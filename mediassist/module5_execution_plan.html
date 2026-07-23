@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Module 5 — Doctor Finder + Output Layer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E1117;--surface:#161B22;--surface2:#1C2230;--surface3:#21293A;
+  --border:#253044;--border2:#2E3D55;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.1);--teal-mid:#00A98E;
+  --you:#00C9A7;--you-bg:rgba(0,201,167,.08);--you-border:rgba(0,201,167,.3);
+  --ai:#58A6FF;--ai-bg:rgba(88,166,255,.08);--ai-border:rgba(88,166,255,.3);
+  --amber:#F0A500;--amber-bg:rgba(240,165,0,.08);--amber-border:rgba(240,165,0,.3);
+  --red:#FF7B72;--red-bg:rgba(255,123,114,.08);
+  --purple:#D2A8FF;--purple-bg:rgba(210,168,255,.08);
+  --green:#3FB950;--green-bg:rgba(63,185,80,.08);
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);font-size:13.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:32px 48px 28px}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+h1{font-size:26px;font-weight:600;color:var(--white);letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
+.header-sub{font-size:13px;color:var(--muted);max-width:580px;line-height:1.7}
+.header-stats{display:flex;gap:1px;background:var(--border);border-radius:var(--r-lg);overflow:hidden;flex-shrink:0}
+.hstat{background:var(--surface2);padding:12px 20px;text-align:center;min-width:80px}
+.hstat-n{font-size:20px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:3px}
+.hstat-l{font-size:10px;color:var(--dim);font-weight:500;letter-spacing:.04em}
+.legend{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 48px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nav a{font-size:12px;font-weight:500;color:var(--dim);text-decoration:none;padding:11px 14px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;display:block}
+.nav a:hover{color:var(--white)}
+.nav a.active{color:var(--white);border-bottom-color:var(--teal)}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 130px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.sbar-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 18px 4px}
+.sbar-link{display:flex;align-items:center;gap:8px;padding:7px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .15s;border-left:2px solid transparent}
+.sbar-link:hover{color:var(--white);background:var(--surface2)}
+.sbar-link.active{color:var(--white);background:var(--teal-dim);border-left-color:var(--teal)}
+.sbar-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.main{padding:32px 44px 60px;max-width:880px}
+.flow{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px 24px;margin-bottom:28px}
+.flow-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+.flow-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.flow-row:last-child{margin-bottom:0}
+.flow-box{font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:var(--r);border:1px solid;white-space:nowrap}
+.fb-you{background:var(--you-bg);border-color:var(--you-border);color:var(--teal)}
+.fb-ai{background:var(--ai-bg);border-color:var(--ai-border);color:var(--ai)}
+.fb-output{background:var(--surface2);border-color:var(--border2);color:var(--muted)}
+.fb-key{background:rgba(0,201,167,.15);border-color:var(--teal);color:var(--teal);font-weight:600}
+.flow-arrow{color:var(--dim);font-size:14px;flex-shrink:0}
+.flow-divider{border-top:1px solid var(--border);margin:10px 0}
+.overview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
+.ocard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+.ocard-icon{font-size:20px;margin-bottom:10px}
+.ocard-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:5px}
+.ocard-body{font-size:12px;color:var(--muted);line-height:1.6}
+.deliverables{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:28px}
+.deliv-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.deliv-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.deliv-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted)}
+.deliv-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.section-hdr{margin:32px 0 14px;display:flex;align-items:center;gap:12px}
+.section-hdr h2{font-size:15px;font-weight:600;color:var(--white)}
+.pill{font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.step{margin-bottom:10px;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;transition:border-color .15s}
+.step:hover{border-color:var(--border2)}
+.step-header{display:grid;grid-template-columns:72px 1fr auto;align-items:stretch;cursor:pointer}
+.step-num{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;border-right:1px solid var(--border);min-width:72px}
+.step-num .num{font-family:var(--mono);font-size:13px;font-weight:600;line-height:1;margin-bottom:4px}
+.step-num .slabel{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3}
+.step-num.you{background:var(--you-bg);border-right-color:var(--you-border)}.step-num.you .num{color:var(--teal)}.step-num.you .slabel{color:var(--teal-mid)}
+.step-num.ai{background:var(--ai-bg);border-right-color:var(--ai-border)}.step-num.ai .num{color:var(--ai)}.step-num.ai .slabel{color:#4B8FCE}
+.step-num.shared{background:var(--amber-bg);border-right-color:var(--amber-border)}.step-num.shared .num{color:var(--amber)}.step-num.shared .slabel{color:#C47F00}
+.step-body{padding:14px 16px}
+.step-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px}
+.step-file{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:6px}
+.step-summary{font-size:12.5px;color:var(--muted);line-height:1.6}
+.step-right{padding:12px 14px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:7px;min-width:120px}
+.effort{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.e-high{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,123,114,.2)}
+.e-med{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.e-low{background:var(--green-bg);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.expand{font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:color .15s}
+.expand:hover{color:var(--white)}
+.time-badge{font-family:var(--mono);font-size:10px;background:var(--surface3);border:1px solid var(--border);padding:3px 8px;border-radius:3px;color:var(--dim)}
+.step-detail{display:none;border-top:1px solid var(--border);padding:18px}
+.step-detail.open{display:block}
+.detail-sections{display:flex;flex-direction:column;gap:14px}
+.dsec{background:var(--surface2);border-radius:var(--r-lg);padding:14px 16px;border:1px solid var(--border)}
+.dsec-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.dsec.you-sec{border-left:2px solid var(--you)}.dsec.you-sec .dsec-title{color:var(--teal)}
+.dsec.ai-sec{border-left:2px solid var(--ai)}.dsec.ai-sec .dsec-title{color:var(--ai)}
+.dsec.warn-sec{border-left:2px solid var(--amber)}.dsec.warn-sec .dsec-title{color:var(--amber)}
+.dsec.verify-sec{border-left:2px solid var(--green)}.dsec.verify-sec .dsec-title{color:var(--green)}
+.dsec.prompt-sec{border-left:2px solid #D2A8FF}.dsec.prompt-sec .dsec-title{color:#D2A8FF}
+.dsec.think-sec{border-left:2px solid var(--red)}.dsec.think-sec .dsec-title{color:var(--red)}
+.dsec-body{font-size:12.5px;color:var(--muted);line-height:1.7}
+.dsec-body ul{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body ol{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body li{color:var(--muted)}
+.dsec-body strong{color:var(--white);font-weight:500}
+pre.cmd{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;color:#79C0FF;overflow-x:auto;line-height:1.7;margin-top:6px;white-space:pre-wrap}
+pre.cmd .c{color:var(--dim)}
+pre.cmd .s{color:#A5D6FF}
+pre.cmd .k{color:var(--teal)}
+.verify-list{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.vitem{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--muted)}
+.vcheck{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;margin-top:1px;background:var(--surface3)}
+.prompt-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-top:6px;font-size:11.5px;color:#A5D6FF;font-family:var(--mono);line-height:1.7;white-space:pre-wrap}
+.table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+.table th{background:var(--bg);color:var(--dim);font-weight:600;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;line-height:1.5}
+.table tr:last-child td{border-bottom:none}
+.table td:first-child{color:var(--white);font-weight:500;font-family:var(--mono);font-size:11px}
+.interview-box{background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:var(--r);padding:12px 14px;margin-top:10px}
+.interview-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--amber);text-transform:uppercase;margin-bottom:5px}
+.interview-q{font-size:12.5px;color:rgba(240,165,0,.7);font-style:italic;line-height:1.6}
+.done-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:22px 24px;margin-top:32px}
+.response-preview{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-top:10px;font-family:var(--mono);font-size:11.5px;color:#79C0FF;line-height:1.8;overflow-x:auto;white-space:pre-wrap}
+.response-preview .k{color:var(--teal)}
+.response-preview .s{color:#A5D6FF}
+.response-preview .n{color:#F0A500}
+.response-preview .c{color:var(--dim)}
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr}.sidebar{display:none}
+  .main{padding:20px 16px 40px}.header{padding:24px 16px}
+  .overview-grid{grid-template-columns:1fr}.deliv-list{grid-template-columns:1fr}
+  .step-header{grid-template-columns:60px 1fr}.step-right{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="eyebrow">MediAssist AI · Module 5 of 6</div>
+      <h1>Doctor Finder + Output Layer</h1>
+      <p class="header-sub">Builds the complete output side of MediAssist AI — specialty mapping, Google Places doctor search, response assembly, session storage, feedback endpoint, and the frontend contract verification. After this module, the full analyze pipeline returns a production-quality response to Lovable.</p>
+    </div>
+    <div>
+      <div class="header-stats">
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">2</div><div class="hstat-l">weeks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">11</div><div class="hstat-l">steps</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--ai)">6</div><div class="hstat-l">AI tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--you)">5</div><div class="hstat-l">your tasks</div></div>
+      </div>
+      <div class="legend" style="margin-top:12px;justify-content:flex-end">
+        <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>You do it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--ai)"></div>Gemini does it</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <a href="#overview" class="active">Overview</a>
+  <a href="#week9">Week 9 — Doctor Finder</a>
+  <a href="#week10">Week 10 — Output + Contract</a>
+  <a href="#done">Definition of done</a>
+</div>
+
+<div class="layout">
+<div class="sidebar">
+  <div class="sbar-section">Week 9 — Doctor Finder</div>
+  <a class="sbar-link active" href="#s1"><div class="sbar-dot" style="background:var(--you)"></div>S1 · Specialty mapping dict</a>
+  <a class="sbar-link" href="#s2"><div class="sbar-dot" style="background:var(--ai)"></div>S2 · Google Places integration</a>
+  <a class="sbar-link" href="#s3"><div class="sbar-dot" style="background:var(--ai)"></div>S3 · NMC registry fallback</a>
+  <a class="sbar-link" href="#s4"><div class="sbar-dot" style="background:var(--you)"></div>S4 · Test doctor results quality</a>
+  <a class="sbar-link" href="#s5"><div class="sbar-dot" style="background:var(--ai)"></div>S5 · /doctors/search endpoint</a>
+  <div class="sbar-section">Week 10 — Output + Contract</div>
+  <a class="sbar-link" href="#s6"><div class="sbar-dot" style="background:var(--you)"></div>S6 · Design final response schema</a>
+  <a class="sbar-link" href="#s7"><div class="sbar-dot" style="background:var(--ai)"></div>S7 · response_builder.py</a>
+  <a class="sbar-link" href="#s8"><div class="sbar-dot" style="background:var(--you)"></div>S8 · Write medical disclaimer</a>
+  <a class="sbar-link" href="#s9"><div class="sbar-dot" style="background:var(--ai)"></div>S9 · DynamoDB + feedback route</a>
+  <a class="sbar-link" href="#s10"><div class="sbar-dot" style="background:var(--you)"></div>S10 · Frontend contract verify</a>
+  <a class="sbar-link" href="#s11"><div class="sbar-dot" style="background:var(--ai)"></div>S11 · Full pipeline test</a>
+</div>
+
+<main class="main">
+
+<div id="overview">
+  <div class="flow">
+    <div class="flow-title">Module 5 — what gets built and how it connects</div>
+    <div class="flow-row">
+      <div class="flow-box fb-output">DiagnosisResult (M3)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">specialist_needed field</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">specialty_mapper.py</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">search term</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box fb-output">search term + user lat/lng</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">finder.py (Google Places)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-key">top-5 DoctorResult[]</div>
+    </div>
+    <div class="flow-divider"></div>
+    <div class="flow-row">
+      <div class="flow-box fb-output">DiagnosisResult + UrgencyResult + DoctorResult[]</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">response_builder.py</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-key">AnalyzeResponse JSON</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box fb-key">AnalyzeResponse</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">DynamoDB save</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">session_id returned to frontend</div>
+    </div>
+    <div class="flow-divider"></div>
+    <div class="flow-row">
+      <div class="flow-box fb-output">AnalyzeResponse schema</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">you verify</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">Gemini generates api.types.ts</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">Lovable frontend</div>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="ocard">
+      <div class="ocard-icon">🎯</div>
+      <div class="ocard-title">Goal of this module</div>
+      <div class="ocard-body">The full analyze pipeline returns a complete, production-quality AnalyzeResponse — diagnosis, urgency, action plan, top-5 nearby doctors, disclaimer, and session ID. Lovable can render it all.</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">⚠️</div>
+      <div class="ocard-title">Your critical tasks</div>
+      <div class="ocard-body">S1 (specialty mapping — medical knowledge), S4 (manually testing doctor result quality for your city), S6 (final response schema design), S8 (disclaimer wording), S10 (frontend contract verification — if wrong, Lovable silently breaks).</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">✅</div>
+      <div class="ocard-title">Done when</div>
+      <div class="ocard-body">A full analyze call from Lovable returns real doctors near Jaipur, a grounded diagnosis, an ML-backed urgency level, and stores the session in DynamoDB. Zero stub responses remaining.</div>
+    </div>
+  </div>
+
+  <div class="deliverables">
+    <div class="deliv-title">Deliverables at end of Module 5</div>
+    <div class="deliv-list">
+      <div class="deliv-item"><span class="deliv-icon">🗺️</span>specialty_mapper.py with 40+ condition→specialty mappings</div>
+      <div class="deliv-item"><span class="deliv-icon">📍</span>finder.py calling Google Places with NMC fallback</div>
+      <div class="deliv-item"><span class="deliv-icon">🏥</span>/api/v1/doctors/search endpoint live</div>
+      <div class="deliv-item"><span class="deliv-icon">📦</span>response_builder.py assembling full AnalyzeResponse</div>
+      <div class="deliv-item"><span class="deliv-icon">⚖️</span>Medical disclaimer written and verified</div>
+      <div class="deliv-item"><span class="deliv-icon">🗄️</span>DynamoDB saving every session correctly</div>
+      <div class="deliv-item"><span class="deliv-icon">💬</span>/api/v1/feedback endpoint storing user ratings</div>
+      <div class="deliv-item"><span class="deliv-icon">📝</span>api.types.ts in Lovable matching backend schemas exactly</div>
+      <div class="deliv-item"><span class="deliv-icon">🔗</span>Full Lovable → API Gateway → Lambda → response working</div>
+      <div class="deliv-item"><span class="deliv-icon">🧪</span>Unit tests for finder.py and response_builder.py</div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 9 -->
+<div id="week9">
+  <div class="section-hdr">
+    <h2>Week 9 — Doctor finder pipeline</h2>
+    <span class="pill" style="background:var(--you-bg);color:var(--teal);border:1px solid var(--you-border)">Days 1–5</span>
+  </div>
+
+  <!-- S1 -->
+  <div class="step" id="s1">
+    <div class="step-header" onclick="toggle('s1')">
+      <div class="step-num you"><div class="num">S1</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Build the condition → specialty mapping dictionary</div>
+        <div class="step-file">backend/app/modules/doctors/specialty_mapper.py</div>
+        <div class="step-summary">The mapping of diagnosed conditions to medical specialties requires medical knowledge. Many conditions map to multiple specialists — you must decide the priority order. Gemini will produce something that looks complete but contains medically incorrect priorities without your review.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s1">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s1">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Write the full mapping yourself — cover all your disease categories</div>
+          <div class="dsec-body">
+            For each condition your system can diagnose, define:
+            <ul style="margin-top:8px">
+              <li><strong>primary_specialty</strong> — the first-line specialist to see</li>
+              <li><strong>secondary_specialty</strong> — alternative if primary unavailable</li>
+              <li><strong>google_search_term</strong> — exact term to pass to Google Places API</li>
+              <li><strong>emergency_dept_if_urgent</strong> — bool — should they go to emergency if urgency=EMERGENCY?</li>
+            </ul>
+<pre class="cmd"><span class="c"># Write this yourself in specialty_mapper.py</span>
+SPECIALTY_MAP = {
+  <span class="c"># CARDIOVASCULAR</span>
+  <span class="k">"Acute Coronary Syndrome"</span>: {
+    "primary": "Cardiologist",
+    "secondary": "Emergency Medicine",
+    "google_term": "cardiologist heart specialist",
+    "emergency_dept": True
+  },
+  <span class="k">"Hypertension"</span>: {
+    "primary": "General Physician",
+    "secondary": "Cardiologist",
+    "google_term": "general physician internal medicine",
+    "emergency_dept": False
+  },
+
+  <span class="c"># RESPIRATORY</span>
+  <span class="k">"Pneumonia"</span>: {
+    "primary": "Pulmonologist",
+    "secondary": "General Physician",
+    "google_term": "pulmonologist chest specialist",
+    "emergency_dept": False
+  },
+  <span class="k">"Tuberculosis"</span>: {
+    "primary": "Pulmonologist",
+    "secondary": "Infectious Disease Specialist",
+    "google_term": "TB specialist pulmonologist",
+    "emergency_dept": False
+  },
+  <span class="k">"Asthma"</span>: {
+    "primary": "Pulmonologist",
+    "secondary": "Allergist",
+    "google_term": "pulmonologist asthma specialist",
+    "emergency_dept": False
+  },
+
+  <span class="c"># NEUROLOGICAL</span>
+  <span class="k">"Stroke"</span>: {
+    "primary": "Neurologist",
+    "secondary": "Emergency Medicine",
+    "google_term": "neurologist stroke specialist",
+    "emergency_dept": True
+  },
+  <span class="k">"Migraine"</span>: {
+    "primary": "Neurologist",
+    "secondary": "General Physician",
+    "google_term": "neurologist headache specialist",
+    "emergency_dept": False
+  },
+
+  <span class="c"># GASTROINTESTINAL</span>
+  <span class="k">"Appendicitis"</span>: {
+    "primary": "General Surgeon",
+    "secondary": "Emergency Medicine",
+    "google_term": "general surgeon surgical specialist",
+    "emergency_dept": True
+  },
+  <span class="k">"Gallstones"</span>: {
+    "primary": "Gastroenterologist",
+    "secondary": "General Surgeon",
+    "google_term": "gastroenterologist liver specialist",
+    "emergency_dept": False
+  },
+
+  <span class="c"># Add all your disease categories...</span>
+  <span class="c"># Dengue, Malaria, Typhoid → Infectious Disease / General Physician</span>
+  <span class="c"># UTI → Urologist / Gynecologist (for women)</span>
+  <span class="c"># Diabetes → Endocrinologist / Diabetologist</span>
+  <span class="c"># Hip fracture → Orthopedic Surgeon</span>
+  <span class="c"># Preeclampsia → Obstetrician/Gynecologist</span>
+  <span class="c"># Skin rash → Dermatologist</span>
+  <span class="c"># Depression → Psychiatrist / Psychologist</span>
+
+  <span class="c"># DEFAULT FALLBACK</span>
+  <span class="k">"Unknown"</span>: {
+    "primary": "General Physician",
+    "secondary": "General Physician",
+    "google_term": "general physician doctor",
+    "emergency_dept": False
+  }
+}
+
+<span class="c"># GENDER-SPECIFIC OVERRIDES</span>
+<span class="c"># If patient is female AND condition involves reproductive system</span>
+FEMALE_OVERRIDE = {
+  "UTI": {"primary": "Gynecologist", "google_term": "gynecologist women specialist"},
+  "Preeclampsia": {"primary": "Obstetrician", "google_term": "obstetrician gynecologist"},
+}
+
+<span class="c"># AGE-SPECIFIC OVERRIDES</span>
+AGE_OVERRIDE = {
+  "under_18": {"google_term_suffix": "pediatric"},   <span class="c"># "pediatric cardiologist"</span>
+  "over_65": {"google_term_suffix": "geriatric"},    <span class="c"># "geriatric specialist"</span>
+}</pre>
+            You must write at least 40 condition mappings covering all 8 disease categories from your RAG KB.
+          </div>
+        </div>
+        <div class="dsec think-sec">
+          <div class="dsec-title">Ambiguous cases — you must decide priority</div>
+          <div class="dsec-body">
+            <table class="table">
+              <thead><tr><th>Condition</th><th>Ambiguity</th><th>Your decision</th></tr></thead>
+              <tbody>
+                <tr><td>Diabetic nephropathy</td><td>Endocrinologist OR Nephrologist?</td><td>Primary: Endocrinologist (manages diabetes), Secondary: Nephrologist (kidney complication)</td></tr>
+                <tr><td>UTI in young woman</td><td>General Physician OR Gynecologist?</td><td>Use FEMALE_OVERRIDE → Gynecologist</td></tr>
+                <tr><td>Depression in teenager</td><td>Psychiatrist OR Psychologist?</td><td>Use AGE_OVERRIDE → Pediatric Psychiatrist</td></tr>
+                <tr><td>Dengue fever</td><td>Infectious Disease OR General Physician?</td><td>General Physician (ID specialists rare in tier-2 India), Secondary: ID Specialist if available</td></tr>
+                <tr><td>Severe headache + vomiting</td><td>Neurologist OR Emergency?</td><td>If urgency=EMERGENCY → Emergency. Else → Neurologist</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"How does your system decide which specialist to recommend for a given condition? How do you handle conditions that could map to multiple specialties? What happens for a patient under 18 vs over 65?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="step" id="s2">
+    <div class="step-header" onclick="toggle('s2')">
+      <div class="step-num ai"><div class="num">S2</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement finder.py — Google Places Nearby Search</div>
+        <div class="step-file">backend/app/modules/doctors/finder.py</div>
+        <div class="step-summary">Gemini implements the Google Places API call with your specialty_mapper output. Takes specialist search term + user lat/lng + radius, returns top-5 doctors ranked by rating × inverse distance. Includes filtering, deduplication, and distance calculation.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s2">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s2">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement backend/app/modules/doctors/finder.py for MediAssist AI.
+
+Main function: async def find_doctors(
+    condition: str,
+    patient_profile: PatientProfile,
+    location: LocationData,
+    urgency_level: str,
+    radius_km: int = 15
+) -> list[DoctorResult]
+
+Steps:
+1. Call specialty_mapper.get_specialty(condition, patient_profile) to get search term
+2. If urgency_level == "EMERGENCY" and specialty_mapper says emergency_dept=True:
+   - Search for "emergency hospital" instead of specialist
+   - Set radius_km = 5 (closest emergency, not best rated)
+3. Call Google Places Nearby Search API:
+   URL: https://maps.googleapis.com/maps/api/place/nearbysearch/json
+   Params: location={lat},{lng}, radius={radius_km*1000}, keyword={search_term}, type=doctor|hospital
+   Key: settings.GOOGLE_PLACES_API_KEY
+4. For each result, call Places Details API to get:
+   - phone_number, opening_hours, website, rating, user_ratings_total
+5. Calculate distance from user location using geopy.distance.geodesic
+6. Rank by: composite_score = (rating/5 * 0.6) + ((1 - dist_km/radius_km) * 0.4)
+   (Higher rating AND closer = better score)
+7. Return top-5 as DoctorResult objects
+
+DoctorResult fields: name, specialty, hospital, address, phone, rating, distance_km, google_place_id, is_open_now
+
+Handle: API quota exceeded → fall back to NMC registry (S3)
+Handle: No results within radius → expand to radius_km*2 and retry once
+Handle: missing phone/rating → use None, don't crash
+
+Cache results per (condition, lat, lng) in DynamoDB with 24hr TTL (avoid repeat API calls)</div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Google Places API cost control</div>
+          <div class="dsec-body">
+            Google Places gives $200 free credit monthly. Nearby Search = $0.032/call. Details = $0.017/call. Per analyze request with 5 results: ~$0.032 + (5 × $0.017) = $0.117. At $200 credit: ~1,700 free requests/month.<br><br>
+            The DynamoDB cache is critical — repeated searches for "cardiologist in Jaipur" return cached results instead of calling the API again. Cache key: <code style="font-family:var(--mono);font-size:11px">f"{condition}_{lat:.2f}_{lng:.2f}"</code> (rounded to 2 decimal places ≈ 1.1km precision).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="step" id="s3">
+    <div class="step-header" onclick="toggle('s3')">
+      <div class="step-num ai"><div class="num">S3</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">NMC registry fallback data + seed script</div>
+        <div class="step-file">backend/scripts/seed_hospital_db.py · DynamoDB hospital table</div>
+        <div class="step-summary">When Google Places quota is exceeded or returns no results, the system falls back to a static NMC registry database in DynamoDB. Gemini builds the seed script to load publicly available NMC data. You don't need to source this data — NMC publishes it publicly.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s3">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s3">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Write backend/scripts/seed_hospital_db.py for MediAssist AI.
+
+1. Download NMC (National Medical Commission) doctor registry from:
+   https://www.nmc.org.in/information-desk/for-students-doctors/list-of-licensed-doctors/
+   (Download the CSV or scrape the public search — no login required)
+
+2. Parse the CSV to extract: name, registration_number, qualification, state, district, specialty
+
+3. Also seed from a curated list of top hospitals in Rajasthan:
+   Create a hardcoded list of 50 major hospitals in Jaipur, Jodhpur, Udaipur, Kota with:
+   name, address, lat, lng, specialties[], phone, google_place_id (if known)
+
+4. Insert all into DynamoDB table: mediassist-hospitals
+   Partition key: state_district (e.g. "rajasthan_jaipur")
+   Sort key: specialty
+   Attributes: all doctor/hospital fields above
+
+5. Write query function: query_nmc_fallback(specialty: str, state: str, district: str) -> list[DoctorResult]
+   Returns up to 5 results matching specialty + location
+
+This fallback is only used when Google Places API is unavailable.
+Mark all fallback results with: {"source": "nmc_registry", "data_freshness": "static"}
+so frontend can show a disclaimer: "This data may not be current. Please verify contact details."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="step" id="s4">
+    <div class="step-header" onclick="toggle('s4')">
+      <div class="step-num you"><div class="num">S4</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Manually test doctor search results for quality</div>
+        <div class="step-file">(manual testing — qualitative review)</div>
+        <div class="step-summary">Run 10 real searches against the live Google Places API for conditions your system diagnoses. You judge: are these actually good doctors? Are the results relevant? Are phone numbers real? This is a real-world QA task only you can do from Jaipur context.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s4">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s4">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">10 searches to run and evaluate manually</div>
+          <div class="dsec-body">
+            Run each search from Jaipur coordinates (26.9124, 75.7873):
+            <table class="table">
+              <thead><tr><th>Search</th><th>Condition</th><th>What to check</th></tr></thead>
+              <tbody>
+                <tr><td>cardiologist heart specialist</td><td>ACS</td><td>Are these real cardiology hospitals in Jaipur? (SMS Hospital, Fortis, Manipal should appear)</td></tr>
+                <tr><td>pulmonologist chest specialist</td><td>Pneumonia/TB</td><td>Real pulmonologists? Not general physicians listed wrongly?</td></tr>
+                <tr><td>neurologist headache specialist</td><td>Migraine/Stroke</td><td>Neurology departments, not chiropractors?</td></tr>
+                <tr><td>gastroenterologist liver specialist</td><td>Gallstones</td><td>GI specialists? Distance reasonable?</td></tr>
+                <tr><td>emergency hospital</td><td>EMERGENCY case</td><td>Returns hospitals with 24hr emergency, not clinics?</td></tr>
+                <tr><td>gynecologist women specialist</td><td>UTI female</td><td>Gynecology clinics? Not general OPDs?</td></tr>
+                <tr><td>orthopedic surgeon</td><td>Hip fracture</td><td>Ortho hospitals? Fortis/SMS ortho dept?</td></tr>
+                <tr><td>dermatologist skin specialist</td><td>Skin rash</td><td>Dermatology clinics?</td></tr>
+                <tr><td>psychiatrist mental health</td><td>Depression</td><td>Mental health facilities? Sensitive — verify results are appropriate</td></tr>
+                <tr><td>pediatric cardiologist</td><td>Child + cardiac</td><td>Age override working? Returns pediatric specialists?</td></tr>
+              </tbody>
+            </table>
+            <br>For each search: note any bad results (wrong specialty, closed permanently, wrong city). Feed those issues back to Gemini to fix in the ranking or filtering logic.
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Common issues to look for</div>
+          <div class="dsec-body">
+            <ul>
+              <li><strong>Medical stores appearing as doctors</strong> — Google Places sometimes returns pharmacies for "doctor" queries. Fix: add <code style="font-family:var(--mono);font-size:11px">exclude_types=["pharmacy","drugstore"]</code> to Places query.</li>
+              <li><strong>Wrong city results</strong> — If radius is too large, results from Delhi appear. Keep radius ≤ 25km for Jaipur.</li>
+              <li><strong>Permanently closed</strong> — Google Places API returns <code style="font-family:var(--mono);font-size:11px">business_status: "CLOSED_PERMANENTLY"</code>. Filter these out.</li>
+              <li><strong>No phone number</strong> — Many Indian clinics don't have phone numbers in Google. Show "Contact via Google Maps" as fallback.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"How did you ensure the doctor recommendations were relevant and accurate? Did you test with real location data? What issues did you find and how did you fix them?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 -->
+  <div class="step" id="s5">
+    <div class="step-header" onclick="toggle('s5')">
+      <div class="step-num ai"><div class="num">S5</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Build /api/v1/doctors/search standalone endpoint</div>
+        <div class="step-file">backend/app/api/routes/doctors.py</div>
+        <div class="step-summary">A standalone doctor search endpoint that Lovable can call independently — not tied to a full analysis. User can directly search for specialists by condition name and their location. Gemini builds this once finder.py exists.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-low">Low</span>
+        <span class="time-badge">~1 hr</span>
+        <button class="expand" id="btn-s5">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s5">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement backend/app/api/routes/doctors.py for MediAssist AI.
+
+POST /api/v1/doctors/search
+
+Request body (JSON):
+{
+  "condition": "Pneumonia",       // or "specialty": "Pulmonologist"
+  "latitude": 26.9124,
+  "longitude": 75.7873,
+  "radius_km": 15,                // optional, default 15
+  "patient_age": 35,              // optional, for age-specific filtering
+  "patient_gender": "female"      // optional, for gender-specific filtering
+}
+
+Logic:
+- If "condition" provided: use specialty_mapper to get search term
+- If "specialty" provided directly: use it as search term
+- Build minimal PatientProfile from age + gender for specialty_mapper overrides
+- Call finder.find_doctors()
+- Return list of DoctorResult objects
+
+GET /api/v1/doctors/specialties
+- Returns the full list of conditions and their mapped specialties
+- Useful for Lovable to show a dropdown of available specialties
+
+Add rate limiting: max 10 requests per minute per IP (to protect Google Places quota)
+Add response caching: same query within 24 hours returns cached DynamoDB result</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 10 -->
+<div id="week10">
+  <div class="section-hdr">
+    <h2>Week 10 — Output assembly + frontend contract</h2>
+    <span class="pill" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">Days 6–14</span>
+  </div>
+
+  <!-- S6 -->
+  <div class="step" id="s6">
+    <div class="step-header" onclick="toggle('s6')">
+      <div class="step-num you"><div class="num">S6</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Design and finalize the complete AnalyzeResponse schema</div>
+        <div class="step-file">backend/app/models/response_models.py</div>
+        <div class="step-summary">Now that all modules exist, you have full visibility of every piece of data the system produces. This is the moment to finalize response_models.py — add any missing fields from Modules 3, 4, and 5, remove any stubs, and ensure the schema is exactly what Lovable needs to render a complete UI.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s6">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s6">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Review and finalize response_models.py yourself</div>
+          <div class="dsec-body">
+            The complete AnalyzeResponse should look like this — verify every field is populated by a real module:
+            <div class="response-preview"><span class="c">// Complete AnalyzeResponse — every field comes from a real module</span>
+{
+  <span class="k">"session_id"</span>: <span class="s">"uuid-string"</span>,          <span class="c">// from patient_context.py</span>
+  <span class="k">"processing_time_ms"</span>: <span class="n">4820</span>,         <span class="c">// measured in analyze.py</span>
+
+  <span class="k">"diagnosis"</span>: {
+    <span class="k">"conditions"</span>: [
+      {
+        <span class="k">"name"</span>: <span class="s">"Acute Coronary Syndrome"</span>,
+        <span class="k">"confidence"</span>: <span class="n">0.82</span>,              <span class="c">// from RAG chain</span>
+        <span class="k">"explanation"</span>: <span class="s">"plain language..."</span>, <span class="c">// from Bedrock</span>
+        <span class="k">"cited_source"</span>: <span class="s">"PMID:12345678"</span>,   <span class="c">// from retriever</span>
+        <span class="k">"specialist_needed"</span>: <span class="s">"Cardiologist"</span>   <span class="c">// from specialty_mapper</span>
+      }
+    ],
+    <span class="k">"ml_predictions"</span>: [
+      {"disease": <span class="s">"ACS"</span>, "probability": <span class="n">0.79</span>},   <span class="c">// from XGBoost</span>
+      {"disease": <span class="s">"Angina"</span>, "probability": <span class="n">0.12</span>}
+    ],
+    <span class="k">"xray_findings"</span>: {                          <span class="c">// from ResNet-50</span>
+      "top_condition": <span class="s">"Cardiomegaly"</span>,
+      "confidence": <span class="n">0.71</span>,
+      "all_scores": {"Cardiomegaly": <span class="n">0.71</span>, "No Finding": <span class="n">0.18</span>}
+    }
+  },
+
+  <span class="k">"urgency"</span>: {
+    <span class="k">"level"</span>: <span class="s">"EMERGENCY"</span>,                  <span class="c">// from LightGBM</span>
+    <span class="k">"score"</span>: <span class="n">0.94</span>,
+    <span class="k">"call_emergency"</span>: true,
+    <span class="k">"action_plan"</span>: [                        <span class="c">// from Bedrock</span>
+      <span class="s">"Call 112 immediately"</span>,
+      <span class="s">"Do not eat or drink anything"</span>,
+      <span class="s">"Chew one aspirin if not allergic"</span>
+    ],
+    <span class="k">"risk_flags_triggered"</span>: [<span class="s">"cardiac_risk_critical"</span>]
+  },
+
+  <span class="k">"recommendations"</span>: [
+    {
+      <span class="k">"name"</span>: <span class="s">"Dr. Sharma Cardiology Clinic"</span>,
+      <span class="k">"specialty"</span>: <span class="s">"Cardiologist"</span>,
+      <span class="k">"hospital"</span>: <span class="s">"Fortis Escorts Hospital"</span>,
+      <span class="k">"rating"</span>: <span class="n">4.6</span>,
+      <span class="k">"distance_km"</span>: <span class="n">3.2</span>,
+      <span class="k">"phone"</span>: <span class="s">"+91-141-2547000"</span>,
+      <span class="k">"address"</span>: <span class="s">"Jawahar Lal Nehru Marg, Jaipur"</span>,
+      <span class="k">"is_open_now"</span>: true,
+      <span class="k">"google_place_id"</span>: <span class="s">"ChIJ..."</span>
+    }
+  ],
+
+  <span class="k">"patient_summary"</span>: {             <span class="c">// echo back for frontend display</span>
+    "name": <span class="s">"Rahul Sharma"</span>,
+    "age": <span class="n">55</span>, "gender": <span class="s">"male"</span>,
+    "risk_flags": [<span class="s">"cardiac_risk_critical"</span>, <span class="s">"age_over_50"</span>]
+  },
+
+  <span class="k">"disclaimer"</span>: <span class="s">"[your written disclaimer text]"</span>,
+  <span class="k">"insufficient_info"</span>: false
+}</div>
+            Go through every field. Confirm it has a source module. Remove any field that's still a stub.
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">This schema is the binding contract — changes after this are expensive</div>
+          <div class="dsec-body">
+            Once you finalize this schema and Lovable starts using it, changing a field name means updating: response_models.py → response_builder.py → api.types.ts → every Lovable component that reads that field. Spend the time to get it right now.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7 -->
+  <div class="step" id="s7">
+    <div class="step-header" onclick="toggle('s7')">
+      <div class="step-num ai"><div class="num">S7</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement response_builder.py</div>
+        <div class="step-file">backend/app/core/response_builder.py</div>
+        <div class="step-summary">Gemini assembles all module outputs into the final AnalyzeResponse using your finalized schema from S6. This is pure data assembly — no decisions required. It takes DiagnosisResult + UrgencyResult + DoctorResult[] + PatientContext and builds the complete response object.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s7">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s7">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement backend/app/core/response_builder.py for MediAssist AI.
+
+Function: build_response(
+    context: PatientContext,
+    diagnosis: DiagnosisResult,
+    urgency: UrgencyResult,
+    doctors: list[DoctorResult],
+    processing_start_time: float
+) -> AnalyzeResponse
+
+Build the complete AnalyzeResponse using my finalized schema:
+[paste your complete schema from S6 here]
+
+Rules:
+1. If diagnosis.insufficient_info=True → add a note in disclaimer about limited analysis
+2. If urgency.level=="EMERGENCY" AND doctors list is empty →
+   append emergency hotline to action_plan: "Call 112 (Ambulance) or 108 (Emergency)"
+3. If xray_findings is None (no X-ray uploaded) → omit that field entirely, don't set to null
+4. Set processing_time_ms = int((time.time() - processing_start_time) * 1000)
+5. Always include disclaimer text (from DISCLAIMER constant in this file)
+6. If call_emergency=True → prepend action_plan[0] with "🚨" emoji marker
+7. Validate against AnalyzeResponse Pydantic model before returning — raise if invalid
+
+This function should never raise exceptions — wrap in try/except and return a
+safe fallback AnalyzeResponse if anything fails (insufficient_info=True, empty doctors, generic disclaimer).</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you verify after delivery</div>
+          <div class="dsec-body">
+            Build a test response manually with known inputs and verify every field is populated correctly. Check edge cases:
+            <ul style="margin-top:8px">
+              <li>Empty doctors list → action_plan includes emergency hotline</li>
+              <li>No X-ray uploaded → xray_findings field absent (not null)</li>
+              <li>EMERGENCY urgency → first action_plan item has 🚨 prefix</li>
+              <li>Processing time is accurate (measure a real call)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 -->
+  <div class="step" id="s8">
+    <div class="step-header" onclick="toggle('s8')">
+      <div class="step-num you"><div class="num">S8</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Write the medical disclaimer — every word is yours</div>
+        <div class="step-file">backend/app/core/response_builder.py (DISCLAIMER constant)</div>
+        <div class="step-summary">The disclaimer is a legal and ethical statement. It must be clear, prominent, and accurate. You write every word — this is not something to generate with AI. You are responsible for what this system says to patients.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s8">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s8">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Write three levels of disclaimer — based on urgency level</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Write these yourself in response_builder.py</span>
+
+DISCLAIMER_STANDARD = """
+MediAssist AI provides health information for educational purposes only.
+This analysis is NOT a medical diagnosis and should NOT be used as a
+substitute for professional medical advice, diagnosis, or treatment.
+Always seek the advice of a qualified healthcare provider with any
+questions you may have regarding a medical condition. Never disregard
+professional medical advice or delay seeking it because of something
+you have read in this report.
+"""
+
+DISCLAIMER_URGENT = """
+⚠️ This analysis suggests you may need prompt medical attention.
+MediAssist AI provides health information only — this is NOT a diagnosis.
+Please consult a qualified doctor as soon as possible. Do not rely
+solely on this analysis to make healthcare decisions.
+"""
+
+DISCLAIMER_EMERGENCY = """
+🚨 IMPORTANT: This analysis suggests a potentially life-threatening situation.
+Call 112 (Ambulance) or go to the nearest emergency room IMMEDIATELY.
+Do NOT wait. MediAssist AI is an information tool ONLY.
+This is NOT a substitute for emergency medical care.
+"""
+
+<span class="c"># Select based on urgency level in response_builder</span>
+def get_disclaimer(urgency_level: str) -> str:
+    if urgency_level == "EMERGENCY":
+        return DISCLAIMER_EMERGENCY
+    elif urgency_level in ["URGENT", "MODERATE"]:
+        return DISCLAIMER_URGENT
+    return DISCLAIMER_STANDARD</pre>
+            Think about each disclaimer carefully:
+            <ul style="margin-top:10px">
+              <li>Does EMERGENCY clearly say to call for help? Yes — explicitly says 112.</li>
+              <li>Does it say this is NOT a diagnosis? Yes — in all three.</li>
+              <li>Does it say don't delay seeking real help? Yes — critical for EMERGENCY.</li>
+              <li>Is it clear but not so alarming that LOW urgency users panic? Yes — STANDARD is calm.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"How did you handle the ethical responsibility of providing medical information? What does your disclaimer say and why did you write different versions for different urgency levels?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9 -->
+  <div class="step" id="s9">
+    <div class="step-header" onclick="toggle('s9')">
+      <div class="step-num ai"><div class="num">S9</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">DynamoDB session storage + feedback endpoint</div>
+        <div class="step-file">backend/app/services/dynamodb_service.py · backend/app/api/routes/feedback.py</div>
+        <div class="step-summary">Gemini implements the complete DynamoDB service (save/get/update session) and the feedback endpoint. Feedback stores thumbs up/down + comment against session_id — feeds the future model improvement loop.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s9">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s9">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement two files for MediAssist AI:
+
+FILE 1: backend/app/services/dynamodb_service.py
+
+Functions:
+- save_session(response: AnalyzeResponse) -> bool
+  Stores full AnalyzeResponse as JSON to DynamoDB table mediassist-sessions
+  PK: session_id, attributes: all response fields, timestamp, expires_at (now + 90 days as TTL)
+
+- get_session(session_id: str) -> Optional[AnalyzeResponse]
+  Retrieves session by ID. Returns None if not found (don't raise).
+
+- save_feedback(session_id: str, rating: int, comment: Optional[str]) -> bool
+  Updates existing session item with: feedback_rating (1=positive, -1=negative),
+  feedback_comment, feedback_timestamp
+  If session not found → create minimal record with just session_id + feedback
+
+- get_all_negative_feedback(limit: int = 100) -> list[dict]
+  Query sessions where feedback_rating=-1 (for model improvement review)
+  Uses a GSI on feedback_rating attribute
+
+FILE 2: backend/app/api/routes/feedback.py
+
+POST /api/v1/feedback
+Request: {"session_id": "uuid", "rating": 1 or -1, "comment": "optional string"}
+- Validate session_id is valid UUID
+- Validate rating is 1 or -1 only
+- Call dynamodb_service.save_feedback()
+- Return: {"saved": true, "session_id": "uuid"}
+- If session_id not found: still save feedback (don't require prior session)
+
+GET /api/v1/history/{session_id}
+- Call dynamodb_service.get_session()
+- Return full AnalyzeResponse if found
+- Return 404 if not found</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">Verify after delivery</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Run a full analyze call, get session_id from response</span>
+session_id = result["session_id"]
+
+<span class="c"># Verify session saved in DynamoDB</span>
+aws dynamodb get-item \
+  --table-name mediassist-sessions \
+  --key '{"session_id": {"S": "'"$session_id"'"}}'
+
+<span class="c"># Submit feedback</span>
+curl -X POST https://[url]/api/v1/feedback \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "'"$session_id"'", "rating": 1, "comment": "Accurate diagnosis"}'
+
+<span class="c"># Retrieve session by ID</span>
+curl https://[url]/api/v1/history/$session_id</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10 -->
+  <div class="step" id="s10">
+    <div class="step-header" onclick="toggle('s10')">
+      <div class="step-num you"><div class="num">S10</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Frontend contract verification — TypeScript vs Pydantic</div>
+        <div class="step-file">frontend/src/types/api.types.ts ↔ backend/app/models/</div>
+        <div class="step-summary">You personally compare every field in response_models.py against api.types.ts in Lovable, field by field. This is not Gemini's job — silent TypeScript mismatches (wrong field name, wrong type, missing optional) cause runtime bugs that are hard to debug. One hour of careful review prevents days of debugging.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s10">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s10">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">How to do the verification — side by side comparison</div>
+          <div class="dsec-body">
+            Open response_models.py and api.types.ts side by side. For every Pydantic field, find the corresponding TypeScript field and verify:
+            <table class="table">
+              <thead><tr><th>Pydantic type</th><th>Must become TypeScript</th><th>Common mistake</th></tr></thead>
+              <tbody>
+                <tr><td>str</td><td>string</td><td>Naming it String (capital S) — wrong</td></tr>
+                <tr><td>int / float</td><td>number</td><td>Using int or float in TS — doesn't exist</td></tr>
+                <tr><td>bool</td><td>boolean</td><td>Using Bool — wrong</td></tr>
+                <tr><td>Optional[str]</td><td>string | null | undefined</td><td>Using just string (missing null breaks runtime)</td></tr>
+                <tr><td>List[DoctorResult]</td><td>DoctorResult[]</td><td>Missing [] — TS treats it as single object</td></tr>
+                <tr><td>Literal["EMERGENCY","URGENT","MODERATE","LOW"]</td><td>type UrgencyLevel = "EMERGENCY" | "URGENT" | "MODERATE" | "LOW"</td><td>Using string — loses type safety</td></tr>
+              </tbody>
+            </table>
+            <br>After reviewing, give Gemini this prompt:
+          </div>
+        </div>
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini — generate api.types.ts from your finalized Pydantic models</div>
+          <div class="prompt-box">Generate frontend/src/types/api.types.ts for MediAssist AI Lovable frontend.
+
+Convert these Pydantic models to TypeScript interfaces:
+[paste your complete response_models.py here]
+[paste your complete request_models.py here]
+
+Rules:
+- Optional[X] → X | null
+- List[X] → X[]
+- Literal["A","B"] → "A" | "B" type union
+- Use export interface for all models
+- Use export type for union types (UrgencyLevel, etc.)
+- Add JSDoc comment on each interface explaining what it is
+- Export a typed analyzeSymptoms() function signature that takes AnalyzeRequest and returns Promise<AnalyzeResponse>
+
+Also generate: src/api/mediassist.ts
+- Import types from api.types.ts
+- Read BASE_URL from import.meta.env.VITE_API_BASE_URL
+- Export: analyzeSymptoms(data: AnalyzeRequest): Promise<AnalyzeResponse>
+- Export: searchDoctors(data: DoctorSearchRequest): Promise<DoctorResult[]>
+- Export: getHistory(sessionId: string): Promise<AnalyzeResponse | null>
+- Export: submitFeedback(sessionId: string, rating: 1 | -1, comment?: string): Promise<void>
+- Export: checkHealth(): Promise<boolean></div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">After Gemini generates — your final check</div>
+          <div class="dsec-body">
+            In Lovable, paste api.types.ts and mediassist.ts. Then:
+            <ul style="margin-top:8px">
+              <li>In any Lovable component, import AnalyzeResponse and type a variable: <code style="font-family:var(--mono);font-size:11px">const r: AnalyzeResponse = ...</code> — TypeScript should autocomplete all fields correctly</li>
+              <li>Call <code style="font-family:var(--mono);font-size:11px">analyzeSymptoms()</code> from a test component and log the response — verify it matches the JSON structure from your backend</li>
+              <li>Check <code style="font-family:var(--mono);font-size:11px">r.urgency.level</code> — should be typed as UrgencyLevel, not string</li>
+              <li>Check <code style="font-family:var(--mono);font-size:11px">r.diagnosis.xray_findings</code> — should be typed as optional (allows undefined)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"How did you ensure type safety between your Python backend and your TypeScript frontend? What happens if a Pydantic Optional field is missing in the API response — how does your TypeScript handle it?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S11 -->
+  <div class="step" id="s11">
+    <div class="step-header" onclick="toggle('s11')">
+      <div class="step-num ai"><div class="num">S11</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Unit tests for Module 5 + full integration test</div>
+        <div class="step-file">backend/tests/test_analyze.py · test_doctors.py</div>
+        <div class="step-summary">Gemini writes unit tests for finder.py (mocked Places API), response_builder.py (known inputs), and feedback endpoint. Plus a full integration test that sends a real analyze request and validates the complete AnalyzeResponse shape.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s11">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s11">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Write tests for MediAssist AI Module 5:
+
+FILE 1: backend/tests/test_doctors.py
+- test_specialty_mapping: verify "Acute Coronary Syndrome" → "Cardiologist" search term
+- test_emergency_overrides_specialty: urgency=EMERGENCY → returns emergency hospital search
+- test_female_override: UTI + female → Gynecologist
+- test_age_override: any condition + age=10 → adds "pediatric" to search term
+- test_google_places_mock: mock requests.get with Places API fixture → verify DoctorResult parsing
+- test_fallback_to_nmc: mock Places API returning empty → verify NMC fallback triggered
+- test_response_builder: known inputs → verify all fields populated, disclaimer present
+
+FILE 2: integration test section in tests/test_analyze.py
+- test_full_pipeline_with_cardiac_case:
+  POST /analyze with: 55yo male smoker, HTN, chest pain symptoms, no images
+  Verify: urgency.level=="EMERGENCY", call_emergency==True, recommendations list non-empty,
+  session_id is valid UUID, disclaimer contains "112"
+  Mock: Bedrock, Pinecone (return fixtures), DynamoDB, Google Places
+
+- test_session_stored_after_analyze:
+  After full analyze call → GET /history/{session_id} → verify same response returned
+
+- test_feedback_flow:
+  POST /feedback with session_id and rating=-1 → verify 200, then verify in DynamoDB</div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Module 5 complete when all of these pass</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>specialty_mapper has 40+ condition mappings</div>
+            <div class="vitem"><div class="vcheck"></div>Real Google Places search for "cardiologist Jaipur" returns 5 real hospitals</div>
+            <div class="vitem"><div class="vcheck"></div>EMERGENCY case returns emergency hospitals within 5km (not best-rated 15km away)</div>
+            <div class="vitem"><div class="vcheck"></div>Full AnalyzeResponse has zero stub/placeholder fields</div>
+            <div class="vitem"><div class="vcheck"></div>Disclaimer text correct for all 3 urgency levels</div>
+            <div class="vitem"><div class="vcheck"></div>DynamoDB stores session after every analyze call</div>
+            <div class="vitem"><div class="vcheck"></div>GET /history/{session_id} returns the stored response</div>
+            <div class="vitem"><div class="vcheck"></div>POST /feedback stores rating in DynamoDB</div>
+            <div class="vitem"><div class="vcheck"></div>api.types.ts TypeScript interfaces match Pydantic models exactly</div>
+            <div class="vitem"><div class="vcheck"></div>analyzeSymptoms() call from Lovable returns correctly typed response</div>
+            <div class="vitem"><div class="vcheck"></div>All unit tests pass with mocked services</div>
+            <div class="vitem"><div class="vcheck"></div>GitHub Actions CI green</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="done" class="done-box">
+  <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px">Module 5 — Definition of done</div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.8">
+    Module 5 is complete when a real <code style="font-family:var(--mono);font-size:11px">POST /api/v1/analyze</code> from Lovable — with real symptom text and patient profile — returns a fully-populated <code style="font-family:var(--mono);font-size:11px">AnalyzeResponse</code> containing an ML-backed diagnosis, a grounded RAG explanation with cited sources, a LightGBM urgency level with action plan, top-5 real doctors near the user's location from Google Places, and the appropriate disclaimer. The session is stored in DynamoDB. Lovable can render all fields without TypeScript errors. Zero stub responses anywhere in the codebase.
+    <br><br>
+    Module 6 (Testing, Deployment &amp; Polish) can now begin — the final phase of hardening, performance tuning, CI/CD, and portfolio documentation.
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function toggle(id){
+  const d=document.getElementById('detail-'+id);
+  const b=document.getElementById('btn-'+id);
+  if(!d)return;
+  const open=d.classList.toggle('open');
+  if(b)b.textContent=open?'Close ▴':'Details ▾';
+}
+const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{
+  const sections=['overview','week9','week10','done'];
+  let current='overview';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&window.scrollY>=el.offsetTop-80)current=id;
+  });
+  navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+current));
+});
+</script>
+</body>
+</html>

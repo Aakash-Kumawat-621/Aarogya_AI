@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Module 6 — Testing, Deployment & Polish</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E1117;--surface:#161B22;--surface2:#1C2230;--surface3:#21293A;
+  --border:#253044;--border2:#2E3D55;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.1);--teal-mid:#00A98E;
+  --you:#00C9A7;--you-bg:rgba(0,201,167,.08);--you-border:rgba(0,201,167,.3);
+  --ai:#58A6FF;--ai-bg:rgba(88,166,255,.08);--ai-border:rgba(88,166,255,.3);
+  --amber:#F0A500;--amber-bg:rgba(240,165,0,.08);--amber-border:rgba(240,165,0,.3);
+  --red:#FF7B72;--red-bg:rgba(255,123,114,.08);
+  --purple:#D2A8FF;--purple-bg:rgba(210,168,255,.08);
+  --green:#3FB950;--green-bg:rgba(63,185,80,.08);
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);font-size:13.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:32px 48px 28px}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+h1{font-size:26px;font-weight:600;color:var(--white);letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
+.header-sub{font-size:13px;color:var(--muted);max-width:580px;line-height:1.7}
+.header-stats{display:flex;gap:1px;background:var(--border);border-radius:var(--r-lg);overflow:hidden;flex-shrink:0}
+.hstat{background:var(--surface2);padding:12px 20px;text-align:center;min-width:80px}
+.hstat-n{font-size:20px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:3px}
+.hstat-l{font-size:10px;color:var(--dim);font-weight:500;letter-spacing:.04em}
+.legend{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 48px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nav a{font-size:12px;font-weight:500;color:var(--dim);text-decoration:none;padding:11px 14px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;display:block}
+.nav a:hover{color:var(--white)}
+.nav a.active{color:var(--white);border-bottom-color:var(--teal)}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 130px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.sbar-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 18px 4px}
+.sbar-link{display:flex;align-items:center;gap:8px;padding:7px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .15s;border-left:2px solid transparent}
+.sbar-link:hover{color:var(--white);background:var(--surface2)}
+.sbar-link.active{color:var(--white);background:var(--teal-dim);border-left-color:var(--teal)}
+.sbar-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.main{padding:32px 44px 60px;max-width:880px}
+.overview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
+.ocard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+.ocard-icon{font-size:20px;margin-bottom:10px}
+.ocard-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:5px}
+.ocard-body{font-size:12px;color:var(--muted);line-height:1.6}
+.deliverables{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:28px}
+.deliv-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.deliv-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.deliv-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted)}
+.deliv-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.section-hdr{margin:32px 0 14px;display:flex;align-items:center;gap:12px}
+.section-hdr h2{font-size:15px;font-weight:600;color:var(--white)}
+.pill{font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.step{margin-bottom:10px;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;transition:border-color .15s}
+.step:hover{border-color:var(--border2)}
+.step-header{display:grid;grid-template-columns:72px 1fr auto;align-items:stretch;cursor:pointer}
+.step-num{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;border-right:1px solid var(--border);min-width:72px}
+.step-num .num{font-family:var(--mono);font-size:13px;font-weight:600;line-height:1;margin-bottom:4px}
+.step-num .slabel{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3}
+.step-num.you{background:var(--you-bg);border-right-color:var(--you-border)}.step-num.you .num{color:var(--teal)}.step-num.you .slabel{color:var(--teal-mid)}
+.step-num.ai{background:var(--ai-bg);border-right-color:var(--ai-border)}.step-num.ai .num{color:var(--ai)}.step-num.ai .slabel{color:#4B8FCE}
+.step-num.shared{background:var(--amber-bg);border-right-color:var(--amber-border)}.step-num.shared .num{color:var(--amber)}.step-num.shared .slabel{color:#C47F00}
+.step-body{padding:14px 16px}
+.step-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px}
+.step-file{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:6px}
+.step-summary{font-size:12.5px;color:var(--muted);line-height:1.6}
+.step-right{padding:12px 14px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:7px;min-width:120px}
+.effort{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.e-high{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,123,114,.2)}
+.e-med{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.e-low{background:var(--green-bg);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.expand{font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:color .15s}
+.expand:hover{color:var(--white)}
+.time-badge{font-family:var(--mono);font-size:10px;background:var(--surface3);border:1px solid var(--border);padding:3px 8px;border-radius:3px;color:var(--dim)}
+.step-detail{display:none;border-top:1px solid var(--border);padding:18px}
+.step-detail.open{display:block}
+.detail-sections{display:flex;flex-direction:column;gap:14px}
+.dsec{background:var(--surface2);border-radius:var(--r-lg);padding:14px 16px;border:1px solid var(--border)}
+.dsec-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.dsec.you-sec{border-left:2px solid var(--you)}.dsec.you-sec .dsec-title{color:var(--teal)}
+.dsec.ai-sec{border-left:2px solid var(--ai)}.dsec.ai-sec .dsec-title{color:var(--ai)}
+.dsec.warn-sec{border-left:2px solid var(--amber)}.dsec.warn-sec .dsec-title{color:var(--amber)}
+.dsec.verify-sec{border-left:2px solid var(--green)}.dsec.verify-sec .dsec-title{color:var(--green)}
+.dsec.prompt-sec{border-left:2px solid #D2A8FF}.dsec.prompt-sec .dsec-title{color:#D2A8FF}
+.dsec.think-sec{border-left:2px solid var(--red)}.dsec.think-sec .dsec-title{color:var(--red)}
+.dsec-body{font-size:12.5px;color:var(--muted);line-height:1.7}
+.dsec-body ul{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body ol{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body li{color:var(--muted)}
+.dsec-body strong{color:var(--white);font-weight:500}
+pre.cmd{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;color:#79C0FF;overflow-x:auto;line-height:1.7;margin-top:6px;white-space:pre-wrap}
+pre.cmd .c{color:var(--dim)}
+pre.cmd .s{color:#A5D6FF}
+pre.cmd .k{color:var(--teal)}
+.verify-list{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.vitem{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--muted)}
+.vcheck{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;margin-top:1px;background:var(--surface3)}
+.prompt-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-top:6px;font-size:11.5px;color:#A5D6FF;font-family:var(--mono);line-height:1.7;white-space:pre-wrap}
+.table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+.table th{background:var(--bg);color:var(--dim);font-weight:600;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;line-height:1.5}
+.table tr:last-child td{border-bottom:none}
+.table td:first-child{color:var(--white);font-weight:500;font-family:var(--mono);font-size:11px}
+.interview-box{background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:var(--r);padding:12px 14px;margin-top:10px}
+.interview-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--amber);text-transform:uppercase;margin-bottom:5px}
+.interview-q{font-size:12.5px;color:rgba(240,165,0,.7);font-style:italic;line-height:1.6}
+/* final done box — special styling */
+.done-box{background:linear-gradient(135deg,rgba(0,201,167,.06) 0%,rgba(88,166,255,.04) 100%);border:1px solid rgba(0,201,167,.25);border-radius:var(--r-xl);padding:28px 32px;margin-top:32px}
+.done-title{font-size:16px;font-weight:600;color:var(--teal);margin-bottom:12px;letter-spacing:-.01em}
+.done-body{font-size:13px;color:var(--muted);line-height:1.8}
+.final-checklist{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+.fc-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px}
+.fc-num{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--teal);flex-shrink:0;margin-top:1px}
+.portfolio-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-top:20px}
+.portfolio-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);margin-bottom:12px}
+.portfolio-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+.portfolio-item:last-child{border-bottom:none}
+.portfolio-item strong{color:var(--white);font-weight:500}
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr}.sidebar{display:none}
+  .main{padding:20px 16px 40px}.header{padding:24px 16px}
+  .overview-grid{grid-template-columns:1fr}.deliv-list{grid-template-columns:1fr}
+  .step-header{grid-template-columns:60px 1fr}.step-right{display:none}
+  .final-checklist{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="eyebrow">MediAssist AI · Module 6 of 6 — Final</div>
+      <h1>Testing, Deployment &amp; Polish</h1>
+      <p class="header-sub">The final push — full test suite, performance hardening, production Lambda deployment, CloudWatch monitoring, Lovable frontend connection, and portfolio documentation. After this module MediAssist AI is a shippable, demonstrable product.</p>
+    </div>
+    <div>
+      <div class="header-stats">
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">2</div><div class="hstat-l">weeks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">12</div><div class="hstat-l">steps</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--ai)">5</div><div class="hstat-l">AI tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--you)">7</div><div class="hstat-l">your tasks</div></div>
+      </div>
+      <div class="legend" style="margin-top:12px;justify-content:flex-end">
+        <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>You do it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--ai)"></div>Gemini does it</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <a href="#overview" class="active">Overview</a>
+  <a href="#week11">Week 11 — Testing + Hardening</a>
+  <a href="#week12">Week 12 — Deploy + Portfolio</a>
+  <a href="#done">Project complete</a>
+</div>
+
+<div class="layout">
+<div class="sidebar">
+  <div class="sbar-section">Week 11 — Testing + Hardening</div>
+  <a class="sbar-link active" href="#s1"><div class="sbar-dot" style="background:var(--you)"></div>S1 · Full test suite review</a>
+  <a class="sbar-link" href="#s2"><div class="sbar-dot" style="background:var(--ai)"></div>S2 · Load + performance tests</a>
+  <a class="sbar-link" href="#s3"><div class="sbar-dot" style="background:var(--you)"></div>S3 · Edge cases + failure modes</a>
+  <a class="sbar-link" href="#s4"><div class="sbar-dot" style="background:var(--ai)"></div>S4 · Security hardening</a>
+  <a class="sbar-link" href="#s5"><div class="sbar-dot" style="background:var(--you)"></div>S5 · 30-case end-to-end validation</a>
+  <a class="sbar-link" href="#s6"><div class="sbar-dot" style="background:var(--ai)"></div>S6 · CloudWatch + Sentry setup</a>
+  <div class="sbar-section">Week 12 — Deploy + Portfolio</div>
+  <a class="sbar-link" href="#s7"><div class="sbar-dot" style="background:var(--ai)"></div>S7 · Production Lambda deploy</a>
+  <a class="sbar-link" href="#s8"><div class="sbar-dot" style="background:var(--you)"></div>S8 · Lovable frontend wiring</a>
+  <a class="sbar-link" href="#s9"><div class="sbar-dot" style="background:var(--ai)"></div>S9 · ETL cron + billing alerts</a>
+  <a class="sbar-link" href="#s10"><div class="sbar-dot" style="background:var(--you)"></div>S10 · Final repo review + README</div>
+  <a class="sbar-link" href="#s11"><div class="sbar-dot" style="background:var(--you)"></div>S11 · Portfolio writeup</a>
+  <a class="sbar-link" href="#s12"><div class="sbar-dot" style="background:var(--you)"></div>S12 · Demo recording</a>
+</div>
+
+<main class="main">
+
+<div id="overview">
+  <div class="overview-grid">
+    <div class="ocard">
+      <div class="ocard-icon">🎯</div>
+      <div class="ocard-title">Goal of this module</div>
+      <div class="ocard-body">A production-grade deployment with full test coverage, CloudWatch monitoring, hardened security, Lovable frontend live, and a portfolio writeup strong enough for placement interviews.</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">⚠️</div>
+      <div class="ocard-title">Your critical tasks</div>
+      <div class="ocard-body">S3 (edge case identification), S5 (30-case validation — qualitative review only you can do), S8 (Lovable wiring — you must test it yourself), S10 (README — you write your own decisions), S11 (portfolio writeup), S12 (demo recording).</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">✅</div>
+      <div class="ocard-title">Done when</div>
+      <div class="ocard-body">MediAssist AI is live at a real URL, demonstrable in a 3-minute video, all CI passes, README explains every major decision, and you can answer any interview question about the project.</div>
+    </div>
+  </div>
+
+  <div class="deliverables">
+    <div class="deliv-title">Deliverables at end of Module 6 — project complete</div>
+    <div class="deliv-list">
+      <div class="deliv-item"><span class="deliv-icon">✅</span>Full pytest suite — all tests green</div>
+      <div class="deliv-item"><span class="deliv-icon">⚡</span>Lambda cold start under 8s, warm under 4s</div>
+      <div class="deliv-item"><span class="deliv-icon">🛡️</span>Security hardened — no exposed secrets, CORS restricted</div>
+      <div class="deliv-item"><span class="deliv-icon">📊</span>CloudWatch dashboard + Sentry error tracking live</div>
+      <div class="deliv-item"><span class="deliv-icon">🌐</span>Production Lambda live at API Gateway URL</div>
+      <div class="deliv-item"><span class="deliv-icon">⚛️</span>Lovable frontend calling real backend end-to-end</div>
+      <div class="deliv-item"><span class="deliv-icon">🔄</span>Weekly ETL cron running on EventBridge</div>
+      <div class="deliv-item"><span class="deliv-icon">💰</span>AWS billing alerts set — no surprise charges</div>
+      <div class="deliv-item"><span class="deliv-icon">📖</span>README — architecture, decisions, setup instructions</div>
+      <div class="deliv-item"><span class="deliv-icon">📝</span>Portfolio writeup — STAR format, metrics, decisions</div>
+      <div class="deliv-item"><span class="deliv-icon">🎥</span>3-minute demo video recorded</div>
+      <div class="deliv-item"><span class="deliv-icon">🎓</span>You can answer all interview questions confidently</div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 11 -->
+<div id="week11">
+  <div class="section-hdr">
+    <h2>Week 11 — Testing, hardening, and monitoring</h2>
+    <span class="pill" style="background:var(--you-bg);color:var(--teal);border:1px solid var(--you-border)">Days 1–5</span>
+  </div>
+
+  <!-- S1 -->
+  <div class="step" id="s1">
+    <div class="step-header" onclick="toggle('s1')">
+      <div class="step-num you"><div class="num">S1</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Audit the full test suite — identify gaps</div>
+        <div class="step-file">backend/tests/ — all test files</div>
+        <div class="step-summary">Before adding new tests, you personally read every existing test and ask: does this test cover the right thing? Many auto-generated tests test implementation details rather than behavior. You identify the gaps and feed Gemini a targeted list of missing tests.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s1">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s1">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Run the full suite first — identify what's missing</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Run all tests with coverage report</span>
+cd backend
+pytest tests/ -v --cov=app --cov-report=term-missing
+
+<span class="c"># Look for:</span>
+<span class="c"># 1. Lines not covered (coverage report)</span>
+<span class="c"># 2. Which modules have 0% coverage</span>
+<span class="c"># 3. Tests that pass but don't actually assert meaningful behavior</span></pre>
+            For each module, check these behaviors are tested:
+            <table class="table">
+              <thead><tr><th>Module</th><th>Must be tested</th></tr></thead>
+              <tbody>
+                <tr><td>NLP preprocessor</td><td>negation detection, uncertainty flag, duration category, empty input</td></tr>
+                <tr><td>symptom_normalizer</td><td>exact match, fuzzy match, Hindi term, unknown term fallback</td></tr>
+                <tr><td>patient_context</td><td>risk flag computation for cardiac case, context_confidence with/without images</td></tr>
+                <tr><td>RAG chain</td><td>returns DiagnosisResult schema, handles Bedrock timeout gracefully</td></tr>
+                <tr><td>XGBoost classifier</td><td>output is top-3 list, probabilities sum ≤ 1.0</td></tr>
+                <tr><td>LightGBM urgency</td><td>cardiac risk case → EMERGENCY, low symptom case → LOW</td></tr>
+                <tr><td>doctor finder</td><td>EMERGENCY overrides specialty, female UTI gets gynecologist</td></tr>
+                <tr><td>response_builder</td><td>disclaimer changes with urgency level, call_emergency=True adds 🚨</td></tr>
+                <tr><td>analyze route</td><td>missing patient profile → 422, analyze timeout → partial response not 500</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">After audit — give Gemini the gap list</div>
+          <div class="prompt-box">Fill these test gaps in MediAssist AI test suite:
+
+[paste your list of missing behaviors from audit]
+
+For each:
+- Write a pytest test that tests BEHAVIOR not implementation
+- Mock all external services (Bedrock, Pinecone, S3, DynamoDB, Google Places)
+- Use fixtures from conftest.py (create a CARDIAC_PATIENT fixture and COMMON_COLD fixture that all tests can reuse)
+- Each test should have: arrange → act → assert (no more than 20 lines)
+- Bad test example: "assert model is not None" (tests existence not behavior)
+- Good test example: "assert result.urgency.level == 'EMERGENCY' for cardiac patient"
+
+Target: 80%+ line coverage on all modules in app/</div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Target before moving to S2</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>pytest runs clean — zero errors, zero failures</div>
+            <div class="vitem"><div class="vcheck"></div>Coverage report shows ≥ 80% for all modules in app/</div>
+            <div class="vitem"><div class="vcheck"></div>All 9 behavioral areas in the table above are covered</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="step" id="s2">
+    <div class="step-header" onclick="toggle('s2')">
+      <div class="step-num ai"><div class="num">S2</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Performance tests — cold start, warm latency, concurrent load</div>
+        <div class="step-file">backend/tests/test_performance.py · Lambda config</div>
+        <div class="step-summary">Gemini writes locust load tests and measures Lambda cold start time. If cold start exceeds 8 seconds, Gemini optimizes: lazy model loading, Lambda memory increase, or provisioned concurrency configuration.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s2">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s2">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Write performance tests and optimization for MediAssist AI.
+
+FILE 1: backend/tests/test_performance.py
+- Measure cold start time by invoking Lambda with time.sleep(5) between calls
+  (simulate cold start by waiting for Lambda to go idle)
+- Measure warm response time for: text-only analyze call (no images)
+- Measure warm response time for: full 5-input call
+- Log p50, p95, p99 latencies over 10 calls each
+- Assert: cold start < 8000ms, warm p95 < 6000ms
+
+FILE 2: Use locust for load testing (locustfile.py in tests/)
+- Simulate 5 concurrent users each sending 1 request per 10 seconds
+- Run for 2 minutes
+- Report: error rate, average response time, RPS
+
+FILE 3: Lambda optimization IF cold start > 8s:
+- Increase Lambda memory from 1024MB to 2048MB (CPU scales with memory on Lambda)
+- Move all model loading to module level (not inside function)
+- Use /tmp caching: check if model file exists in /tmp before downloading from S3
+- Implement Lambda warming: add a health ping in EventBridge every 5 minutes
+  to keep Lambda warm (only for prod stage)
+
+Update deploy.sh to set Lambda memory to 2048MB and timeout to 30s.</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you monitor during load test</div>
+          <div class="dsec-body">
+            Watch CloudWatch metrics during the locust run:
+            <ul style="margin-top:8px">
+              <li>Lambda Duration — is p95 under 6000ms?</li>
+              <li>Lambda Throttles — any 429 errors under 5 concurrent users? If yes, increase Lambda reserved concurrency</li>
+              <li>Bedrock throttling — any 429 from Bedrock? Add exponential backoff in chain.py</li>
+              <li>Pinecone timeout — any Pinecone timeouts under load? Increase connection pool size</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="step" id="s3">
+    <div class="step-header" onclick="toggle('s3')">
+      <div class="step-num you"><div class="num">S3</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Identify and test all edge cases and failure modes</div>
+        <div class="step-file">(thinking task + manual testing)</div>
+        <div class="step-summary">You think through every way the system can receive bad, unusual, or malicious input — then verify each is handled gracefully. This requires anticipating failure scenarios that Gemini cannot foresee from the code alone.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s3">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s3">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Test every edge case manually — record pass/fail</div>
+          <div class="dsec-body">
+            <table class="table">
+              <thead><tr><th>Edge case</th><th>Input</th><th>Expected behavior</th><th>Pass?</th></tr></thead>
+              <tbody>
+                <tr><td>Empty symptoms</td><td>No symptoms_text, no images, valid profile</td><td>422 validation error — at least one input required</td><td>___</td></tr>
+                <tr><td>Very long symptoms text</td><td>symptoms_text = 5000 characters</td><td>Truncated to 2000 chars OR 422 error — not crash</td><td>___</td></tr>
+                <tr><td>Non-medical text</td><td>"I like pizza and movies"</td><td>Returns low confidence, insufficient_info=True</td><td>___</td></tr>
+                <tr><td>Non-English symptoms</td><td>Pure Hindi: "मुझे बुखार है और सिर दर्द है"</td><td>NLP should extract some entities OR return gracefully</td><td>___</td></tr>
+                <tr><td>Corrupt image</td><td>Upload a .txt file renamed to .jpg</td><td>S3 upload succeeds, image preprocessing fails gracefully, context built without image</td><td>___</td></tr>
+                <tr><td>Huge image</td><td>Upload a 50MB .jpg</td><td>Rejected at API Gateway (10MB limit) with clear error</td><td>___</td></tr>
+                <tr><td>Invalid location</td><td>lat=999, lng=999</td><td>422 from Pydantic validation (lat must be ≤ 90)</td><td>___</td></tr>
+                <tr><td>No location provided</td><td>location field absent</td><td>Doctors section returns empty list, not crash</td><td>___</td></tr>
+                <tr><td>Allergy to suggested drug</td><td>Patient allergic to penicillin + pneumonia diagnosis</td><td>Action plan does NOT mention amoxicillin/penicillin</td><td>___</td></tr>
+                <tr><td>Bedrock timeout</td><td>Simulate with mock — response after 30s</td><td>Partial response returned — diagnosis section empty, urgency from ML models still present</td><td>___</td></tr>
+                <tr><td>Pinecone down</td><td>Mock Pinecone throwing exception</td><td>Chain falls back to LLM-only (no retrieved context) with disclaimer about limited info</td><td>___</td></tr>
+                <tr><td>Google Places quota exceeded</td><td>Mock 429 from Places API</td><td>Falls back to NMC registry data</td><td>___</td></tr>
+                <tr><td>XSS in symptom text</td><td>symptoms_text = "&lt;script&gt;alert(1)&lt;/script&gt;"</td><td>Treated as plain text, never executed</td><td>___</td></tr>
+                <tr><td>SQL injection attempt</td><td>patient.name = "'; DROP TABLE sessions; --"</td><td>Stored as string safely in DynamoDB (no SQL)</td><td>___</td></tr>
+                <tr><td>Concurrent requests</td><td>5 simultaneous analyze calls</td><td>All complete without 500 errors</td><td>___</td></tr>
+              </tbody>
+            </table>
+            <br>Any failing edge case → give the exact case to Gemini and ask it to fix the specific failure.
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"What happens in your system when Bedrock is unavailable? How does it degrade gracefully? What if the patient has an allergy to the drug your system would normally recommend?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="step" id="s4">
+    <div class="step-header" onclick="toggle('s4')">
+      <div class="step-num ai"><div class="num">S4</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Security hardening</div>
+        <div class="step-file">backend/app/main.py · Dockerfile · Lambda config · API Gateway</div>
+        <div class="step-summary">Gemini audits and hardens: CORS restricted to Lovable domain, API Gateway request size limit, rate limiting per IP, no secrets in code, Lambda IAM principle of least privilege, S3 bucket hardened.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s4">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s4">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Security hardening for MediAssist AI — implement all of these:
+
+1. CORS — restrict to production Lovable URL:
+   Change allow_origins from ["*"] to [settings.ALLOWED_ORIGIN]
+   Add ALLOWED_ORIGIN to .env.example and config.py
+   In dev: ALLOWED_ORIGIN="http://localhost:3000"
+   In prod: ALLOWED_ORIGIN="https://your-lovable-app.lovable.app"
+
+2. API Gateway — add request size limit:
+   Set maximumRequestBodySize = 10485760 (10MB) — reject large uploads at gateway level
+   Add throttling: 100 requests/second burst, 50 requests/second rate
+
+3. Rate limiting in FastAPI (SlowAPI):
+   pip install slowapi
+   Add rate limiter: 10 requests/minute per IP on /analyze, 30/minute on /doctors/search
+   On rate limit exceeded: return 429 with Retry-After header
+
+4. Secrets audit — scan codebase:
+   Run: git grep -r "AKIA" -- '*.py' '*.yml' '*.json' (should return nothing)
+   Run: git grep -r "sk-" -- '*.py' (should return nothing)
+   Add .secrets.baseline (detect-secrets tool) to CI pipeline
+
+5. Lambda IAM — principle of least privilege:
+   Remove wildcard (*) from Bedrock IAM policy
+   Replace with specific model ARNs: arn:aws:bedrock:ap-south-1::foundation-model/amazon.nova-pro-v1:0
+   Add DynamoDB condition: only allow access to mediassist-sessions table specifically
+
+6. S3 hardening:
+   Ensure public access block is ON (already set but verify)
+   Add bucket policy: only allow access from Lambda execution role ARN
+   Encrypt at rest: SSE-S3 encryption enabled</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you verify after delivery</div>
+          <div class="dsec-body">
+            <ul>
+              <li>Try calling your API from a non-Lovable origin → should get CORS error</li>
+              <li>Send 15 requests in 1 minute to /analyze → 11th should get 429</li>
+              <li>Try to access your S3 bucket directly from browser → should get 403</li>
+              <li><code style="font-family:var(--mono);font-size:11px">git log --all | grep -i "AKIA"</code> returns nothing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 -->
+  <div class="step" id="s5">
+    <div class="step-header" onclick="toggle('s5')">
+      <div class="step-num you"><div class="num">S5</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">30-case end-to-end qualitative validation</div>
+        <div class="step-file">(manual testing against production Lambda)</div>
+        <div class="step-summary">Your final quality gate. Run 30 realistic patient scenarios through the complete production system and judge every output as Acceptable, Needs improvement, or Unacceptable. This is the most important human review task in the entire project — no automated test can substitute for it.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~6 hrs</span>
+        <button class="expand" id="btn-s5">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s5">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">30 cases — mix of easy, hard, edge, and India-specific</div>
+          <div class="dsec-body">
+            Group your 30 cases:
+            <table class="table">
+              <thead><tr><th>Group</th><th>Cases</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td>High-confidence cardiac</td><td>10 cases: vary age (40/55/65), gender, smoking status, symptom intensity</td><td>Verify EMERGENCY triggered correctly. Verify NOT triggered for 25yo healthy athlete with chest pain.</td></tr>
+                <tr><td>India-specific diseases</td><td>8 cases: dengue (Jaipur monsoon), malaria, typhoid, TB, chikungunya</td><td>Verify regional disease awareness. Hindi symptom descriptions.</td></tr>
+                <tr><td>Complex multi-condition</td><td>6 cases: diabetic + hypertensive + cardiac symptoms simultaneously</td><td>Verify risk_flags compound correctly. Verify prescription drug conflict detection.</td></tr>
+                <tr><td>Low urgency / false alarms</td><td>4 cases: common cold, mild sprain, minor skin rash, seasonal allergy</td><td>Verify LOW urgency, no false Emergency triggers. Verify GP recommended not specialist.</td></tr>
+                <tr><td>Gender + age specific</td><td>2 cases: pregnant woman with headache (preeclampsia risk), 8-year-old with high fever</td><td>Verify female/age overrides in doctor finder. Verify pediatric specialist recommended.</td></tr>
+              </tbody>
+            </table>
+            <br>For each case, score:
+            <ul style="margin-top:8px">
+              <li><strong>Diagnosis accuracy</strong> (1-3): 3=correct top condition, 2=correct in top-3, 1=missed entirely</li>
+              <li><strong>Urgency appropriateness</strong> (1-3): 3=exact match, 2=one level off, 1=dangerous error</li>
+              <li><strong>Action plan quality</strong> (1-3): 3=specific and helpful, 2=generic but safe, 1=wrong or harmful</li>
+              <li><strong>Doctor relevance</strong> (1-3): 3=right specialist near you, 2=acceptable fallback, 1=wrong specialty</li>
+            </ul>
+            Target: average score ≥ 2.5/3.0 across all 30 cases. Any single 1 score in urgency → mandatory fix before ship.
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">The one case that must get a 3 in urgency</div>
+          <div class="dsec-body">
+            Case: 55-year-old male, 20 pack-year smoker, hypertension, presents with chest pain and left arm numbness for 30 minutes.<br><br>
+            This case must return EMERGENCY urgency, call_emergency=True, and action_plan[0] must reference 112. If this case returns MODERATE or URGENT — that is a critical system failure. Fix everything else around this single case first.
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"Tell me about a case where your system gave an unexpected or wrong output. What was the case? What did the system return? How did you diagnose the problem and fix it?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 -->
+  <div class="step" id="s6">
+    <div class="step-header" onclick="toggle('s6')">
+      <div class="step-num ai"><div class="num">S6</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">CloudWatch dashboard + Sentry error tracking</div>
+        <div class="step-file">AWS CloudWatch · Sentry SDK</div>
+        <div class="step-summary">Gemini sets up CloudWatch custom metrics (diagnosis latency, urgency distribution, daily request count) and a Sentry integration for unhandled exception tracking. You get visibility into production health without checking logs manually.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s6">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s6">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Set up monitoring for MediAssist AI production:
+
+1. CloudWatch custom metrics (emit from analyze route):
+   - mediassist/AnalyzeLatency: processing_time_ms per request
+   - mediassist/UrgencyDistribution: count per level (LOW/MODERATE/URGENT/EMERGENCY)
+   - mediassist/InputModalities: count of which inputs were used (text/xray/photo/prescription)
+   - mediassist/RAGRetrievalScore: top Pinecone similarity score per request
+   - Emit with boto3 cloudwatch.put_metric_data() after each request
+
+2. CloudWatch Dashboard (create via CLI or CDK):
+   - Widget 1: Average AnalyzeLatency last 24h (line chart)
+   - Widget 2: UrgencyDistribution pie chart last 7 days
+   - Widget 3: Daily request count
+   - Widget 4: Lambda error rate
+   - Widget 5: Lambda cold start rate
+
+3. CloudWatch Alarms:
+   - Alert if p95 latency > 20000ms (something is very slow)
+   - Alert if Lambda error rate > 5%
+   - Alert if EMERGENCY urgency count > 20 in 1 hour (anomaly detection)
+
+4. Sentry integration:
+   pip install sentry-sdk[fastapi]
+   Add to main.py: sentry_sdk.init(dsn=settings.SENTRY_DSN, traces_sample_rate=0.1)
+   Add SENTRY_DSN to .env.example and config.py
+   Sentry free tier captures all unhandled exceptions with stack traces
+
+5. Billing alert (AWS Budgets):
+   Create monthly budget: $20 threshold
+   Alert at 50% ($10) and 100% ($20) → email notification</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 12 -->
+<div id="week12">
+  <div class="section-hdr">
+    <h2>Week 12 — Production deploy + portfolio</h2>
+    <span class="pill" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">Days 6–14</span>
+  </div>
+
+  <!-- S7 -->
+  <div class="step" id="s7">
+    <div class="step-header" onclick="toggle('s7')">
+      <div class="step-num ai"><div class="num">S7</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Final production Lambda deployment</div>
+        <div class="step-file">AWS Lambda · API Gateway · ECR</div>
+        <div class="step-summary">Clean production deploy: new Docker image build with all modules, push to ECR, update Lambda, run smoke tests. Gemini runs the deploy script and confirms every endpoint returns correct status.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-low">Low</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s7">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s7">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Run final production deployment for MediAssist AI and verify it.
+
+Steps:
+1. Build fresh Docker image (linux/arm64):
+   docker build --platform linux/arm64 --no-cache -t mediassist-backend ./backend
+
+2. Run smoke test against local container first:
+   docker run --env-file backend/.env -p 9000:8080 mediassist-backend &
+   curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
+     -d '{"httpMethod":"GET","path":"/api/v1/health","headers":{},"body":null}'
+   Kill container
+
+3. Push to ECR and update Lambda:
+   [standard push + update commands from deploy.sh]
+
+4. Wait for Lambda update and run smoke tests on production URL:
+   curl GET https://[api-gw-url]/api/v1/health → expect 200
+   curl POST https://[api-gw-url]/api/v1/analyze (minimal payload) → expect 200
+   curl POST https://[api-gw-url]/api/v1/doctors/search → expect 200
+   Print all responses and confirm no 500 errors
+
+5. Check CloudWatch for Lambda init duration (cold start time)
+6. Check Sentry dashboard for any errors during smoke test
+
+Also update GitHub Actions deploy.yml to run smoke tests automatically after each deploy.</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you confirm after deploy</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Your personal smoke test from terminal</span>
+API=https://your-api-id.execute-api.ap-south-1.amazonaws.com
+
+<span class="c"># 1. Health</span>
+curl $API/api/v1/health
+<span class="c"># {"status":"ok","service":"mediassist-ai"}</span>
+
+<span class="c"># 2. Real analyze with cardiac patient</span>
+curl -X POST $API/api/v1/analyze \
+  -F 'symptoms_text=chest pain left arm numbness sweating' \
+  -F 'patient={"name":"Test","age":55,"gender":"male","smoking":"current","pack_years":20,"conditions":["hypertension"]}'
+
+<span class="c"># Expect: urgency.level=="EMERGENCY", call_emergency==true</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 -->
+  <div class="step" id="s8">
+    <div class="step-header" onclick="toggle('s8')">
+      <div class="step-num you"><div class="num">S8</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Wire Lovable frontend to production backend</div>
+        <div class="step-file">Lovable project settings · frontend/src/</div>
+        <div class="step-summary">You personally connect your Lovable frontend to the production API Gateway URL, test every screen end-to-end, and verify the UI renders all AnalyzeResponse fields correctly. Only you can judge if the UI experience feels right for an Indian patient user.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s8">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s8">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Complete Lovable connection checklist</div>
+          <div class="dsec-body">
+            <ol style="margin-top:8px">
+              <li style="margin-bottom:10px"><strong>Set environment variable in Lovable:</strong><br>
+              Project Settings → Environment Variables → add:<br>
+              <code style="font-family:var(--mono);font-size:11px">VITE_API_BASE_URL = https://your-api-id.execute-api.ap-south-1.amazonaws.com</code></li>
+              <li style="margin-bottom:10px"><strong>Test the input form:</strong><br>
+              Fill in: patient name, age 55, male, smoker, hypertension condition, chest pain symptoms. Submit. Watch browser Network tab → confirm POST to /analyze returns 200.</li>
+              <li style="margin-bottom:10px"><strong>Verify every field renders:</strong><br>
+              - Diagnosis card shows condition name and confidence bar<br>
+              - Urgency badge shows EMERGENCY in red<br>
+              - Action plan list renders all steps<br>
+              - Doctor cards show name, specialty, rating, distance, phone<br>
+              - Disclaimer text visible (check it's prominent, not hidden)</li>
+              <li style="margin-bottom:10px"><strong>Test image upload:</strong><br>
+              Upload a chest X-ray image. Confirm S3 key appears in response. Confirm xray_findings renders in UI.</li>
+              <li style="margin-bottom:10px"><strong>Test feedback:</strong><br>
+              After receiving results, submit thumbs up. Confirm feedback stored — check DynamoDB console.</li>
+              <li><strong>Test on mobile:</strong><br>
+              Lovable previews on mobile. Confirm the form and results render correctly on small screen.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Most common Lovable ↔ backend issues</div>
+          <div class="dsec-body">
+            <ul>
+              <li><strong>CORS error</strong> — check that ALLOWED_ORIGIN in Lambda env matches your Lovable preview URL exactly (including https://, no trailing slash)</li>
+              <li><strong>FormData serialization</strong> — patient JSON must be sent as a string field, not a nested object. Check mediassist.ts: <code style="font-family:var(--mono);font-size:11px">form.append('patient', JSON.stringify(data.patient))</code></li>
+              <li><strong>TypeScript null handling</strong> — if a field is Optional in backend and comes back null, TS must handle it with optional chaining: <code style="font-family:var(--mono);font-size:11px">response.diagnosis?.xray_findings?.top_condition</code></li>
+              <li><strong>Large X-ray rejected</strong> — if user uploads a 15MB X-ray, API Gateway rejects it. Show a clear error message in the UI: "Image too large. Maximum 10MB."</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9 -->
+  <div class="step" id="s9">
+    <div class="step-header" onclick="toggle('s9')">
+      <div class="step-num ai"><div class="num">S9</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">EventBridge ETL cron + billing alerts setup</div>
+        <div class="step-file">AWS EventBridge · AWS Budgets · scripts/</div>
+        <div class="step-summary">Gemini sets up the weekly EventBridge cron that triggers the knowledge base ETL pipeline, and AWS Budget billing alerts so you never get surprised by costs. Set-and-forget operational infrastructure.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-low">Low</span>
+        <span class="time-badge">~1 hr</span>
+        <button class="expand" id="btn-s9">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s9">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Set up automated operations for MediAssist AI:
+
+1. EventBridge weekly cron for ETL:
+   aws events put-rule --name mediassist-kb-refresh \
+     --schedule-expression "cron(0 2 ? * SUN *)"  (every Sunday 2am IST)
+     --state ENABLED
+   Add Lambda target: index_knowledge_base function
+   (create a separate Lambda for this or add a /internal/refresh endpoint)
+
+2. Lambda warming — prevent cold starts in prod:
+   aws events put-rule --name mediassist-warmer \
+     --schedule-expression "rate(5 minutes)"
+   Target: invoke Lambda with {"path": "/api/v1/health", "httpMethod": "GET"}
+   This keeps Lambda warm during business hours without provisioned concurrency cost
+
+3. AWS Budgets (billing protection):
+   Create budget: $20/month
+   Alert at 50% ($10) → email notification
+   Alert at 80% ($16) → email + SMS notification
+   Alert at 100% ($20) → email + SMS + Lambda that disables non-critical endpoints
+
+4. S3 lifecycle rules (keep storage costs low):
+   Transition objects older than 24h to GLACIER (0.004$/GB vs 0.023$/GB)
+   Delete GLACIER objects after 7 days
+   (Uploaded images are only needed for analysis — not long-term storage)
+
+Write all as AWS CLI commands in scripts/setup_operations.sh</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10 -->
+  <div class="step" id="s10">
+    <div class="step-header" onclick="toggle('s10')">
+      <div class="step-num you"><div class="num">S10</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Final repo review + write README.md</div>
+        <div class="step-file">README.md · entire codebase</div>
+        <div class="step-summary">You do a final pass through every file in the repo and then write the README yourself. The README is your first interview — every claim in it must come from your own understanding. Gemini can help with formatting but not with the content of your decisions.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~5 hrs</span>
+        <button class="expand" id="btn-s10">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s10">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Final codebase review — read every important file one more time</div>
+          <div class="dsec-body">
+            Before writing the README, re-read these files and confirm you fully understand each one:
+            <ul style="margin-top:8px">
+              <li><strong>patient_context.py</strong> — understand every merge rule and risk flag computation</li>
+              <li><strong>chain.py</strong> — understand the full RAG flow from query to response</li>
+              <li><strong>prompts.py</strong> — every rule in your system prompt and why it's there</li>
+              <li><strong>severity_scorer.py</strong> — the threshold tuning and Emergency recall logic</li>
+              <li><strong>specialty_mapper.py</strong> — every mapping and the ambiguous cases</li>
+              <li><strong>response_builder.py</strong> — the disclaimer logic and EMERGENCY special handling</li>
+            </ul>
+            If you read a file and don't understand part of it — understand it now, before interviews.
+          </div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">README sections you must write yourself</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># README.md structure — write every section yourself</span>
+
+<span class="c">## MediAssist AI</span>
+<span class="c">### What it does (2-3 sentences, plain language)</span>
+<span class="c">### Architecture diagram (link to your architecture HTML)</span>
+
+<span class="c">## Technical decisions</span>
+<span class="c">### Why XGBoost over Random Forest for symptom classification</span>
+<span class="c">### Why BioSentBERT embeddings over OpenAI embeddings</span>
+<span class="c">### Why hybrid retrieval (dense + BM25) not pure dense</span>
+<span class="c">### Why ResNet-50 not EfficientNet for X-ray classification</span>
+<span class="c">### Why AWS Lambda not ECS for deployment</span>
+<span class="c">### Why 512-token chunks for medical KB</span>
+<span class="c">Write 2-3 sentences for each. Your reasoning, not generic reasoning.</span>
+
+<span class="c">## Model performance</span>
+<span class="c">### XGBoost: final test macro-F1 = X.XX</span>
+<span class="c">### ResNet-50: mean AUC-ROC = X.XX (per-class table)</span>
+<span class="c">### LightGBM: Emergency recall = X.XX at threshold X.XX</span>
+
+<span class="c">## Data sources</span>
+<span class="c">### List every dataset with why you chose it</span>
+
+<span class="c">## Setup and deployment</span>
+<span class="c">### Local development instructions</span>
+<span class="c">### SageMaker training instructions</span>
+<span class="c">### Production deployment instructions</span>
+
+<span class="c">## Limitations</span>
+<span class="c">### What the system CANNOT do (be honest — shows maturity)</span>
+<span class="c">### Known failure modes</span>
+<span class="c">### Future improvements you would make</span>
+
+<span class="c">## Medical disclaimer</span>
+<span class="c">### Your full disclaimer text</span></pre>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Your README IS your first interview round</div>
+          <div class="interview-q">Every recruiter who sees your GitHub repo will read the README before talking to you. Every technical question in the interview will be based on what you wrote. If Gemini wrote your README, you'll be unable to answer follow-up questions about it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S11 -->
+  <div class="step" id="s11">
+    <div class="step-header" onclick="toggle('s11')">
+      <div class="step-num you"><div class="num">S11</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Write the portfolio writeup in STAR + TLCC format</div>
+        <div class="step-file">Portfolio / LinkedIn / Resume</div>
+        <div class="step-summary">Your portfolio writeup is what gets you interviews. It must lead with metrics, show your decisions (not just what was built), and be written in your voice. Every word must be defensible — you must be able to expand on any claim in a follow-up interview question.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s11">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s11">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Write your portfolio writeup — use this structure</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c">## MediAssist AI — Multimodal Medical Intelligence System</span>
+
+<span class="c">### One-liner (for LinkedIn headline and resume)</span>
+Built a full-stack medical AI system that ingests X-rays, symptom text,
+body photos, prescriptions, and patient health profiles — delivering
+RAG-grounded diagnosis and nearby specialist recommendations on AWS Lambda.
+
+<span class="c">### The technical problem I solved</span>
+Medical triage in India's tier-2 cities is bottlenecked by lack of access
+to specialists. I built a first-line AI that personalizes diagnosis by
+combining multimodal inputs with patient risk profiles (smoking, age, BMI,
+family history) — something neither a simple chatbot nor a standalone
+classifier can do.
+
+<span class="c">### My specific DS contributions</span>
+- Engineered cardiac_risk_score = smoker × age_over_50 × hypertension
+  as a composite feature, improving Emergency classification recall from
+  0.87 to 0.96 on the test set.
+- Fine-tuned ResNet-50 on NIH ChestX-ray14 with differential learning
+  rates (1e-4 head, 1e-5 pretrained layers) and CLAHE preprocessing,
+  achieving mean AUC-ROC of 0.83 across 14 conditions.
+- Built hybrid RAG retrieval (dense + BM25) over 55K indexed PubMed
+  chunks, achieving Precision@5 of 0.71 on 20 medical query types
+  including Hindi symptom descriptions.
+
+<span class="c">### Architecture (3 sentences)</span>
+Backend: FastAPI on AWS Lambda (Mangum adapter), triggered via API Gateway.
+ML models exported to ONNX loaded from S3 at cold start.
+LangChain orchestrates query construction → Pinecone retrieval →
+Bedrock Nova Pro generation in a single async chain.
+
+<span class="c">### Numbers that matter</span>
+- XGBoost macro-F1: 0.74 (41 diseases, class-imbalanced)
+- ResNet-50 mean AUC-ROC: 0.83 (14 chest conditions)
+- Emergency class recall: 0.96 at threshold 0.35
+- RAG Precision@5: 0.71 across 20 query types
+- Lambda warm latency p95: under 6 seconds
+- Cost: ~$12 total training + ~$5/month in production
+
+<span class="c">### Tech stack</span>
+FastAPI · AWS Lambda · S3 · DynamoDB · Bedrock (Nova Pro) ·
+LangChain · Pinecone · XGBoost · LightGBM · ResNet-50 (PyTorch) ·
+SageMaker · AWS Textract · Google Places API · Lovable (React/TS)</pre>
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">What NOT to write</div>
+          <div class="dsec-body">
+            <ul>
+              <li>❌ "Used LangChain for RAG" — too vague. Say what problem it solved.</li>
+              <li>❌ "Implemented machine learning models" — which models, what metrics?</li>
+              <li>❌ "Built a multimodal system" — every project claims this. What was hard about yours?</li>
+              <li>❌ Any metric you can't defend in detail — if you write AUC 0.83, be ready to explain per-class breakdown and what classes underperformed.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S12 -->
+  <div class="step" id="s12">
+    <div class="step-header" onclick="toggle('s12')">
+      <div class="step-num you"><div class="num">S12</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Record 3-minute demo video</div>
+        <div class="step-file">YouTube / Loom / GitHub README</div>
+        <div class="step-summary">A demo video is worth more than 10 paragraphs in a portfolio. You narrate what you built and why while showing the system working in real-time. Must show: a real cardiac patient case going to EMERGENCY, a doctor result appearing for Jaipur, and a low-urgency case staying LOW.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s12">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s12">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">3-minute demo script — practice this before recording</div>
+          <div class="dsec-body">
+            <ol style="margin-top:8px">
+              <li style="margin-bottom:10px"><strong>0:00–0:30 — Hook</strong><br>
+              "MediAssist AI helps Indian patients understand their symptoms and find the right specialist — using a combination of ML models, RAG over medical literature, and real-time doctor search. Let me show you how it works."</li>
+
+              <li style="margin-bottom:10px"><strong>0:30–1:30 — Case 1: EMERGENCY</strong><br>
+              Fill in the form: 55-year-old male, smoker, hypertension, chest pain + left arm numbness. Submit. Show the EMERGENCY badge appearing. Read one line of the action plan. Show one doctor card for a Jaipur cardiologist. Say: "The cardiac_risk_score feature I engineered — combining smoking, age, and hypertension — triggers the Emergency classification here."</li>
+
+              <li style="margin-bottom:10px"><strong>1:30–2:15 — Case 2: LOW</strong><br>
+              Fill in: 22-year-old healthy female, mild runny nose and sneezing for 1 day. Submit. Show LOW badge. Say: "Same system, different profile — correctly identifies this as low urgency and recommends a general physician."</li>
+
+              <li style="margin-bottom:10px"><strong>2:15–2:45 — Architecture in 30 seconds</strong><br>
+              Switch to your architecture diagram. "Input → multimodal preprocessing → PatientContext → XGBoost classifier + ResNet-50 + LightGBM urgency scorer → LangChain RAG chain over 55K indexed PubMed chunks → Bedrock response → Google Places doctor finder → DynamoDB session. All running on Lambda."</li>
+
+              <li><strong>2:45–3:00 — Close</strong><br>
+              "Built over 12 weeks. XGBoost macro-F1 0.74, ResNet-50 mean AUC 0.83, Emergency recall 0.96. GitHub link in the description."</li>
+            </ol>
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Recording tips</div>
+          <div class="dsec-body">
+            <ul>
+              <li>Use Loom (free) — records screen + camera simultaneously</li>
+              <li>Pre-fill the patient forms before recording — live typing during demo is slow and error-prone</li>
+              <li>Show real response times — don't skip ahead during the Lambda processing. 4-5 seconds of real loading shows it's actually working</li>
+              <li>Record in one take after 2-3 practice runs — multiple cuts look less authentic</li>
+              <li>Add the video to README, LinkedIn, and send to recruiters before the GitHub link</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT COMPLETE -->
+<div id="done" class="done-box">
+  <div class="done-title">🎉 MediAssist AI — Project complete</div>
+  <div class="done-body">
+    All 6 modules done. The system is live, tested, documented, and demonstrable. Here is your complete project-level checklist — every item must be true before you call this shippable.
+  </div>
+
+  <div class="final-checklist">
+    <div class="fc-item"><span class="fc-num">01</span>GET /api/v1/health returns 200 from production URL</div>
+    <div class="fc-item"><span class="fc-num">02</span>Cardiac EMERGENCY case returns correct urgency</div>
+    <div class="fc-item"><span class="fc-num">03</span>Common cold case returns LOW — no false alarms</div>
+    <div class="fc-item"><span class="fc-num">04</span>Real Jaipur cardiologist appears in doctor results</div>
+    <div class="fc-item"><span class="fc-num">05</span>Hindi symptom input processed without crash</div>
+    <div class="fc-item"><span class="fc-num">06</span>X-ray upload stores in S3, result appears in response</div>
+    <div class="fc-item"><span class="fc-num">07</span>Prescription OCR extracts medicine names</div>
+    <div class="fc-item"><span class="fc-num">08</span>Session stored in DynamoDB after every call</div>
+    <div class="fc-item"><span class="fc-num">09</span>Feedback endpoint saves rating to DynamoDB</div>
+    <div class="fc-item"><span class="fc-num">10</span>Lovable frontend renders full response — no blank fields</div>
+    <div class="fc-item"><span class="fc-num">11</span>CORS rejects requests from non-Lovable origins</div>
+    <div class="fc-item"><span class="fc-num">12</span>GitHub Actions CI green on main branch</div>
+    <div class="fc-item"><span class="fc-num">13</span>All pytest tests pass — ≥80% coverage</div>
+    <div class="fc-item"><span class="fc-num">14</span>Lambda p95 warm latency under 6 seconds</div>
+    <div class="fc-item"><span class="fc-num">15</span>CloudWatch dashboard showing real metrics</div>
+    <div class="fc-item"><span class="fc-num">16</span>AWS billing alert set at $20/month</div>
+    <div class="fc-item"><span class="fc-num">17</span>Weekly ETL cron live on EventBridge</div>
+    <div class="fc-item"><span class="fc-num">18</span>No hardcoded secrets anywhere in git history</div>
+    <div class="fc-item"><span class="fc-num">19</span>README written — every decision section filled</div>
+    <div class="fc-item"><span class="fc-num">20</span>3-minute demo video recorded and uploaded</div>
+    <div class="fc-item"><span class="fc-num">21</span>Portfolio writeup with real metrics written</div>
+    <div class="fc-item"><span class="fc-num">22</span>You can answer all interview questions without notes</div>
+  </div>
+
+  <div class="portfolio-box">
+    <div class="portfolio-title">What this project proves to a placement interviewer</div>
+    <div class="portfolio-item"><strong>Full-stack AI/ML</strong> — not just a notebook or just an API, but a complete end-to-end system with six integrated modules</div>
+    <div class="portfolio-item"><strong>Real DS decisions</strong> — feature engineering with medical justification, model selection with metrics, hyperparameter strategy, evaluation rigor</div>
+    <div class="portfolio-item"><strong>RAG + LLM engineering</strong> — not just calling an API, but designing a retrieval system with quality evaluation, prompt engineering, and grounding</div>
+    <div class="portfolio-item"><strong>Cloud deployment</strong> — Lambda, SageMaker, S3, DynamoDB, API Gateway, CloudWatch — the full AWS production stack</div>
+    <div class="portfolio-item"><strong>System design maturity</strong> — graceful degradation, security hardening, monitoring, type-safe API contracts</div>
+    <div class="portfolio-item"><strong>Domain understanding</strong> — medical NLP, X-ray classification, urgency scoring — not a generic ML project</div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function toggle(id){
+  const d=document.getElementById('detail-'+id);
+  const b=document.getElementById('btn-'+id);
+  if(!d)return;
+  const open=d.classList.toggle('open');
+  if(b)b.textContent=open?'Close ▴':'Details ▾';
+}
+const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{
+  const sections=['overview','week11','week12','done'];
+  let current='overview';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&window.scrollY>=el.offsetTop-80)current=id;
+  });
+  navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+current));
+});
+</script>
+</body>
+</html>

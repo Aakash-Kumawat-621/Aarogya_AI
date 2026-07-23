@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediAssist AI — Master Project Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E1117;--surface:#161B22;--surface2:#1C2230;--surface3:#21293A;
+  --border:#253044;--border2:#2E3D55;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.1);
+  --you:#00C9A7;--you-bg:rgba(0,201,167,.08);--you-border:rgba(0,201,167,.3);
+  --ai:#58A6FF;--ai-bg:rgba(88,166,255,.08);
+  --amber:#F0A500;--amber-bg:rgba(240,165,0,.08);
+  --red:#FF7B72;--red-bg:rgba(255,123,114,.08);
+  --green:#3FB950;--green-bg:rgba(63,185,80,.1);
+  --purple:#D2A8FF;
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);font-size:13.5px;line-height:1.65;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,#0B1829 0%,#0D2040 100%);padding:40px 48px 36px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;right:-80px;top:-80px;width:360px;height:360px;background:radial-gradient(circle,rgba(0,201,167,.08) 0%,transparent 70%);pointer-events:none}
+.header::after{content:'';position:absolute;left:30%;bottom:-60px;width:240px;height:240px;background:radial-gradient(circle,rgba(88,166,255,.06) 0%,transparent 70%);pointer-events:none}
+.header-inner{position:relative;max-width:1100px;margin:0 auto}
+.header-eyebrow{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.header-title{font-size:32px;font-weight:600;color:var(--white);letter-spacing:-.025em;line-height:1.15;margin-bottom:10px}
+.header-title span{color:var(--teal)}
+.header-sub{font-size:14px;color:rgba(255,255,255,.45);max-width:560px;line-height:1.7;margin-bottom:24px}
+.header-meta{display:flex;gap:28px;flex-wrap:wrap}
+.meta-item{display:flex;flex-direction:column;gap:3px}
+.meta-n{font-size:24px;font-weight:600;font-family:var(--mono);color:var(--white);line-height:1}
+.meta-l{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.06em;font-weight:500}
+.meta-div{width:1px;background:rgba(255,255,255,.08);align-self:stretch}
+
+/* ── PROGRESS BAR ── */
+.progress-section{background:var(--surface);border-bottom:1px solid var(--border);padding:20px 48px}
+.progress-inner{max-width:1100px;margin:0 auto}
+.progress-label{display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px}
+.progress-label span{color:var(--dim);font-family:var(--mono)}
+.progress-label strong{color:var(--teal);font-family:var(--mono)}
+.progress-track{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--teal) 0%,#00E5BE 100%);transition:width .4s ease;width:0%}
+.module-dots{display:flex;gap:0;margin-top:10px}
+.mod-dot{flex:1;height:3px;margin-right:2px;border-radius:1px;background:var(--surface3);transition:background .3s}
+.mod-dot.done{background:var(--teal)}
+.mod-dot.active{background:var(--amber)}
+
+/* ── MAIN LAYOUT ── */
+.main{max-width:1100px;margin:0 auto;padding:32px 48px 64px;display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start}
+
+/* ── MODULE CARDS ── */
+.modules{display:flex;flex-direction:column;gap:12px}
+.mod-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;transition:border-color .2s}
+.mod-card:hover{border-color:var(--border2)}
+.mod-card.done{border-left:3px solid var(--teal)}
+.mod-card.active{border-left:3px solid var(--amber)}
+.mod-card.locked{border-left:3px solid var(--border2);opacity:.6}
+
+.mod-header{display:grid;grid-template-columns:56px 1fr auto;align-items:center;padding:16px 18px;cursor:pointer;gap:14px}
+.mod-num-badge{width:40px;height:40px;border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:600;flex-shrink:0}
+.mod-info{}
+.mod-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:2px}
+.mod-weeks{font-size:11px;color:var(--dim);font-family:var(--mono)}
+.mod-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.mod-status{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;font-family:var(--mono);letter-spacing:.04em}
+.status-done{background:var(--green-bg);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.status-active{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.status-locked{background:var(--surface3);color:var(--dim);border:1px solid var(--border)}
+.mod-step-count{font-size:11px;color:var(--dim);font-family:var(--mono)}
+
+.mod-body{padding:0 18px 16px;display:none}
+.mod-body.open{display:block}
+.mod-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px;padding-top:4px;border-top:1px solid var(--border)}
+.mod-desc{padding-top:12px}
+
+/* task rows inside module */
+.task-list{display:flex;flex-direction:column;gap:6px}
+.task-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:var(--r);background:var(--surface2)}
+.task-owner{font-size:9px;font-weight:600;font-family:var(--mono);padding:2px 7px;border-radius:3px;white-space:nowrap;flex-shrink:0;margin-top:1px;letter-spacing:.04em}
+.to-you{background:var(--you-bg);color:var(--teal);border:1px solid var(--you-border)}
+.to-ai{background:var(--ai-bg);color:var(--ai);border:1px solid rgba(88,166,255,.3)}
+.task-name{font-size:12.5px;color:var(--muted);line-height:1.45;flex:1}
+.task-check{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;background:var(--surface3)}
+.task-check.checked{background:var(--teal);border-color:var(--teal)}
+.task-check.checked::after{content:'';display:block;width:5px;height:9px;border:1.5px solid white;border-top:none;border-left:none;transform:rotate(45deg) translate(-1px,-1px)}
+.mod-deliverables{margin-top:12px}
+.deliv-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.deliv-tags{display:flex;flex-wrap:wrap;gap:5px}
+.dtag{font-family:var(--mono);font-size:10.5px;background:var(--surface3);border:1px solid var(--border);padding:2px 8px;border-radius:3px;color:var(--muted)}
+
+/* ── RIGHT PANEL ── */
+.right-panel{display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
+
+/* ownership summary */
+.panel-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px 20px}
+.panel-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+
+.ownership-bars{display:flex;flex-direction:column;gap:10px}
+.own-row{display:flex;flex-direction:column;gap:4px}
+.own-label{display:flex;justify-content:space-between;font-size:12px}
+.own-label span{color:var(--muted)}
+.own-label strong{font-family:var(--mono);font-size:11px}
+.own-bar{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.own-fill{height:100%;border-radius:3px}
+
+/* tech stack */
+.stack-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stack-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px}
+.stack-category{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.stack-tools{display:flex;flex-wrap:wrap;gap:3px}
+.stack-tool{font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+/* metrics targets */
+.metric-list{display:flex;flex-direction:column;gap:8px}
+.metric-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:var(--r)}
+.metric-val{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--teal);flex-shrink:0;min-width:52px}
+.metric-desc{font-size:12px;color:var(--muted);line-height:1.4}
+
+/* interview Q panel */
+.iq-list{display:flex;flex-direction:column;gap:8px}
+.iq-item{background:var(--surface2);border-radius:var(--r);padding:10px 12px;border-left:2px solid var(--amber)}
+.iq-q{font-size:12px;color:rgba(240,165,0,.8);font-style:italic;line-height:1.5}
+
+/* timeline */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tl-row:last-child{border-bottom:none}
+.tl-week{font-family:var(--mono);font-size:10px;color:var(--dim);flex-shrink:0;width:48px;padding-top:2px}
+.tl-content{font-size:12px;color:var(--muted);line-height:1.5}
+.tl-content strong{color:var(--white);font-weight:500}
+
+@media(max-width:900px){
+  .main{grid-template-columns:1fr;padding:20px 16px 40px}
+  .header{padding:28px 16px}
+  .progress-section{padding:16px}
+  .right-panel{position:static}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">MediAssist AI · Complete Project Dashboard</div>
+    <div class="header-title">12-Week Build Plan<br><span>All 6 Modules</span></div>
+    <div class="header-sub">Full execution plan — every step, who does it, Gemini prompts, and interview questions. Click any module to expand tasks and track your progress.</div>
+    <div class="header-meta">
+      <div class="meta-item"><div class="meta-n">12</div><div class="meta-l">weeks</div></div>
+      <div class="meta-div"></div>
+      <div class="meta-item"><div class="meta-n">63</div><div class="meta-l">total steps</div></div>
+      <div class="meta-div"></div>
+      <div class="meta-item"><div class="meta-n" style="color:var(--teal)">36</div><div class="meta-l">your tasks</div></div>
+      <div class="meta-div"></div>
+      <div class="meta-item"><div class="meta-n" style="color:var(--ai)">27</div><div class="meta-l">AI tasks</div></div>
+      <div class="meta-div"></div>
+      <div class="meta-item"><div class="meta-n" style="color:var(--amber)">~$12</div><div class="meta-l">total training cost</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-section">
+  <div class="progress-inner">
+    <div class="progress-label">
+      <span>Overall progress</span>
+      <strong id="progress-pct">0%</strong>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="module-dots" id="mod-dots"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: MODULES -->
+  <div class="modules" id="modules-list"></div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="panel-card">
+      <div class="panel-title">Task ownership split</div>
+      <div class="ownership-bars">
+        <div class="own-row">
+          <div class="own-label"><span>You must do</span><strong style="color:var(--teal)">36 tasks</strong></div>
+          <div class="own-bar"><div class="own-fill" style="width:57%;background:var(--teal)"></div></div>
+        </div>
+        <div class="own-row">
+          <div class="own-label"><span>Gemini does</span><strong style="color:var(--ai)">27 tasks</strong></div>
+          <div class="own-bar"><div class="own-fill" style="width:43%;background:var(--ai)"></div></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11.5px;color:var(--dim);line-height:1.6">Your tasks are all <strong style="color:var(--white)">judgment calls</strong> — EDA interpretation, feature design, prompt engineering, evaluation decisions, and all qualitative review. Gemini handles all boilerplate and implementation.</div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-title">Target metrics</div>
+      <div class="metric-list">
+        <div class="metric-item"><div class="metric-val">≥0.72</div><div class="metric-desc">XGBoost macro-F1 on 41-disease classification</div></div>
+        <div class="metric-item"><div class="metric-val">≥0.80</div><div class="metric-desc">ResNet-50 mean AUC-ROC on ChestX-ray14</div></div>
+        <div class="metric-item"><div class="metric-val">≥0.95</div><div class="metric-desc">LightGBM Emergency class recall at tuned threshold</div></div>
+        <div class="metric-item"><div class="metric-val">≥0.65</div><div class="metric-desc">RAG Precision@5 on 20 medical query types</div></div>
+        <div class="metric-item"><div class="metric-val">&lt;6s</div><div class="metric-desc">Lambda warm p95 latency end-to-end</div></div>
+        <div class="metric-item"><div class="metric-val">≥80%</div><div class="metric-desc">pytest line coverage across all modules</div></div>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-title">Tech stack</div>
+      <div class="stack-grid">
+        <div class="stack-item">
+          <div class="stack-category">Backend</div>
+          <div class="stack-tools">
+            <span class="stack-tool">FastAPI</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">Mangum</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">Pydantic</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-category">AI / LLM</div>
+          <div class="stack-tools">
+            <span class="stack-tool">Bedrock</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">LangChain</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">Pinecone</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-category">ML Models</div>
+          <div class="stack-tools">
+            <span class="stack-tool">XGBoost</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">LightGBM</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">ResNet-50</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-category">AWS Infra</div>
+          <div class="stack-tools">
+            <span class="stack-tool">Lambda</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">S3</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">DynamoDB</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">SageMaker</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-category">NLP</div>
+          <div class="stack-tools">
+            <span class="stack-tool">spaCy</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">scispaCy</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">BioSentBERT</span>
+          </div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-category">Frontend</div>
+          <div class="stack-tools">
+            <span class="stack-tool">Lovable</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">React</span><span class="stack-tool"> · </span>
+            <span class="stack-tool">TypeScript</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-title">Top interview questions</div>
+      <div class="iq-list">
+        <div class="iq-item"><div class="iq-q">"Walk me through how your system merges 5 different input modalities into a unified patient context."</div></div>
+        <div class="iq-item"><div class="iq-q">"Explain your cardiac_risk_score feature — why that specific combination of factors?"</div></div>
+        <div class="iq-item"><div class="iq-q">"Why did you use hybrid retrieval instead of pure dense vector search?"</div></div>
+        <div class="iq-item"><div class="iq-q">"Show me your RAG system prompt. Why did you write each rule?"</div></div>
+        <div class="iq-item"><div class="iq-q">"What recall did you achieve on the Emergency urgency class and why did that number matter?"</div></div>
+        <div class="iq-item"><div class="iq-q">"What happens in your system when Bedrock times out mid-request?"</div></div>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-title">12-week timeline</div>
+      <div class="timeline">
+        <div class="tl-row"><div class="tl-week">W1–2</div><div class="tl-content"><strong>Module 1</strong> — Repo, AWS infra, Pydantic schemas, FastAPI skeleton, Lambda deploy</div></div>
+        <div class="tl-row"><div class="tl-week">W3–4</div><div class="tl-content"><strong>Module 2</strong> — NLP pipeline, S3 images, OCR, Bedrock vision, PatientContext merger</div></div>
+        <div class="tl-row"><div class="tl-week">W5–6</div><div class="tl-content"><strong>Module 3</strong> — Knowledge base indexing, embeddings, RAG chain, system prompt</div></div>
+        <div class="tl-row"><div class="tl-week">W7–8</div><div class="tl-content"><strong>Module 4</strong> — EDA, XGBoost, ResNet-50 (SageMaker), LightGBM urgency, ONNX export</div></div>
+        <div class="tl-row"><div class="tl-week">W9–10</div><div class="tl-content"><strong>Module 5</strong> — Doctor finder, response assembly, disclaimer, frontend contract</div></div>
+        <div class="tl-row"><div class="tl-week">W11–12</div><div class="tl-content"><strong>Module 6</strong> — Test suite, security, load testing, production deploy, portfolio</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const MODULES = [
+  {
+    id:1, title:"Project Setup & FastAPI Skeleton", weeks:"Weeks 1–2",
+    color:"#00C9A7", status:"active",
+    desc:"Repo init, Python venv, folder structure, requirements.txt, .env + config.py, AWS infra (S3, DynamoDB, Pinecone), Pydantic schemas, FastAPI app, Dockerfile, Lambda + API Gateway deploy, GitHub Actions CI/CD.",
+    tasks:[
+      {owner:"ai", name:"GitHub repo initialization + folder structure"},
+      {owner:"you", name:"Python venv setup locally"},
+      {owner:"ai", name:"Complete folder structure creation"},
+      {owner:"you", name:"Review and approve requirements.txt — know every package"},
+      {owner:"you", name:"Create .env file with real credentials (never share)"},
+      {owner:"ai", name:"AWS CLI + IAM role for Lambda"},
+      {owner:"ai", name:"S3 bucket + DynamoDB table + Pinecone index"},
+      {owner:"you", name:"Define Pydantic request/response schemas — the frontend contract"},
+      {owner:"ai", name:"FastAPI main.py — CORS, routers, Mangum adapter"},
+      {owner:"ai", name:"Route stubs with real request parsing"},
+      {owner:"ai", name:"Dockerfile — Lambda container image"},
+      {owner:"ai", name:"Lambda function + API Gateway creation"},
+      {owner:"ai", name:"GitHub Actions CI/CD pipeline"},
+      {owner:"you", name:"End-to-end verification + Lovable URL connection"},
+    ],
+    deliverables:["FastAPI skeleton live","Lambda + API Gateway","Pydantic schemas","GitHub Actions CI","Pinecone index"]
+  },
+  {
+    id:2, title:"Multimodal Input Handler", weeks:"Weeks 3–4",
+    color:"#58A6FF", status:"locked",
+    desc:"NLP pipeline (scispaCy NER, negation, uncertainty), symptom synonym dictionary with Hindi terms, S3 image handling, CLAHE X-ray preprocessing, AWS Textract OCR, Bedrock vision prompt, PatientContext merger with risk flags.",
+    tasks:[
+      {owner:"you", name:"Install + verify scispaCy medical NLP models"},
+      {owner:"you", name:"Design NLP strategy — negation, uncertainty, duration, output schema"},
+      {owner:"ai", name:"Implement preprocessor.py"},
+      {owner:"you", name:"Build symptom synonym dictionary (100+ terms, Hindi included)"},
+      {owner:"ai", name:"Implement symptom_normalizer.py with fuzzy matching"},
+      {owner:"ai", name:"S3 upload handler + image_preprocessor.py with CLAHE"},
+      {owner:"ai", name:"AWS Textract prescription OCR handler"},
+      {owner:"you", name:"Write Bedrock vision system prompt"},
+      {owner:"you", name:"Design PatientContext schema + merge rules + risk flags"},
+      {owner:"ai", name:"Implement patient_context.py"},
+      {owner:"you", name:"Wire patient_context.py into analyze.py yourself"},
+      {owner:"you", name:"End-to-end integration test — all 5 inputs"},
+    ],
+    deliverables:["NLP pipeline","Synonym dict","S3 handler","Textract OCR","Bedrock vision","PatientContext"]
+  },
+  {
+    id:3, title:"RAG Pipeline + Knowledge Base", weeks:"Weeks 5–6",
+    color:"#D2A8FF", status:"locked",
+    desc:"PubMed + MedMCQA + OpenFDA data download, chunking (512/256 tokens), BioSentBERT embedding, Pinecone indexing, hybrid retrieval strategy, query_builder.py, medical system prompt engineering, LangChain chain + Bedrock, Precision@5 evaluation on 20 queries.",
+    tasks:[
+      {owner:"you", name:"Define KB scope — disease categories, PubMed MeSH terms, chunk strategy"},
+      {owner:"ai", name:"Download + chunk PubMed, MedMCQA, OpenFDA data"},
+      {owner:"you", name:"Manually review 50 chunks for quality"},
+      {owner:"ai", name:"Generate BioSentBERT embeddings + index into Pinecone"},
+      {owner:"you", name:"Run dense vs hybrid retrieval comparison on 10 test queries"},
+      {owner:"ai", name:"Implement retriever.py with your chosen strategy"},
+      {owner:"you", name:"Write the medical system prompt — every word is yours"},
+      {owner:"you", name:"Build query_builder.py — PatientContext → RAG query"},
+      {owner:"ai", name:"Implement chain.py — LangChain + Bedrock RAG chain"},
+      {owner:"you", name:"Wire chain.py into analyze.py"},
+      {owner:"you", name:"Precision@5 evaluation on 20 test queries"},
+    ],
+    deliverables:["55K+ Pinecone vectors","Hybrid retriever","System prompt","RAG chain","P@5 ≥ 0.65","ETL script"]
+  },
+  {
+    id:4, title:"Data Science Models", weeks:"Weeks 7–8",
+    color:"#F0A500", status:"locked",
+    desc:"EDA interpretation, feature engineering with risk multipliers (cardiac_risk_score), XGBoost Optuna tuning, ResNet-50 fine-tune on SageMaker (CLAHE + differential LR + BCE loss + class weights), LightGBM urgency (Emergency recall ≥ 0.95), ONNX export, MLflow tracking, 20-case validation.",
+    tasks:[
+      {owner:"you", name:"EDA — interpret class imbalance, co-occurrence, decide metrics"},
+      {owner:"you", name:"Design all features — 5 categories + risk multipliers with medical justification"},
+      {owner:"ai", name:"Implement feature engineering + XGBoost training pipeline"},
+      {owner:"you", name:"Define Optuna search space + optimization objective"},
+      {owner:"you", name:"Design ResNet-50 fine-tune strategy — layers, LR, augmentations, loss"},
+      {owner:"ai", name:"Implement + launch ResNet-50 training on SageMaker spot instance"},
+      {owner:"you", name:"Define urgency class boundaries + Emergency recall requirement"},
+      {owner:"ai", name:"Train LightGBM severity scorer with threshold tuning"},
+      {owner:"you", name:"Evaluate all 3 models — interpret results, decide if acceptable"},
+      {owner:"you", name:"MLflow experiment analysis + final model selection"},
+      {owner:"ai", name:"ONNX export + S3 upload + Lambda loaders"},
+      {owner:"ai", name:"Wire all 3 models into analyze.py"},
+      {owner:"you", name:"20-case end-to-end validation — cardiac TC-01 must get EMERGENCY"},
+    ],
+    deliverables:["XGBoost F1≥0.72","ResNet AUC≥0.80","LightGBM recall≥0.95","ONNX models","MLflow dashboard","model_selection.md"]
+  },
+  {
+    id:5, title:"Doctor Finder + Output Layer", weeks:"Weeks 9–10",
+    color:"#3FB950", status:"locked",
+    desc:"Condition→specialty mapping (40+ entries, gender/age overrides, ambiguous case rules), Google Places Nearby Search with DynamoDB caching, NMC registry fallback, manual quality testing of doctor results for Jaipur, response_builder.py, medical disclaimer (3 levels), DynamoDB session + feedback, TypeScript contract verification.",
+    tasks:[
+      {owner:"you", name:"Build condition → specialty mapping dict with priorities + overrides"},
+      {owner:"ai", name:"Implement finder.py — Google Places + composite ranking"},
+      {owner:"ai", name:"NMC registry fallback data + seed script"},
+      {owner:"you", name:"Manually test 10 doctor searches for Jaipur quality"},
+      {owner:"ai", name:"Build /doctors/search + /doctors/specialties endpoints"},
+      {owner:"you", name:"Design + finalize complete AnalyzeResponse schema"},
+      {owner:"ai", name:"Implement response_builder.py"},
+      {owner:"you", name:"Write medical disclaimer — 3 levels (Standard, Urgent, Emergency)"},
+      {owner:"ai", name:"DynamoDB session storage + feedback endpoint"},
+      {owner:"you", name:"TypeScript contract verification — every field matched"},
+      {owner:"ai", name:"Unit tests + full integration test"},
+    ],
+    deliverables:["specialty_mapper.py","finder.py live","AnalyzeResponse final","3-level disclaimer","DynamoDB sessions","api.types.ts verified"]
+  },
+  {
+    id:6, title:"Testing, Deployment & Polish", weeks:"Weeks 11–12",
+    color:"#FF7B72", status:"locked",
+    desc:"Full test suite audit + gap filling (≥80% coverage), load tests (locust), 15 edge cases, security hardening (CORS, rate limiting, IAM), CloudWatch dashboard + Sentry, 30-case qualitative validation, production Lambda deploy, Lovable wiring, ETL cron, billing alerts, README, portfolio writeup, demo video.",
+    tasks:[
+      {owner:"you", name:"Audit test suite — identify behavioral gaps"},
+      {owner:"ai", name:"Performance tests + Lambda optimization"},
+      {owner:"you", name:"Test 15 edge cases — record pass/fail manually"},
+      {owner:"ai", name:"Security hardening — CORS, rate limiting, IAM least privilege"},
+      {owner:"you", name:"30-case qualitative validation — cardiac must be EMERGENCY"},
+      {owner:"ai", name:"CloudWatch dashboard + Sentry error tracking"},
+      {owner:"ai", name:"Final production Lambda deployment + smoke tests"},
+      {owner:"you", name:"Wire Lovable frontend to production URL — test every screen"},
+      {owner:"ai", name:"EventBridge ETL cron + billing alerts"},
+      {owner:"you", name:"Final repo review + write README.md yourself"},
+      {owner:"you", name:"Portfolio writeup in STAR format with real metrics"},
+      {owner:"you", name:"Record 3-minute demo video"},
+    ],
+    deliverables:["≥80% test coverage","Production Lambda live","Lovable connected","CloudWatch dashboard","README complete","Demo video","Portfolio writeup"]
+  }
+];
+
+let checkedTasks = JSON.parse(localStorage.getItem('mediassist-progress') || '{}');
+
+function saveProgress(){ localStorage.setItem('mediassist-progress', JSON.stringify(checkedTasks)); }
+
+function renderModules(){
+  const container = document.getElementById('modules-list');
+  container.innerHTML = '';
+  MODULES.forEach(mod => {
+    const card = document.createElement('div');
+    card.className = `mod-card ${mod.status}`;
+    card.dataset.id = mod.id;
+
+    const totalTasks = mod.tasks.length;
+    const doneTasks = mod.tasks.filter((_,i) => checkedTasks[`${mod.id}-${i}`]).length;
+
+    const statusLabel = mod.status==='done'?'Complete':mod.status==='active'?'In Progress':'Upcoming';
+    const statusClass = mod.status==='done'?'status-done':mod.status==='active'?'status-active':'status-locked';
+
+    const tasksHtml = mod.tasks.map((t,i) => {
+      const key = `${mod.id}-${i}`;
+      const checked = checkedTasks[key] ? 'checked' : '';
+      return `<div class="task-row">
+        <span class="task-check ${checked}" onclick="toggleTask('${key}',this)" title="Mark complete"></span>
+        <span class="task-owner ${t.owner==='you'?'to-you':'to-ai'}">${t.owner==='you'?'YOU':'GEMINI'}</span>
+        <span class="task-name">${t.name}</span>
+      </div>`;
+    }).join('');
+
+    const delivHtml = mod.deliverables.map(d => `<span class="dtag">${d}</span>`).join('');
+
+    card.innerHTML = `
+      <div class="mod-header" onclick="toggleMod(${mod.id})">
+        <div class="mod-num-badge" style="background:${mod.color}18;color:${mod.color};border:1px solid ${mod.color}30">
+          ${String(mod.id).padStart(2,'0')}
+        </div>
+        <div class="mod-info">
+          <div class="mod-title">${mod.title}</div>
+          <div class="mod-weeks">${mod.weeks} · ${doneTasks}/${totalTasks} tasks done</div>
+        </div>
+        <div class="mod-right">
+          <span class="mod-status ${statusClass}">${statusLabel}</span>
+        </div>
+      </div>
+      <div class="mod-body" id="mod-body-${mod.id}">
+        <div class="mod-desc">${mod.desc}</div>
+        <div class="task-list">${tasksHtml}</div>
+        <div class="mod-deliverables">
+          <div class="deliv-label">Deliverables</div>
+          <div class="deliv-tags">${delivHtml}</div>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+  updateProgress();
+}
+
+function toggleMod(id){
+  const body = document.getElementById(`mod-body-${id}`);
+  body.classList.toggle('open');
+}
+
+function toggleTask(key, el){
+  if(checkedTasks[key]){ delete checkedTasks[key]; el.classList.remove('checked'); }
+  else { checkedTasks[key]=true; el.classList.add('checked'); }
+  saveProgress();
+  updateProgress();
+  // update week count in header
+  const [modId] = key.split('-');
+  const mod = MODULES.find(m=>m.id==modId);
+  if(mod){
+    const totalTasks = mod.tasks.length;
+    const doneTasks = mod.tasks.filter((_,i) => checkedTasks[`${modId}-${i}`]).length;
+    const weekEl = document.querySelector(`[data-id="${modId}"] .mod-weeks`);
+    if(weekEl) weekEl.textContent = `${mod.weeks} · ${doneTasks}/${totalTasks} tasks done`;
+  }
+}
+
+function updateProgress(){
+  const totalTasks = MODULES.reduce((sum,m)=>sum+m.tasks.length,0);
+  const doneTasks = Object.keys(checkedTasks).length;
+  const pct = Math.round((doneTasks/totalTasks)*100);
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-pct').textContent = pct+'%';
+
+  // module dots
+  const dotsEl = document.getElementById('mod-dots');
+  dotsEl.innerHTML = MODULES.map(mod=>{
+    const modDone = mod.tasks.filter((_,i)=>checkedTasks[`${mod.id}-${i}`]).length;
+    const allDone = modDone === mod.tasks.length;
+    const anyDone = modDone > 0;
+    const cls = allDone?'done':anyDone?'active':'';
+    return `<div class="mod-dot ${cls}" title="Module ${mod.id}: ${modDone}/${mod.tasks.length}"></div>`;
+  }).join('');
+}
+
+renderModules();
+// auto-open module 1
+document.getElementById('mod-body-1').classList.add('open');
+</script>
+</body>
+</html>

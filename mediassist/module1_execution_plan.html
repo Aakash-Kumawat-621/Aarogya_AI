@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Module 1 — Execution Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E1117;--surface:#161B22;--surface2:#1C2230;--surface3:#21293A;
+  --border:#253044;--border2:#2E3D55;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.1);--teal-mid:#00A98E;
+  --you:#00C9A7;--you-bg:rgba(0,201,167,.08);--you-border:rgba(0,201,167,.3);
+  --ai:#58A6FF;--ai-bg:rgba(88,166,255,.08);--ai-border:rgba(88,166,255,.3);
+  --amber:#F0A500;--amber-bg:rgba(240,165,0,.08);--amber-border:rgba(240,165,0,.3);
+  --red:#FF7B72;--red-bg:rgba(255,123,114,.08);
+  --purple:#D2A8FF;--purple-bg:rgba(210,168,255,.08);
+  --green:#3FB950;--green-bg:rgba(63,185,80,.08);
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);font-size:13.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:32px 48px 28px}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.header-left .eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+.header-left h1{font-size:26px;font-weight:600;color:var(--white);letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
+.header-left p{font-size:13px;color:var(--muted);max-width:560px;line-height:1.7}
+.header-stats{display:flex;gap:1px;background:var(--border);border-radius:var(--r-lg);overflow:hidden;flex-shrink:0;margin-top:4px}
+.hstat{background:var(--surface2);padding:12px 20px;text-align:center;min-width:80px}
+.hstat-n{font-size:20px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:3px}
+.hstat-l{font-size:10px;color:var(--dim);font-weight:500;letter-spacing:.04em}
+.legend{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── NAV ── */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 48px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nav a{font-size:12px;font-weight:500;color:var(--dim);text-decoration:none;padding:11px 14px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;display:block}
+.nav a:hover{color:var(--white)}
+.nav a.active{color:var(--white);border-bottom-color:var(--teal)}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 130px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.sbar-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 18px 4px}
+.sbar-link{display:flex;align-items:center;gap:8px;padding:7px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .15s;border-left:2px solid transparent}
+.sbar-link:hover{color:var(--white);background:var(--surface2)}
+.sbar-link.active{color:var(--white);background:var(--teal-dim);border-left-color:var(--teal)}
+.sbar-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+.main{padding:32px 44px 60px;max-width:860px}
+
+/* ── STEP BLOCKS ── */
+.step{margin-bottom:10px;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;transition:border-color .15s}
+.step:hover{border-color:var(--border2)}
+
+.step-header{display:grid;grid-template-columns:72px 1fr auto;align-items:stretch;cursor:pointer}
+.step-num{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;border-right:1px solid var(--border);min-width:72px}
+.step-num .num{font-family:var(--mono);font-size:13px;font-weight:600;line-height:1;margin-bottom:4px}
+.step-num .step-label{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3}
+
+.step-num.you{background:var(--you-bg);border-right-color:var(--you-border)}
+.step-num.you .num{color:var(--teal)}
+.step-num.you .step-label{color:var(--teal-mid)}
+.step-num.ai{background:var(--ai-bg);border-right-color:var(--ai-border)}
+.step-num.ai .num{color:var(--ai)}
+.step-num.ai .step-label{color:#4B8FCE}
+.step-num.shared{background:var(--amber-bg);border-right-color:var(--amber-border)}
+.step-num.shared .num{color:var(--amber)}
+.step-num.shared .step-label{color:#C47F00}
+
+.step-body{padding:14px 16px;flex:1}
+.step-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px}
+.step-file{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:6px}
+.step-summary{font-size:12.5px;color:var(--muted);line-height:1.6}
+
+.step-right{padding:12px 14px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:7px;min-width:120px}
+.effort{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.e-high{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,123,114,.2)}
+.e-med{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.e-low{background:var(--green-bg);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.expand{font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:color .15s}
+.expand:hover{color:var(--white)}
+
+/* ── STEP DETAIL ── */
+.step-detail{display:none;border-top:1px solid var(--border);padding:18px 18px 18px 18px}
+.step-detail.open{display:block}
+
+.detail-sections{display:flex;flex-direction:column;gap:14px}
+.dsec{background:var(--surface2);border-radius:var(--r-lg);padding:14px 16px;border:1px solid var(--border)}
+.dsec-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.dsec.you-sec{border-left:2px solid var(--you);}.dsec.you-sec .dsec-title{color:var(--teal)}
+.dsec.ai-sec{border-left:2px solid var(--ai)}.dsec.ai-sec .dsec-title{color:var(--ai)}
+.dsec.cmd-sec{border-left:2px solid var(--purple)}.dsec.cmd-sec .dsec-title{color:var(--purple)}
+.dsec.warn-sec{border-left:2px solid var(--amber)}.dsec.warn-sec .dsec-title{color:var(--amber)}
+.dsec.verify-sec{border-left:2px solid var(--green)}.dsec.verify-sec .dsec-title{color:var(--green)}
+.dsec.prompt-sec{border-left:2px solid #D2A8FF}.dsec.prompt-sec .dsec-title{color:#D2A8FF}
+
+.dsec-body{font-size:12.5px;color:var(--muted);line-height:1.7}
+.dsec-body ul{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body ol{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body li{color:var(--muted)}
+.dsec-body strong{color:var(--white);font-weight:500}
+
+pre.cmd{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:12px;color:#79C0FF;overflow-x:auto;line-height:1.7;margin-top:4px}
+pre.cmd .comment{color:var(--dim)}
+pre.cmd .string{color:#A5D6FF}
+pre.cmd .key{color:var(--teal)}
+
+.verify-list{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.vitem{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--muted)}
+.vcheck{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.vcheck svg{width:10px;height:10px;stroke:var(--teal);fill:none;stroke-width:2}
+.vcheck.empty{background:var(--surface3)}
+
+.prompt-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-top:4px;font-size:12px;color:#A5D6FF;font-family:var(--mono);line-height:1.7;white-space:pre-wrap}
+
+.libs{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.lib{font-family:var(--mono);font-size:11px;background:var(--surface3);border:1px solid var(--border);padding:2px 8px;border-radius:4px;color:var(--muted)}
+
+.time-badge{font-family:var(--mono);font-size:10px;background:var(--surface3);border:1px solid var(--border);padding:3px 8px;border-radius:3px;color:var(--dim)}
+
+/* ── SECTION HEADER ── */
+.section-hdr{margin:32px 0 14px;display:flex;align-items:center;gap:12px}
+.section-hdr h2{font-size:15px;font-weight:600;color:var(--white)}
+.section-hdr .pill{font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+
+/* ── OVERVIEW CARDS ── */
+.overview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:28px}
+.ocard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+.ocard-icon{font-size:20px;margin-bottom:10px}
+.ocard-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:5px}
+.ocard-body{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* ── DELIVERABLES ── */
+.deliverables{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:28px}
+.deliv-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.deliv-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.deliv-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted)}
+.deliv-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .main{padding:20px 16px 40px}
+  .header{padding:24px 16px}
+  .overview-grid{grid-template-columns:1fr}
+  .deliv-list{grid-template-columns:1fr}
+  .step-header{grid-template-columns:60px 1fr}
+  .step-right{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-left">
+      <div class="eyebrow">MediAssist AI · Module 1 of 6</div>
+      <h1>Project Setup &amp; FastAPI Skeleton</h1>
+      <p>Everything needed before any real code is written — repo, environment, AWS infra, Pydantic contracts, and a working API skeleton deployed to Lambda. Completion = a live <code style="font-family:var(--mono);font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:4px">/health</code> endpoint on API Gateway.</p>
+    </div>
+    <div>
+      <div class="header-stats">
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">2</div><div class="hstat-l">weeks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">14</div><div class="hstat-l">steps</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--ai)">9</div><div class="hstat-l">AI tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--you)">4</div><div class="hstat-l">your tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--amber)">1</div><div class="hstat-l">shared</div></div>
+      </div>
+      <div class="legend" style="margin-top:12px;justify-content:flex-end">
+        <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>You do it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--ai)"></div>Gemini does it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--amber)"></div>Shared</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a href="#overview" class="active">Overview</a>
+  <a href="#week1">Week 1</a>
+  <a href="#week2">Week 2</a>
+  <a href="#done">Definition of done</a>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sbar-section">Week 1 — Local + AWS</div>
+    <a class="sbar-link active" href="#s1"><div class="sbar-dot" style="background:var(--ai)"></div>S1 · GitHub repo init</a>
+    <a class="sbar-link" href="#s2"><div class="sbar-dot" style="background:var(--you)"></div>S2 · Python env setup</a>
+    <a class="sbar-link" href="#s3"><div class="sbar-dot" style="background:var(--ai)"></div>S3 · Folder structure</a>
+    <a class="sbar-link" href="#s4"><div class="sbar-dot" style="background:var(--you)"></div>S4 · requirements.txt</a>
+    <a class="sbar-link" href="#s5"><div class="sbar-dot" style="background:var(--you)"></div>S5 · .env + config.py</a>
+    <a class="sbar-link" href="#s6"><div class="sbar-dot" style="background:var(--ai)"></div>S6 · AWS CLI + IAM</a>
+    <a class="sbar-link" href="#s7"><div class="sbar-dot" style="background:var(--ai)"></div>S7 · S3 + DynamoDB</a>
+
+    <div class="sbar-section">Week 2 — Schemas + Deploy</div>
+    <a class="sbar-link" href="#s8"><div class="sbar-dot" style="background:var(--you)"></div>S8 · Pydantic schemas</a>
+    <a class="sbar-link" href="#s9"><div class="sbar-dot" style="background:var(--ai)"></div>S9 · FastAPI main.py</a>
+    <a class="sbar-link" href="#s10"><div class="sbar-dot" style="background:var(--ai)"></div>S10 · Route stubs</a>
+    <a class="sbar-link" href="#s11"><div class="sbar-dot" style="background:var(--ai)"></div>S11 · Dockerfile</a>
+    <a class="sbar-link" href="#s12"><div class="sbar-dot" style="background:var(--ai)"></div>S12 · Pinecone setup</a>
+    <a class="sbar-link" href="#s13"><div class="sbar-dot" style="background:var(--ai)"></div>S13 · GitHub Actions</a>
+    <a class="sbar-link" href="#s14"><div class="sbar-dot" style="background:var(--amber)"></div>S14 · End-to-end verify</a>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div id="overview">
+      <div class="overview-grid">
+        <div class="ocard">
+          <div class="ocard-icon">🎯</div>
+          <div class="ocard-title">Goal of this module</div>
+          <div class="ocard-body">A working FastAPI backend deployed to AWS Lambda, reachable via API Gateway, with all infra provisioned and Pydantic schemas finalized. Every later module builds on this foundation.</div>
+        </div>
+        <div class="ocard">
+          <div class="ocard-icon">⚠️</div>
+          <div class="ocard-title">Your most important task</div>
+          <div class="ocard-body">Defining the Pydantic request/response schemas (S8). Every field you write becomes a contract that Lovable's TypeScript must match. Get this wrong now and you debug silent mismatches for weeks.</div>
+        </div>
+        <div class="ocard">
+          <div class="ocard-icon">✅</div>
+          <div class="ocard-title">Done when</div>
+          <div class="ocard-body"><code style="font-family:var(--mono);font-size:11px">GET /api/v1/health</code> returns 200 from the real API Gateway URL. Lovable can call it and get a response.</div>
+        </div>
+      </div>
+
+      <div class="deliverables">
+        <div class="deliv-title">Deliverables at end of Module 1</div>
+        <div class="deliv-list">
+          <div class="deliv-item"><span class="deliv-icon">📁</span>Complete folder structure committed to GitHub</div>
+          <div class="deliv-item"><span class="deliv-icon">🐍</span>Python venv with all dependencies installed</div>
+          <div class="deliv-item"><span class="deliv-icon">☁️</span>AWS: S3 bucket, DynamoDB table, ECR repo created</div>
+          <div class="deliv-item"><span class="deliv-icon">🗄️</span>Pinecone index with 3 namespaces ready</div>
+          <div class="deliv-item"><span class="deliv-icon">📐</span>Pydantic request + response models finalized</div>
+          <div class="deliv-item"><span class="deliv-icon">🚀</span>FastAPI app with all route stubs (no logic yet)</div>
+          <div class="deliv-item"><span class="deliv-icon">🐳</span>Docker container building and running locally</div>
+          <div class="deliv-item"><span class="deliv-icon">🌐</span>Lambda + API Gateway live — /health returns 200</div>
+          <div class="deliv-item"><span class="deliv-icon">⚙️</span>GitHub Actions CI/CD pipeline working</div>
+          <div class="deliv-item"><span class="deliv-icon">🔗</span>Lovable frontend can call backend URL successfully</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 1 -->
+    <div id="week1">
+      <div class="section-hdr">
+        <h2>Week 1 — Local environment + AWS infrastructure</h2>
+        <span class="pill" style="background:var(--teal-dim);color:var(--teal);border:1px solid var(--you-border)">Days 1–5</span>
+      </div>
+
+      <!-- S1 -->
+      <div class="step" id="s1">
+        <div class="step-header" onclick="toggle('s1')">
+          <div class="step-num ai"><div class="num">S1</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">GitHub repository initialization</div>
+            <div class="step-file">mediassist-ai/ (root) · .gitignore · README.md</div>
+            <div class="step-summary">Create the GitHub repo, set up .gitignore for Python + secrets, push initial commit. You just create the empty repo on GitHub; Gemini generates all the files.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-low">Low</span>
+            <span class="time-badge">~30 min</span>
+            <button class="expand" id="btn-s1">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s1">
+          <div class="detail-sections">
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do (5 minutes)</div>
+              <div class="dsec-body">
+                <ol>
+                  <li>Go to github.com → New repository → name it <strong>mediassist-ai</strong></li>
+                  <li>Set to Private, do NOT initialize with README (Gemini will do it)</li>
+                  <li>Copy the repo URL</li>
+                  <li>Give Gemini this prompt below</li>
+                </ol>
+              </div>
+            </div>
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini/Antigravity</div>
+              <div class="prompt-box">Initialize a Python project for MediAssist AI. Create:
+1. .gitignore (Python + venv + .env + __pycache__ + .DS_Store + *.pkl + *.pt + *.onnx)
+2. README.md with project title and placeholder sections: Overview, Setup, Architecture, API Reference
+3. Initial git commit with message "chore: initial project setup"
+
+Push to: https://github.com/[your-username]/mediassist-ai.git</div>
+            </div>
+            <div class="dsec ai-sec">
+              <div class="dsec-title">What Gemini does</div>
+              <div class="dsec-body">
+                <ul>
+                  <li>Generates .gitignore with all Python, virtual env, secrets, model file patterns</li>
+                  <li>Writes README.md skeleton with your project sections</li>
+                  <li>Runs <code style="font-family:var(--mono);font-size:11px">git init</code>, stages files, makes initial commit, pushes to your repo</li>
+                </ul>
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1"/></svg></div>Repo visible on github.com with initial commit</div>
+                <div class="vitem"><div class="vcheck"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1"/></svg></div>.gitignore includes .env and *.pkl and *.pt</div>
+                <div class="vitem"><div class="vcheck empty"></div>Clone it locally and confirm it works: <code style="font-family:var(--mono);font-size:11px">git clone [url]</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S2 -->
+      <div class="step" id="s2">
+        <div class="step-header" onclick="toggle('s2')">
+          <div class="step-num you"><div class="num">S2</div><div class="step-label">You do it</div></div>
+          <div class="step-body">
+            <div class="step-title">Python virtual environment setup</div>
+            <div class="step-file">venv/ · Python 3.11</div>
+            <div class="step-summary">Create and activate the Python venv. You must do this yourself — it runs on your machine and Gemini can't set up your local environment. Takes 5 minutes.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-low">Low</span>
+            <span class="time-badge">~20 min</span>
+            <button class="expand" id="btn-s2">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s2">
+          <div class="detail-sections">
+            <div class="dsec you-sec">
+              <div class="dsec-title">Exact commands to run (WSL2 Ubuntu)</div>
+              <div class="dsec-body">
+<pre class="cmd"><span class="comment"># Navigate to your cloned repo</span>
+cd ~/mediassist-ai
+
+<span class="comment"># Create venv with Python 3.11 (you already have this from your WSL2 setup)</span>
+python3.11 -m venv venv
+
+<span class="comment"># Activate it</span>
+source venv/bin/activate
+
+<span class="comment"># Verify Python version — must show 3.11.x</span>
+python --version
+
+<span class="comment"># Upgrade pip first</span>
+pip install --upgrade pip
+
+<span class="comment"># Confirm you're inside the venv (should show venv path)</span>
+which python</pre>
+              </div>
+            </div>
+            <div class="dsec warn-sec">
+              <div class="dsec-title">Important — never do this</div>
+              <div class="dsec-body">
+                <ul>
+                  <li>Never install packages globally (outside venv) — it will pollute your system Python</li>
+                  <li>Never commit the <strong>venv/</strong> folder — it's in .gitignore already</li>
+                  <li>Every time you open a new terminal, run <code style="font-family:var(--mono);font-size:11px">source venv/bin/activate</code> first</li>
+                </ul>
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div>Terminal prompt shows <code style="font-family:var(--mono);font-size:11px">(venv)</code> prefix</div>
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">python --version</code> shows 3.11.x</div>
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">which python</code> shows the venv path, not /usr/bin/python</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S3 -->
+      <div class="step" id="s3">
+        <div class="step-header" onclick="toggle('s3')">
+          <div class="step-num ai"><div class="num">S3</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">Complete folder structure creation</div>
+            <div class="step-file">backend/ · frontend/ · notebooks/ · scripts/ · tests/ (all subdirs)</div>
+            <div class="step-summary">Gemini creates every folder and placeholder file from your directory plan. You already defined this — it just needs to execute it.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-low">Low</span>
+            <span class="time-badge">~30 min</span>
+            <button class="expand" id="btn-s3">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s3">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini/Antigravity</div>
+              <div class="prompt-box">Create the complete folder structure for MediAssist AI inside the mediassist-ai repo. Exact structure:
+
+backend/
+  app/
+    __init__.py
+    main.py           (empty FastAPI app for now)
+    config.py         (empty)
+    api/routes/
+      __init__.py
+      analyze.py      (stub only — return {"status": "not implemented"})
+      doctors.py      (stub only)
+      history.py      (stub only)
+      health.py       (return {"status": "ok", "service": "mediassist-ai"})
+      feedback.py     (stub only)
+    core/
+      __init__.py
+      patient_context.py   (empty)
+      response_builder.py  (empty)
+    modules/
+      nlp/__init__.py, preprocessor.py (empty), symptom_normalizer.py (empty)
+      image/__init__.py, xray_classifier.py (empty), image_preprocessor.py (empty)
+      ocr/__init__.py, textract_handler.py (empty)
+      rag/__init__.py, query_builder.py (empty), retriever.py (empty), chain.py (empty)
+      ml/__init__.py, symptom_classifier.py (empty), severity_scorer.py (empty)
+      doctors/__init__.py, finder.py (empty), specialty_mapper.py (empty)
+    services/
+      __init__.py
+      s3_service.py (empty)
+      dynamodb_service.py (empty)
+      bedrock_service.py (empty)
+    models/
+      __init__.py
+      request_models.py   (I will fill this — leave as empty Pydantic placeholder)
+      response_models.py  (I will fill this — leave as empty Pydantic placeholder)
+  ml_models/           (empty dir, add .gitkeep)
+  notebooks/           (add 6 empty .ipynb files: 01_eda_symptoms, 02_nlp_preprocessing, 03_xray_cnn_training, 04_embeddings_indexing, 05_symptom_classifier, 06_severity_scorer)
+  scripts/
+    index_knowledge_base.py (empty)
+    seed_hospital_db.py (empty)
+  tests/
+    __init__.py
+    test_analyze.py (empty)
+    test_rag.py (empty)
+    test_ml_models.py (empty)
+  requirements.txt     (empty for now)
+  .env.example         (with all required variable names, empty values)
+  Dockerfile           (empty for now)
+
+Commit with message: "chore: scaffold complete project structure"</div>
+            </div>
+            <div class="dsec ai-sec">
+              <div class="dsec-title">What Gemini does</div>
+              <div class="dsec-body">
+                <ul>
+                  <li>Creates every directory with <code style="font-family:var(--mono);font-size:11px">__init__.py</code> files</li>
+                  <li>Writes health.py stub that already returns a valid response</li>
+                  <li>All other route files return <code style="font-family:var(--mono);font-size:11px">{"status": "not implemented"}</code> — placeholders only</li>
+                  <li>Writes .env.example with all 9 variable names and empty values</li>
+                  <li>Commits and pushes to GitHub</li>
+                </ul>
+              </div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do after Gemini finishes</div>
+              <div class="dsec-body">
+                <ul>
+                  <li>Pull the commit locally: <code style="font-family:var(--mono);font-size:11px">git pull</code></li>
+                  <li>Open in VS Code: <code style="font-family:var(--mono);font-size:11px">code .</code></li>
+                  <li>Visually verify the folder tree matches your directory plan exactly</li>
+                  <li>Check that request_models.py and response_models.py are left EMPTY — Gemini must not touch these</li>
+                </ul>
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div>All 6 module directories exist under backend/app/modules/</div>
+                <div class="vitem"><div class="vcheck empty"></div>health.py has a real response, other routes return stub</div>
+                <div class="vitem"><div class="vcheck empty"></div>request_models.py and response_models.py are empty</div>
+                <div class="vitem"><div class="vcheck empty"></div>.env.example has all variable names</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S4 -->
+      <div class="step" id="s4">
+        <div class="step-header" onclick="toggle('s4')">
+          <div class="step-num you"><div class="num">S4</div><div class="step-label">You do it</div></div>
+          <div class="step-body">
+            <div class="step-title">Review and approve requirements.txt</div>
+            <div class="step-file">backend/requirements.txt</div>
+            <div class="step-summary">Gemini generates the dependencies list — but YOU must review it, understand every package, and approve before installation. You need to know what's in your own project.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-med">Medium</span>
+            <span class="time-badge">~1 hr</span>
+            <button class="expand" id="btn-s4">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s4">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini first</div>
+              <div class="prompt-box">Generate requirements.txt for MediAssist AI with pinned versions. Include:
+
+API: fastapi, uvicorn[standard], python-multipart, mangum, pydantic, pydantic-settings
+AWS: boto3, botocore
+AI/LLM: langchain, langchain-aws, langchain-community, langchain-pinecone
+Vector DB: pinecone-client, faiss-cpu
+Embeddings: sentence-transformers
+NLP: spacy, scispacy
+Image ML: torch (CPU version for Lambda), torchvision, opencv-python-headless, Pillow, albumentations
+Classical ML: scikit-learn, xgboost, lightgbm, imbalanced-learn, feature-engine
+Data: pandas, numpy
+Experiment tracking: mlflow
+Utilities: python-dotenv, httpx, requests, rapidfuzz, geopy
+Testing: pytest, pytest-mock, moto[s3,dynamodb], httpx
+
+Pin to latest stable versions as of 2024.</div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What YOU must do — this is not optional</div>
+              <div class="dsec-body">
+                Read every package Gemini generated. For each one, you must know:
+                <ul style="margin-top:8px">
+                  <li><strong>fastapi</strong> — the API framework. You know this.</li>
+                  <li><strong>mangum</strong> — wraps FastAPI for AWS Lambda. ASGI adapter.</li>
+                  <li><strong>pydantic-settings</strong> — loads .env into Python settings class.</li>
+                  <li><strong>langchain-aws</strong> — LangChain's official AWS Bedrock integration.</li>
+                  <li><strong>langchain-pinecone</strong> — LangChain's Pinecone vector store integration.</li>
+                  <li><strong>sentence-transformers</strong> — runs BioSentBERT for medical embeddings.</li>
+                  <li><strong>scispacy</strong> — spaCy extension for medical NER. Needs separate model download.</li>
+                  <li><strong>faiss-cpu</strong> — local vector search for development. Pinecone used in prod.</li>
+                  <li><strong>opencv-python-headless</strong> — OpenCV without GUI (required for Lambda).</li>
+                  <li><strong>mangum</strong> — this is what makes FastAPI work on Lambda. Critical.</li>
+                  <li><strong>moto</strong> — mocks AWS services in tests. You do not pay for AWS during testing.</li>
+                  <li><strong>imbalanced-learn</strong> — provides SMOTE for handling class imbalance.</li>
+                </ul>
+                <br>Then install:
+<pre class="cmd">pip install -r requirements.txt</pre>
+                Watch for any errors. If torch conflicts with anything, install CPU version separately:
+<pre class="cmd">pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu</pre>
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">pip install -r requirements.txt</code> completes with no errors</div>
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">python -c "import fastapi, langchain, pinecone, torch"</code> — no ImportError</div>
+                <div class="vitem"><div class="vcheck empty"></div>You can explain what every major package does if asked</div>
+              </div>
+            </div>
+            <div class="dsec warn-sec">
+              <div class="dsec-title">Common issue</div>
+              <div class="dsec-body">If torch installation fails on WSL2, install the CPU-only version explicitly using the command above. You don't need GPU torch on your laptop — training happens on SageMaker.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S5 -->
+      <div class="step" id="s5">
+        <div class="step-header" onclick="toggle('s5')">
+          <div class="step-num you"><div class="num">S5</div><div class="step-label">You do it</div></div>
+          <div class="step-body">
+            <div class="step-title">Create .env file + review config.py</div>
+            <div class="step-file">.env · backend/app/config.py</div>
+            <div class="step-summary">You must personally create .env with real credentials — never paste secrets to Gemini. Gemini writes config.py; you review every variable to understand what each one controls.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-med">Medium</span>
+            <span class="time-badge">~1.5 hrs</span>
+            <button class="expand" id="btn-s5">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s5">
+          <div class="detail-sections">
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do — .env file (NEVER share this file)</div>
+              <div class="dsec-body">
+                Create <code style="font-family:var(--mono);font-size:11px">.env</code> in the repo root (it's in .gitignore, will never be committed):
+<pre class="cmd"><span class="comment"># AWS Credentials (from AWS Console → IAM → your user → Access keys)</span>
+<span class="key">AWS_ACCESS_KEY_ID</span>=<span class="string">your_key_here</span>
+<span class="key">AWS_SECRET_ACCESS_KEY</span>=<span class="string">your_secret_here</span>
+<span class="key">AWS_REGION</span>=<span class="string">ap-south-1</span>
+
+<span class="comment"># Bedrock (same region as Lambda)</span>
+<span class="key">BEDROCK_MODEL_ID</span>=<span class="string">amazon.nova-pro-v1:0</span>
+
+<span class="comment"># Pinecone (from pinecone.io → API Keys)</span>
+<span class="key">PINECONE_API_KEY</span>=<span class="string">your_pinecone_key</span>
+<span class="key">PINECONE_INDEX_NAME</span>=<span class="string">mediassist-index</span>
+
+<span class="comment"># Google Places (from console.cloud.google.com)</span>
+<span class="key">GOOGLE_PLACES_API_KEY</span>=<span class="string">your_places_key</span>
+
+<span class="comment"># DynamoDB</span>
+<span class="key">DYNAMODB_TABLE_NAME</span>=<span class="string">mediassist-sessions</span>
+
+<span class="comment"># S3</span>
+<span class="key">S3_BUCKET_NAME</span>=<span class="string">mediassist-uploads</span></pre>
+
+                Getting these keys:
+                <ul style="margin-top:8px">
+                  <li><strong>AWS keys</strong> — AWS Console → IAM → Users → your user → Security credentials → Create access key</li>
+                  <li><strong>Pinecone key</strong> — pinecone.io → sign up free → API Keys tab</li>
+                  <li><strong>Google Places</strong> — console.cloud.google.com → Enable Places API → Create credential</li>
+                </ul>
+              </div>
+            </div>
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini for config.py</div>
+              <div class="prompt-box">Write backend/app/config.py using Pydantic BaseSettings. Load these environment variables:
+AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION,
+BEDROCK_MODEL_ID, PINECONE_API_KEY, PINECONE_INDEX_NAME,
+GOOGLE_PLACES_API_KEY, DYNAMODB_TABLE_NAME, S3_BUCKET_NAME.
+
+Export a singleton `settings` object. Use model_config with env_file=".env".
+Add a is_local property that returns True if AWS_ACCESS_KEY_ID starts with "AKIA" (real IAM key).</div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">python -c "from app.config import settings; print(settings.AWS_REGION)"</code> prints ap-south-1</div>
+                <div class="vitem"><div class="vcheck empty"></div>.env is in .gitignore and does NOT appear in git status</div>
+                <div class="vitem"><div class="vcheck empty"></div>You understand what every variable controls</div>
+              </div>
+            </div>
+            <div class="dsec warn-sec">
+              <div class="dsec-title">Critical security warning</div>
+              <div class="dsec-body">Never paste your AWS_ACCESS_KEY_ID or any secret into Gemini/Antigravity. Create the .env file yourself in your terminal. Gemini only writes the config.py code that reads from it — it never sees the actual values.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S6 -->
+      <div class="step" id="s6">
+        <div class="step-header" onclick="toggle('s6')">
+          <div class="step-num ai"><div class="num">S6</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">AWS CLI setup + IAM role for Lambda</div>
+            <div class="step-file">AWS Console + CLI config</div>
+            <div class="step-summary">Gemini writes the IAM policy JSON and CLI commands. You run them in your terminal. The IAM role defines what Lambda is allowed to do — Bedrock, S3, DynamoDB, Textract.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-med">Medium</span>
+            <span class="time-badge">~2 hrs</span>
+            <button class="expand" id="btn-s6">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s6">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini</div>
+              <div class="prompt-box">Write the complete AWS setup for MediAssist AI:
+
+1. AWS CLI configure command for region ap-south-1
+2. IAM policy JSON (mediassist-lambda-policy) granting Lambda access to:
+   - S3: GetObject, PutObject, DeleteObject on mediassist-uploads bucket
+   - DynamoDB: GetItem, PutItem, UpdateItem, Query on mediassist-sessions table
+   - Bedrock: InvokeModel on all models (*)
+   - Textract: AnalyzeDocument (*)
+   - CloudWatch Logs: CreateLogGroup, CreateLogStream, PutLogEvents
+3. IAM role (mediassist-lambda-role) that trusts lambda.amazonaws.com
+4. Attach the policy to the role
+5. Commands to create ECR repository named mediassist-backend
+
+Give me the exact AWS CLI commands to run for each step.</div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do — run Gemini's commands in your terminal</div>
+              <div class="dsec-body">
+                After Gemini generates the commands, run each one in your terminal:
+<pre class="cmd"><span class="comment"># Step 1: configure AWS CLI</span>
+aws configure
+<span class="comment"># Enter your keys from .env when prompted</span>
+
+<span class="comment"># Steps 2-5: run Gemini's generated commands one by one</span>
+<span class="comment"># They will look like: aws iam create-policy, aws iam create-role, etc.</span></pre>
+                <strong>You must understand</strong> what the IAM policy is granting. Read each permission and confirm it makes sense for what that service does in your project.
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">aws sts get-caller-identity</code> returns your account ID</div>
+                <div class="vitem"><div class="vcheck empty"></div>IAM role mediassist-lambda-role visible in AWS Console</div>
+                <div class="vitem"><div class="vcheck empty"></div>ECR repository mediassist-backend created</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S7 -->
+      <div class="step" id="s7">
+        <div class="step-header" onclick="toggle('s7')">
+          <div class="step-num ai"><div class="num">S7</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">S3 bucket + DynamoDB table + Pinecone index creation</div>
+            <div class="step-file">AWS S3 · DynamoDB · Pinecone dashboard</div>
+            <div class="step-summary">Gemini writes boto3 scripts to create the S3 bucket with lifecycle rules, DynamoDB table with TTL, and Pinecone index with 3 namespaces. You run the scripts.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-med">Medium</span>
+            <span class="time-badge">~2 hrs</span>
+            <button class="expand" id="btn-s7">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s7">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini</div>
+              <div class="prompt-box">Write a Python setup script (scripts/setup_aws_infra.py) that creates:
+
+1. S3 bucket named mediassist-uploads in ap-south-1 with:
+   - Versioning disabled
+   - Lifecycle rule: delete objects after 1 day (uploaded images are temporary)
+   - Block all public access
+
+2. DynamoDB table named mediassist-sessions with:
+   - Partition key: session_id (String)
+   - Billing: PAY_PER_REQUEST (on-demand)
+   - TTL attribute: expires_at (auto-delete after 90 days)
+
+3. Pinecone index setup script (scripts/setup_pinecone.py):
+   - Index name: mediassist-index
+   - Dimension: 768 (BioSentBERT output size)
+   - Metric: cosine
+   - Cloud: aws, region: us-east-1 (Pinecone free tier)
+   - Print confirmation that namespaces medical-kb, drug-db, hospital-db are ready
+
+Use settings from app/config.py for all credentials.</div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do</div>
+              <div class="dsec-body">
+                Run the scripts:
+<pre class="cmd">cd backend
+python scripts/setup_aws_infra.py
+python scripts/setup_pinecone.py</pre>
+                Then verify in AWS Console:
+                <ul style="margin-top:8px">
+                  <li>S3 → confirm bucket exists with lifecycle rule</li>
+                  <li>DynamoDB → confirm table with TTL enabled on expires_at</li>
+                  <li>Pinecone dashboard → confirm index with dimension 768</li>
+                </ul>
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div>mediassist-uploads bucket exists in ap-south-1</div>
+                <div class="vitem"><div class="vcheck empty"></div>mediassist-sessions DynamoDB table with TTL on expires_at</div>
+                <div class="vitem"><div class="vcheck empty"></div>Pinecone index shows dimension: 768, metric: cosine</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 2 -->
+    <div id="week2">
+      <div class="section-hdr">
+        <h2>Week 2 — Schemas, FastAPI app &amp; deployment</h2>
+        <span class="pill" style="background:var(--ai-bg);color:var(--ai);border:1px solid var(--ai-border)">Days 6–14</span>
+      </div>
+
+      <!-- S8 -->
+      <div class="step" id="s8">
+        <div class="step-header" onclick="toggle('s8')">
+          <div class="step-num you"><div class="num">S8</div><div class="step-label">You do it</div></div>
+          <div class="step-body">
+            <div class="step-title">Define Pydantic request + response schemas</div>
+            <div class="step-file">backend/app/models/request_models.py · response_models.py</div>
+            <div class="step-summary">The most critical task in Module 1. Every field you define here is a binding contract between backend and frontend. Get this right now — changing schemas later breaks everything downstream.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-high">High effort</span>
+            <span class="time-badge">~4 hrs</span>
+            <button class="expand" id="btn-s8">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s8">
+          <div class="detail-sections">
+            <div class="dsec you-sec">
+              <div class="dsec-title">Your thinking process — do this BEFORE writing any code</div>
+              <div class="dsec-body">
+                Answer these questions on paper first:
+                <ol style="margin-top:8px">
+                  <li>What is the MINIMUM required input for a valid analysis? (at least symptoms text OR one image)</li>
+                  <li>Which PatientProfile fields are <strong>required</strong> vs <strong>optional</strong>? Why?</li>
+                  <li>What are valid ranges? (age: 0–120, not negative, not 999)</li>
+                  <li>What does the response look like structurally when urgency is Emergency vs Low?</li>
+                  <li>What does the frontend need to render the doctor cards? (name, specialty, rating, distance, phone)</li>
+                </ol>
+              </div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">Write request_models.py yourself</div>
+              <div class="dsec-body">
+<pre class="cmd"><span class="comment"># backend/app/models/request_models.py</span>
+<span class="comment"># Write this yourself — field by field, with thought</span>
+
+from pydantic import BaseModel, Field, validator
+from typing import Optional, List
+from enum import Enum
+
+class SmokingStatus(str, Enum):
+    never = "never"
+    former = "former"
+    current = "current"
+
+class ActivityLevel(str, Enum):
+    sedentary = "sedentary"
+    light = "light"
+    moderate = "moderate"
+    active = "active"
+
+class PatientProfile(BaseModel):
+    <span class="comment"># Demographics — required</span>
+    name: str = Field(..., min_length=1, max_length=100)
+    age: int = Field(..., ge=0, le=120)
+    gender: str = Field(..., pattern="^(male|female|other)$")
+
+    <span class="comment"># Body metrics — optional</span>
+    height_cm: Optional[float] = Field(None, ge=50, le=250)
+    weight_kg: Optional[float] = Field(None, ge=2, le=300)
+    blood_group: Optional[str] = None
+
+    <span class="comment"># Medical history — optional lists</span>
+    conditions: Optional[List[str]] = []
+    allergies: Optional[List[str]] = []
+    medications: Optional[List[str]] = []
+
+    <span class="comment"># Lifestyle — optional enums</span>
+    smoking: SmokingStatus = SmokingStatus.never
+    pack_years: Optional[float] = None  <span class="comment"># only if smoking==current/former</span>
+    alcohol_units_per_week: Optional[int] = Field(None, ge=0, le=200)
+    activity_level: ActivityLevel = ActivityLevel.moderate
+    sleep_hours: Optional[float] = Field(None, ge=0, le=24)
+
+    <span class="comment"># Family history</span>
+    family_history: Optional[List[str]] = []
+
+class LocationData(BaseModel):
+    lat: float = Field(..., ge=-90, le=90)
+    lng: float = Field(..., ge=-180, le=180)
+    city: Optional[str] = None
+
+<span class="comment"># AnalyzeRequest — at least one input required</span>
+class AnalyzeRequest(BaseModel):
+    symptoms_text: Optional[str] = Field(None, max_length=2000)
+    patient: PatientProfile
+    location: Optional[LocationData] = None
+    <span class="comment"># xray_image, body_photo, prescription — come as multipart files</span>
+    <span class="comment"># handled separately in FastAPI route, not in Pydantic model</span></pre>
+                Then write <strong>response_models.py</strong> the same way. Think: what does the frontend need to render?
+              </div>
+            </div>
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">After YOU write request_models.py — prompt Gemini for response_models.py</div>
+              <div class="prompt-box">Based on this request schema I wrote [paste your request_models.py], write response_models.py for MediAssist AI.
+
+Response must include:
+- session_id: UUID string
+- diagnosis: condition_name, confidence (0.0-1.0), explanation (plain text), severity_level (enum: low/moderate/urgent/emergency), specialist_needed (string), citations (list of source strings)
+- urgency: level (enum), action_plan (list of strings), call_emergency (bool — true only for emergency level)
+- recommendations: list of DoctorResult (name, specialty, hospital, rating 0-5, distance_km, phone, address)
+- disclaimer: string (always present)
+- processing_time_ms: int
+
+Use Pydantic v2 with proper field validation.</div>
+            </div>
+            <div class="dsec warn-sec">
+              <div class="dsec-title">Why this task is yours and not Gemini's</div>
+              <div class="dsec-body">
+                If Gemini writes your Pydantic schemas, you won't be able to defend field choices in interviews. Questions you WILL be asked:
+                <ul style="margin-top:8px">
+                  <li>"Why is <code style="font-family:var(--mono);font-size:11px">pack_years</code> a separate field from smoking status?"</li>
+                  <li>"Why did you make symptoms_text optional but patient required?"</li>
+                  <li>"Why is call_emergency a bool and not just derivable from urgency level?"</li>
+                  <li>"What validation prevents an age of -5 or 999?"</li>
+                </ul>
+                Every answer must come from your own reasoning.
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">from app.models.request_models import AnalyzeRequest</code> — no import errors</div>
+                <div class="vitem"><div class="vcheck empty"></div>Test validation: age=-1 raises ValidationError</div>
+                <div class="vitem"><div class="vcheck empty"></div>You can explain every field choice verbally</div>
+                <div class="vitem"><div class="vcheck empty"></div>Committed to GitHub</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S9 -->
+      <div class="step" id="s9">
+        <div class="step-header" onclick="toggle('s9')">
+          <div class="step-num ai"><div class="num">S9</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">FastAPI main.py — app wiring</div>
+            <div class="step-file">backend/app/main.py</div>
+            <div class="step-summary">Gemini writes the complete FastAPI app setup: CORS, router registration, Mangum Lambda adapter, startup events. Pure boilerplate — no decisions needed from you.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-low">Low</span>
+            <span class="time-badge">~1 hr</span>
+            <button class="expand" id="btn-s9">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s9">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini</div>
+              <div class="prompt-box">Write backend/app/main.py for MediAssist AI FastAPI backend.
+
+Requirements:
+- FastAPI app with title "MediAssist AI", version "1.0.0"
+- CORS middleware: allow origins ["*"] for dev (we'll restrict later), allow all methods and headers
+- Register all routers from api/routes/ with prefix "/api/v1":
+  analyze.py → /api/v1/analyze
+  doctors.py → /api/v1/doctors
+  history.py → /api/v1/history
+  health.py → /api/v1/health
+  feedback.py → /api/v1/feedback
+- Mangum handler at bottom: handler = Mangum(app, lifespan="off")
+- Startup event that prints "MediAssist AI started" to logs
+- No actual business logic — just wiring</div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do — test it locally</div>
+              <div class="dsec-body">
+<pre class="cmd">cd backend
+uvicorn app.main:app --reload --port 8000</pre>
+                Then open <strong>http://localhost:8000/api/v1/health</strong> in browser. Should return:
+<pre class="cmd">{"status": "ok", "service": "mediassist-ai"}</pre>
+                Also check <strong>http://localhost:8000/docs</strong> — FastAPI auto-generates Swagger UI. All 5 routes should be visible.
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div>uvicorn starts with no errors</div>
+                <div class="vitem"><div class="vcheck empty"></div>/api/v1/health returns 200</div>
+                <div class="vitem"><div class="vcheck empty"></div>/docs shows all 5 routes</div>
+                <div class="vitem"><div class="vcheck empty"></div>/api/v1/analyze returns 200 {"status": "not implemented"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S10 -->
+      <div class="step" id="s10">
+        <div class="step-header" onclick="toggle('s10')">
+          <div class="step-num ai"><div class="num">S10</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">Route stubs with real request parsing</div>
+            <div class="step-file">backend/app/api/routes/analyze.py + all routes</div>
+            <div class="step-summary">Gemini upgrades the route stubs to actually parse multipart form data and your Pydantic schemas — but still returns stub responses. This validates the schemas work before any modules are built.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-med">Medium</span>
+            <span class="time-badge">~2 hrs</span>
+            <button class="expand" id="btn-s10">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s10">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini</div>
+              <div class="prompt-box">Update backend/app/api/routes/analyze.py to properly parse the request but return a stub response.
+
+The route is POST /api/v1/analyze. It accepts multipart/form-data with:
+- symptoms_text: Optional[str] form field
+- patient: str form field (JSON string of PatientProfile)
+- location: Optional[str] form field (JSON string of LocationData)
+- xray_image: Optional[UploadFile]
+- body_photo: Optional[UploadFile]
+- prescription: Optional[UploadFile]
+
+It should:
+1. Parse patient JSON into PatientProfile Pydantic model
+2. Validate at least one input is provided (symptoms_text OR any file)
+3. Log received inputs to console (what was received)
+4. Return a stub AnalyzeResponse with hardcoded placeholder values
+5. Handle validation errors with HTTP 422
+
+Import from app/models/request_models.py and response_models.py.
+Do NOT implement any actual logic — just parsing and stub response.</div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do — test the parsing</div>
+              <div class="dsec-body">
+                Use the Swagger UI at /docs to test. Send a POST to /api/v1/analyze with:
+                <ul style="margin-top:8px">
+                  <li>symptoms_text: "headache and fever for 2 days"</li>
+                  <li>patient: paste a valid JSON PatientProfile</li>
+                </ul>
+                Confirm it returns the stub AnalyzeResponse matching your schema. If it returns 422, your schema has a validation issue — fix it now before any real logic is added.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S11 -->
+      <div class="step" id="s11">
+        <div class="step-header" onclick="toggle('s11')">
+          <div class="step-num ai"><div class="num">S11</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">Dockerfile — Lambda container image</div>
+            <div class="step-file">backend/Dockerfile</div>
+            <div class="step-summary">Gemini writes the multi-stage Docker build for Lambda deployment. You just need to confirm it builds locally and the container starts.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-med">Medium</span>
+            <span class="time-badge">~2 hrs</span>
+            <button class="expand" id="btn-s11">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s11">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini</div>
+              <div class="prompt-box">Write a Dockerfile for MediAssist AI FastAPI backend on AWS Lambda.
+
+Requirements:
+- Base image: public.ecr.aws/lambda/python:3.11
+- Architecture: linux/arm64 (Graviton2 — cheaper on Lambda)
+- Copy requirements.txt and install all dependencies
+- Copy the entire backend/app/ directory to /var/task/app/
+- Set CMD to: app.main.handler (Mangum handler)
+- Multi-stage build: builder stage installs deps, final stage copies only what's needed
+- Add PYTHONPATH=/var/task
+- Environment: set PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+
+Also write a docker-compose.yml for local testing that:
+- Builds the image
+- Maps port 9000 to 8080 (Lambda runtime emulator port)
+- Mounts .env file as environment</div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do — test the container</div>
+              <div class="dsec-body">
+<pre class="cmd"><span class="comment"># Build the container</span>
+docker build -t mediassist-backend ./backend
+
+<span class="comment"># Run locally using Lambda runtime emulator</span>
+docker run -p 9000:8080 \
+  --env-file backend/.env \
+  mediassist-backend
+
+<span class="comment"># Test the health endpoint via Lambda emulator</span>
+curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
+  -d '{"httpMethod":"GET","path":"/api/v1/health","headers":{},"body":null}'</pre>
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">docker build</code> completes with no errors</div>
+                <div class="vitem"><div class="vcheck empty"></div>Container starts and health endpoint returns 200</div>
+                <div class="vitem"><div class="vcheck empty"></div>Image size is reasonable (under 2GB)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S12 -->
+      <div class="step" id="s12">
+        <div class="step-header" onclick="toggle('s12')">
+          <div class="step-num ai"><div class="num">S12</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">Lambda function + API Gateway creation</div>
+            <div class="step-file">AWS Lambda + API Gateway Console</div>
+            <div class="step-summary">Gemini writes the CLI commands and scripts to push the container to ECR, create the Lambda function, and set up API Gateway HTTP API pointing to it.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-med">Medium</span>
+            <span class="time-badge">~3 hrs</span>
+            <button class="expand" id="btn-s12">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s12">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini</div>
+              <div class="prompt-box">Write a deployment script (scripts/deploy.sh) that:
+
+1. Logs in to ECR:
+   aws ecr get-login-password --region ap-south-1 | docker login ...
+
+2. Builds and pushes the Docker image:
+   docker build --platform linux/arm64 -t mediassist-backend ./backend
+   docker tag mediassist-backend:latest [ECR_URI]:latest
+   docker push [ECR_URI]:latest
+
+3. Creates Lambda function named mediassist-api:
+   - Runtime: Image (from ECR)
+   - Architecture: arm64
+   - Memory: 1024 MB
+   - Timeout: 30 seconds
+   - Role: mediassist-lambda-role ARN
+   - Environment variables from .env file
+
+4. Creates API Gateway HTTP API:
+   - Name: mediassist-gateway
+   - Integrates with Lambda mediassist-api
+   - Route: ANY /{proxy+} → Lambda
+   - Auto-deploy stage: $default
+
+5. Prints the final API Gateway URL at the end
+
+Use my AWS account region ap-south-1.</div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do</div>
+              <div class="dsec-body">
+<pre class="cmd">chmod +x backend/scripts/deploy.sh
+./backend/scripts/deploy.sh</pre>
+                Copy the API Gateway URL it prints at the end. This is your <strong>VITE_API_BASE_URL</strong> for Lovable. Save it — you'll need it in Lovable's .env.local file.
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div>Lambda function visible in AWS Console</div>
+                <div class="vitem"><div class="vcheck empty"></div>API Gateway URL is live</div>
+                <div class="vitem"><div class="vcheck empty"></div><code style="font-family:var(--mono);font-size:11px">curl https://[your-api-id].execute-api.ap-south-1.amazonaws.com/api/v1/health</code> returns 200</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S13 -->
+      <div class="step" id="s13">
+        <div class="step-header" onclick="toggle('s13')">
+          <div class="step-num ai"><div class="num">S13</div><div class="step-label">Gemini does</div></div>
+          <div class="step-body">
+            <div class="step-title">GitHub Actions CI/CD pipeline</div>
+            <div class="step-file">.github/workflows/deploy.yml</div>
+            <div class="step-summary">Gemini writes the GitHub Actions workflow: on push to main, run tests → build Docker → push to ECR → update Lambda. You add AWS secrets to GitHub repository settings.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-low">Low</span>
+            <span class="time-badge">~1.5 hrs</span>
+            <button class="expand" id="btn-s13">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s13">
+          <div class="detail-sections">
+            <div class="dsec prompt-sec">
+              <div class="dsec-title">Prompt to give Gemini</div>
+              <div class="prompt-box">Write .github/workflows/deploy.yml for MediAssist AI.
+
+On push to main branch:
+1. Run tests: pip install -r requirements.txt && pytest backend/tests/ -v
+2. Build Docker image for linux/arm64
+3. Push to ECR (use GitHub secrets: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, ECR_REPOSITORY_URI)
+4. Update Lambda function: aws lambda update-function-code --function-name mediassist-api --image-uri [ECR]:latest
+5. Wait for update to complete: aws lambda wait function-updated
+6. Print success message with timestamp
+
+Also add a separate workflow: .github/workflows/test.yml
+On every pull request: just run pytest, no deployment.</div>
+            </div>
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do — add secrets to GitHub</div>
+              <div class="dsec-body">
+                Go to your GitHub repo → Settings → Secrets and variables → Actions → New repository secret. Add:
+                <ul style="margin-top:8px">
+                  <li><strong>AWS_ACCESS_KEY_ID</strong> — your IAM access key</li>
+                  <li><strong>AWS_SECRET_ACCESS_KEY</strong> — your IAM secret</li>
+                  <li><strong>AWS_REGION</strong> — ap-south-1</li>
+                  <li><strong>ECR_REPOSITORY_URI</strong> — your ECR repo URI from AWS Console</li>
+                </ul>
+                Then push a small change to main and watch the Actions tab — the pipeline should run automatically.
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Verify before moving on</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div>Push to main triggers the workflow</div>
+                <div class="vitem"><div class="vcheck empty"></div>All 5 steps pass (green checkmarks)</div>
+                <div class="vitem"><div class="vcheck empty"></div>Lambda version updated after push</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S14 -->
+      <div class="step" id="s14">
+        <div class="step-header" id="s14">
+          <div class="step-num shared"><div class="num">S14</div><div class="step-label">Shared</div></div>
+          <div class="step-body">
+            <div class="step-title">End-to-end verification + Lovable connection</div>
+            <div class="step-file">API Gateway URL → Lovable frontend</div>
+            <div class="step-summary">You verify the full stack works. Gemini helps debug any issues. Connect your API Gateway URL to Lovable's environment variable so the frontend can reach the backend.</div>
+          </div>
+          <div class="step-right">
+            <span class="effort e-med">Medium</span>
+            <span class="time-badge">~2 hrs</span>
+            <button class="expand" id="btn-s14">Details ▾</button>
+          </div>
+        </div>
+        <div class="step-detail" id="detail-s14">
+          <div class="detail-sections">
+            <div class="dsec you-sec">
+              <div class="dsec-title">What you do</div>
+              <div class="dsec-body">
+                Run this full checklist manually — this is your Module 1 sign-off:
+<pre class="cmd"><span class="comment"># 1. Hit health from terminal</span>
+curl https://[your-api-id].execute-api.ap-south-1.amazonaws.com/api/v1/health
+<span class="comment"># Expected: {"status":"ok","service":"mediassist-ai"}</span>
+
+<span class="comment"># 2. Hit analyze stub</span>
+curl -X POST https://[url]/api/v1/analyze \
+  -F 'symptoms_text=headache and fever' \
+  -F 'patient={"name":"Test","age":25,"gender":"male"}'
+<span class="comment"># Expected: stub AnalyzeResponse with your schema shape</span>
+
+<span class="comment"># 3. Verify schema validation works</span>
+curl -X POST https://[url]/api/v1/analyze \
+  -F 'patient={"name":"Test","age":-1,"gender":"male"}'
+<span class="comment"># Expected: 422 Unprocessable Entity (age validation fails)</span></pre>
+
+                Then in Lovable: open your project → Settings → Environment Variables → add:
+                <ul style="margin-top:8px">
+                  <li><strong>VITE_API_BASE_URL</strong> = your full API Gateway URL</li>
+                </ul>
+                In Lovable's <code style="font-family:var(--mono);font-size:11px">src/api/mediassist.ts</code>, add a basic health check call and confirm it returns successfully from the Lovable preview.
+              </div>
+            </div>
+            <div class="dsec ai-sec">
+              <div class="dsec-title">Where Gemini helps</div>
+              <div class="dsec-body">
+                If any step fails, paste the error message to Gemini and ask it to debug. Common issues Gemini fixes well:
+                <ul style="margin-top:8px">
+                  <li>Lambda cold start timeout — Gemini adjusts timeout setting</li>
+                  <li>CORS error from Lovable — Gemini fixes CORS origins in main.py</li>
+                  <li>422 on analyze — Gemini fixes the multipart form parsing</li>
+                  <li>ECR push fails — Gemini fixes the docker login command</li>
+                </ul>
+              </div>
+            </div>
+            <div class="dsec verify-sec">
+              <div class="dsec-title">Module 1 complete when all of these pass</div>
+              <div class="verify-list">
+                <div class="vitem"><div class="vcheck empty"></div>GET /api/v1/health → 200 from API Gateway URL</div>
+                <div class="vitem"><div class="vcheck empty"></div>POST /api/v1/analyze with valid payload → stub 200 response</div>
+                <div class="vitem"><div class="vcheck empty"></div>POST /api/v1/analyze with invalid age → 422 response</div>
+                <div class="vitem"><div class="vcheck empty"></div>Lovable frontend health check call succeeds in preview</div>
+                <div class="vitem"><div class="vcheck empty"></div>Push to main auto-deploys via GitHub Actions</div>
+                <div class="vitem"><div class="vcheck empty"></div>You can explain every Pydantic field in request_models.py</div>
+                <div class="vitem"><div class="vcheck empty"></div>All 10 deliverables checked off</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEFINITION OF DONE -->
+    <div id="done" style="margin-top:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:22px 24px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px">Module 1 — Definition of done</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.8">
+        Module 1 is complete when you can demonstrate a live API Gateway URL returning a valid stubbed <code style="font-family:var(--mono);font-size:11px">AnalyzeResponse</code> shaped by <strong>your</strong> Pydantic schema, schema validation rejecting bad inputs with 422, your Lovable frontend successfully calling that URL, and GitHub Actions auto-deploying on every push to main.
+        <br><br>
+        At this point, Module 2 (Multimodal Input Handler) can begin — you have a working skeleton to fill in.
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function toggle(id){
+  const d=document.getElementById('detail-'+id);
+  const b=document.getElementById('btn-'+id);
+  if(!d)return;
+  const open=d.classList.toggle('open');
+  if(b)b.textContent=open?'Close ▴':'Details ▾';
+}
+
+const navLinks=document.querySelectorAll('.nav a');
+const sbarLinks=document.querySelectorAll('.sbar-link');
+
+window.addEventListener('scroll',()=>{
+  const sections=['overview','week1','week2','done'];
+  let current='overview';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&window.scrollY>=el.offsetTop-80)current=id;
+  });
+  navLinks.forEach(a=>{
+    a.classList.toggle('active',a.getAttribute('href')==='#'+current);
+  });
+});
+</script>
+</body>
+</html>

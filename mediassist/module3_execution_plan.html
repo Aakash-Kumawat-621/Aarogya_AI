@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Module 3 — RAG Pipeline + Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E1117;--surface:#161B22;--surface2:#1C2230;--surface3:#21293A;
+  --border:#253044;--border2:#2E3D55;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.1);--teal-mid:#00A98E;
+  --you:#00C9A7;--you-bg:rgba(0,201,167,.08);--you-border:rgba(0,201,167,.3);
+  --ai:#58A6FF;--ai-bg:rgba(88,166,255,.08);--ai-border:rgba(88,166,255,.3);
+  --amber:#F0A500;--amber-bg:rgba(240,165,0,.08);--amber-border:rgba(240,165,0,.3);
+  --red:#FF7B72;--red-bg:rgba(255,123,114,.08);
+  --purple:#D2A8FF;--purple-bg:rgba(210,168,255,.08);
+  --green:#3FB950;--green-bg:rgba(63,185,80,.08);
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);font-size:13.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:32px 48px 28px}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+h1{font-size:26px;font-weight:600;color:var(--white);letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
+.header-sub{font-size:13px;color:var(--muted);max-width:580px;line-height:1.7}
+.header-stats{display:flex;gap:1px;background:var(--border);border-radius:var(--r-lg);overflow:hidden;flex-shrink:0}
+.hstat{background:var(--surface2);padding:12px 20px;text-align:center;min-width:80px}
+.hstat-n{font-size:20px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:3px}
+.hstat-l{font-size:10px;color:var(--dim);font-weight:500;letter-spacing:.04em}
+.legend{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 48px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nav a{font-size:12px;font-weight:500;color:var(--dim);text-decoration:none;padding:11px 14px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;display:block}
+.nav a:hover{color:var(--white)}
+.nav a.active{color:var(--white);border-bottom-color:var(--teal)}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 130px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.sbar-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 18px 4px}
+.sbar-link{display:flex;align-items:center;gap:8px;padding:7px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .15s;border-left:2px solid transparent}
+.sbar-link:hover{color:var(--white);background:var(--surface2)}
+.sbar-link.active{color:var(--white);background:var(--teal-dim);border-left-color:var(--teal)}
+.sbar-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.main{padding:32px 44px 60px;max-width:880px}
+.flow{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px 24px;margin-bottom:28px}
+.flow-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+.flow-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.flow-row:last-child{margin-bottom:0}
+.flow-box{font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:var(--r);border:1px solid;white-space:nowrap}
+.fb-you{background:var(--you-bg);border-color:var(--you-border);color:var(--teal)}
+.fb-ai{background:var(--ai-bg);border-color:var(--ai-border);color:var(--ai)}
+.fb-shared{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber)}
+.fb-output{background:var(--surface2);border-color:var(--border2);color:var(--muted)}
+.fb-key{background:rgba(0,201,167,.15);border-color:var(--teal);color:var(--teal);font-weight:600}
+.flow-arrow{color:var(--dim);font-size:14px;flex-shrink:0}
+.overview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
+.ocard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+.ocard-icon{font-size:20px;margin-bottom:10px}
+.ocard-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:5px}
+.ocard-body{font-size:12px;color:var(--muted);line-height:1.6}
+.deliverables{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:28px}
+.deliv-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.deliv-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.deliv-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted)}
+.deliv-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.section-hdr{margin:32px 0 14px;display:flex;align-items:center;gap:12px}
+.section-hdr h2{font-size:15px;font-weight:600;color:var(--white)}
+.pill{font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.step{margin-bottom:10px;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;transition:border-color .15s}
+.step:hover{border-color:var(--border2)}
+.step-header{display:grid;grid-template-columns:72px 1fr auto;align-items:stretch;cursor:pointer}
+.step-num{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;border-right:1px solid var(--border);min-width:72px}
+.step-num .num{font-family:var(--mono);font-size:13px;font-weight:600;line-height:1;margin-bottom:4px}
+.step-num .slabel{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3}
+.step-num.you{background:var(--you-bg);border-right-color:var(--you-border)}.step-num.you .num{color:var(--teal)}.step-num.you .slabel{color:var(--teal-mid)}
+.step-num.ai{background:var(--ai-bg);border-right-color:var(--ai-border)}.step-num.ai .num{color:var(--ai)}.step-num.ai .slabel{color:#4B8FCE}
+.step-num.shared{background:var(--amber-bg);border-right-color:var(--amber-border)}.step-num.shared .num{color:var(--amber)}.step-num.shared .slabel{color:#C47F00}
+.step-body{padding:14px 16px}
+.step-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px}
+.step-file{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:6px}
+.step-summary{font-size:12.5px;color:var(--muted);line-height:1.6}
+.step-right{padding:12px 14px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:7px;min-width:120px}
+.effort{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.e-high{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,123,114,.2)}
+.e-med{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.e-low{background:var(--green-bg);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.expand{font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:color .15s}
+.expand:hover{color:var(--white)}
+.time-badge{font-family:var(--mono);font-size:10px;background:var(--surface3);border:1px solid var(--border);padding:3px 8px;border-radius:3px;color:var(--dim)}
+.step-detail{display:none;border-top:1px solid var(--border);padding:18px}
+.step-detail.open{display:block}
+.detail-sections{display:flex;flex-direction:column;gap:14px}
+.dsec{background:var(--surface2);border-radius:var(--r-lg);padding:14px 16px;border:1px solid var(--border)}
+.dsec-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.dsec.you-sec{border-left:2px solid var(--you)}.dsec.you-sec .dsec-title{color:var(--teal)}
+.dsec.ai-sec{border-left:2px solid var(--ai)}.dsec.ai-sec .dsec-title{color:var(--ai)}
+.dsec.warn-sec{border-left:2px solid var(--amber)}.dsec.warn-sec .dsec-title{color:var(--amber)}
+.dsec.verify-sec{border-left:2px solid var(--green)}.dsec.verify-sec .dsec-title{color:var(--green)}
+.dsec.prompt-sec{border-left:2px solid #D2A8FF}.dsec.prompt-sec .dsec-title{color:#D2A8FF}
+.dsec.think-sec{border-left:2px solid var(--red)}.dsec.think-sec .dsec-title{color:var(--red)}
+.dsec-body{font-size:12.5px;color:var(--muted);line-height:1.7}
+.dsec-body ul{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body ol{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body li{color:var(--muted)}
+.dsec-body strong{color:var(--white);font-weight:500}
+pre.cmd{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;color:#79C0FF;overflow-x:auto;line-height:1.7;margin-top:6px;white-space:pre-wrap}
+pre.cmd .c{color:var(--dim)}
+pre.cmd .s{color:#A5D6FF}
+pre.cmd .k{color:var(--teal)}
+.verify-list{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.vitem{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--muted)}
+.vcheck{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;margin-top:1px;background:var(--surface3)}
+.prompt-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-top:6px;font-size:11.5px;color:#A5D6FF;font-family:var(--mono);line-height:1.7;white-space:pre-wrap}
+.table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+.table th{background:var(--bg);color:var(--dim);font-weight:600;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;line-height:1.5}
+.table tr:last-child td{border-bottom:none}
+.table td:first-child{color:var(--white);font-weight:500;font-family:var(--mono);font-size:11px}
+.interview-box{background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:var(--r);padding:12px 14px;margin-top:10px}
+.interview-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--amber);text-transform:uppercase;margin-bottom:5px}
+.interview-q{font-size:12.5px;color:rgba(240,165,0,.7);font-style:italic;line-height:1.6}
+.done-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:22px 24px;margin-top:32px}
+.kb-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px}
+.kb-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.kb-name{font-size:12px;font-weight:600;color:var(--white);margin-bottom:4px}
+.kb-detail{font-size:11.5px;color:var(--muted);line-height:1.5}
+.kb-ns{display:inline-block;font-family:var(--mono);font-size:10px;background:var(--teal-dim);color:var(--teal);padding:2px 7px;border-radius:3px;margin-top:5px}
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr}.sidebar{display:none}
+  .main{padding:20px 16px 40px}.header{padding:24px 16px}
+  .overview-grid{grid-template-columns:1fr}.deliv-list{grid-template-columns:1fr}
+  .step-header{grid-template-columns:60px 1fr}.step-right{display:none}
+  .kb-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="eyebrow">MediAssist AI · Module 3 of 6</div>
+      <h1>RAG Pipeline + Knowledge Base</h1>
+      <p class="header-sub">Builds the retrieval-augmented generation core — indexes medical knowledge into Pinecone, constructs rich queries from PatientContext, retrieves relevant chunks, and calls Bedrock to produce a grounded diagnosis. This is the intelligence layer of MediAssist AI.</p>
+    </div>
+    <div>
+      <div class="header-stats">
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">2</div><div class="hstat-l">weeks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">11</div><div class="hstat-l">steps</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--ai)">4</div><div class="hstat-l">AI tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--you)">6</div><div class="hstat-l">your tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--amber)">1</div><div class="hstat-l">shared</div></div>
+      </div>
+      <div class="legend" style="margin-top:12px;justify-content:flex-end">
+        <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>You do it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--ai)"></div>Gemini does it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--amber)"></div>Shared</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <a href="#overview" class="active">Overview</a>
+  <a href="#week5">Week 5 — KB + Embeddings</a>
+  <a href="#week6">Week 6 — Chain + Wire-up</a>
+  <a href="#done">Definition of done</a>
+</div>
+
+<div class="layout">
+<div class="sidebar">
+  <div class="sbar-section">Week 5 — Knowledge Base</div>
+  <a class="sbar-link active" href="#s1"><div class="sbar-dot" style="background:var(--you)"></div>S1 · Decide dataset scope</a>
+  <a class="sbar-link" href="#s2"><div class="sbar-dot" style="background:var(--ai)"></div>S2 · Download + chunk data</a>
+  <a class="sbar-link" href="#s3"><div class="sbar-dot" style="background:var(--you)"></div>S3 · Review chunk quality</a>
+  <a class="sbar-link" href="#s4"><div class="sbar-dot" style="background:var(--ai)"></div>S4 · Generate embeddings</a>
+  <a class="sbar-link" href="#s5"><div class="sbar-dot" style="background:var(--you)"></div>S5 · Decide retrieval strategy</a>
+  <a class="sbar-link" href="#s6"><div class="sbar-dot" style="background:var(--ai)"></div>S6 · Implement retriever.py</a>
+  <div class="sbar-section">Week 6 — Chain + Deploy</div>
+  <a class="sbar-link" href="#s7"><div class="sbar-dot" style="background:var(--you)"></div>S7 · Write medical system prompt</a>
+  <a class="sbar-link" href="#s8"><div class="sbar-dot" style="background:var(--you)"></div>S8 · Build query_builder.py</a>
+  <a class="sbar-link" href="#s9"><div class="sbar-dot" style="background:var(--ai)"></div>S9 · Implement chain.py</a>
+  <a class="sbar-link" href="#s10"><div class="sbar-dot" style="background:var(--shared)"></div>S10 · Wire into analyze.py</a>
+  <a class="sbar-link" href="#s11"><div class="sbar-dot" style="background:var(--you)"></div>S11 · Retrieval quality eval</a>
+</div>
+
+<main class="main">
+
+<div id="overview">
+  <div class="flow">
+    <div class="flow-title">RAG data flow — Module 3</div>
+    <div class="flow-row">
+      <div class="flow-box fb-you">PubMed scope defined</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">Download + chunk (512 tok)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">BioSentBERT embed</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">Pinecone: medical-kb</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box fb-ai">OpenFDA fetch</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">chunk + embed</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">Pinecone: drug-db</div>
+    </div>
+    <div class="flow-row" style="padding-top:10px;border-top:1px solid var(--border);margin-top:4px">
+      <div class="flow-box fb-output">PatientContext (from M2)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">query_builder.py</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">rich query string</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">retriever.py (Pinecone)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">top-5 chunks × 2 namespaces</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box fb-output">chunks + patient context</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">system prompt (yours)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">chain.py → Bedrock</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-key">DiagnosisResult JSON</div>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="ocard">
+      <div class="ocard-icon">🎯</div>
+      <div class="ocard-title">Goal of this module</div>
+      <div class="ocard-body">The /analyze endpoint now returns a real, grounded diagnosis — condition name, confidence, plain-language explanation, and cited sources — powered by RAG over indexed medical knowledge.</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">⚠️</div>
+      <div class="ocard-title">Your hardest tasks</div>
+      <div class="ocard-body">S1 (dataset scope), S7 (medical system prompt), and S11 (retrieval quality evaluation). These three drive the quality of every diagnosis the system produces.</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">✅</div>
+      <div class="ocard-title">Done when</div>
+      <div class="ocard-body">Real symptom input returns a grounded diagnosis with condition name, confidence ≥ 0.6, and at least 2 cited sources from your knowledge base. Not a hallucination — a retrieval-backed answer.</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:24px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px">Three Pinecone namespaces</div>
+    <div class="kb-grid">
+      <div class="kb-card">
+        <div class="kb-name">medical-kb</div>
+        <div class="kb-detail">PubMed abstracts + MedMCQA Q&A pairs. Symptoms → conditions, treatment guidelines, diagnostic criteria.</div>
+        <span class="kb-ns">medical-kb</span>
+      </div>
+      <div class="kb-card">
+        <div class="kb-name">drug-db</div>
+        <div class="kb-detail">OpenFDA adverse events, drug labels, RxNorm. Drug interactions, side effects, contraindications.</div>
+        <span class="kb-ns">drug-db</span>
+      </div>
+      <div class="kb-card">
+        <div class="kb-name">hospital-db</div>
+        <div class="kb-detail">NMC registry + specialty mapping. Used by doctor finder in Module 5. Pre-indexed static data.</div>
+        <span class="kb-ns">hospital-db</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="deliverables">
+    <div class="deliv-title">Deliverables at end of Module 3</div>
+    <div class="deliv-list">
+      <div class="deliv-item"><span class="deliv-icon">🗂️</span>Pinecone medical-kb namespace with 50K+ chunks indexed</div>
+      <div class="deliv-item"><span class="deliv-icon">💊</span>Pinecone drug-db namespace with OpenFDA data indexed</div>
+      <div class="deliv-item"><span class="deliv-icon">🔍</span>retriever.py doing hybrid search across namespaces</div>
+      <div class="deliv-item"><span class="deliv-icon">🏗️</span>query_builder.py converting PatientContext → rich query</div>
+      <div class="deliv-item"><span class="deliv-icon">⛓️</span>chain.py LangChain RAG chain calling Bedrock</div>
+      <div class="deliv-item"><span class="deliv-icon">📋</span>Medical system prompt tested and refined</div>
+      <div class="deliv-item"><span class="deliv-icon">🔗</span>analyze.py returning real DiagnosisResult</div>
+      <div class="deliv-item"><span class="deliv-icon">📊</span>Retrieval quality evaluated on 20 test queries (Precision@5)</div>
+      <div class="deliv-item"><span class="deliv-icon">🔄</span>Weekly ETL script for KB updates committed</div>
+      <div class="deliv-item"><span class="deliv-icon">🧪</span>Unit tests with mocked Pinecone and Bedrock</div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 5 -->
+<div id="week5">
+  <div class="section-hdr">
+    <h2>Week 5 — Knowledge base indexing</h2>
+    <span class="pill" style="background:var(--you-bg);color:var(--teal);border:1px solid var(--you-border)">Days 1–5</span>
+  </div>
+
+  <!-- S1 -->
+  <div class="step" id="s1">
+    <div class="step-header" onclick="toggle('s1')">
+      <div class="step-num you"><div class="num">S1</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Decide what goes into your knowledge base</div>
+        <div class="step-file">(research + decisions — no code)</div>
+        <div class="step-summary">You cannot index all of PubMed (35M papers). You must decide what disease scope your system covers, which PubMed MeSH terms to query, what OpenFDA fields to include, and how to ensure quality over quantity. This shapes everything downstream.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s1">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s1">
+      <div class="detail-sections">
+        <div class="dsec think-sec">
+          <div class="dsec-title">Decisions you must make before S2</div>
+          <div class="dsec-body">
+            <ol>
+              <li style="margin-bottom:14px">
+                <strong>What disease categories does MediAssist AI cover?</strong><br>
+                You cannot cover everything. Define your scope explicitly. Recommended for MVP:
+                <ul style="margin-top:6px">
+                  <li>Respiratory: pneumonia, asthma, COPD, tuberculosis, COVID-19</li>
+                  <li>Cardiovascular: chest pain, hypertension, cardiac arrhythmia, heart failure</li>
+                  <li>Gastrointestinal: abdominal pain, appendicitis, gastritis, IBS</li>
+                  <li>Musculoskeletal: fractures, sprains, joint pain, back pain</li>
+                  <li>Dermatological: rashes, infections, burns, wounds</li>
+                  <li>Neurological: headache, migraine, dizziness, seizures</li>
+                  <li>Infectious: dengue, malaria, typhoid, common infections (India-relevant)</li>
+                  <li>Endocrine: diabetes symptoms, thyroid disorders</li>
+                </ul>
+                Write this list down. It becomes your PubMed query MeSH terms.
+              </li>
+              <li style="margin-bottom:14px">
+                <strong>Chunk size decision — 256 vs 512 tokens?</strong><br>
+                512 tokens: more context per chunk, better for complex medical explanations. Fewer total chunks.<br>
+                256 tokens: more precise retrieval, better for specific symptom–condition pairs.<br>
+                <strong>Your decision:</strong> 512 tokens with 50-token overlap for medical-kb (explanations need context), 256 tokens for drug-db (drug facts are short and specific).
+              </li>
+              <li style="margin-bottom:14px">
+                <strong>How many chunks to index?</strong><br>
+                Pinecone free tier: 100K vectors max. Budget: medical-kb=60K, drug-db=30K, hospital-db=10K.<br>
+                At 512 tokens/chunk: 60K chunks ≈ 30M tokens ≈ roughly 4,000–6,000 PubMed abstracts.
+              </li>
+              <li>
+                <strong>Quality filter for PubMed?</strong><br>
+                Only index: abstracts published after 2018, English language, human studies only (filter out animal studies), abstract length &gt; 150 words.<br>
+                This filters out low-quality and irrelevant papers.
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">Write your dataset spec document (save as docs/kb_spec.md)</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># docs/kb_spec.md — write this yourself</span>
+
+<span class="c">## Disease scope</span>
+Categories: [your 8 categories above]
+Excluded: rare diseases, pediatric-only conditions, surgical procedures
+
+<span class="c">## PubMed query strategy</span>
+MeSH terms: "chest pain"[MeSH], "pneumonia"[MeSH], "dengue"[MeSH], ...
+Filters: 2018:2024[dp], English[la], humans[mh], hasabstract[text]
+Target: 5000 abstracts across all categories
+
+<span class="c">## Chunking strategy</span>
+medical-kb: 512 tokens, 50 overlap, RecursiveCharacterTextSplitter
+drug-db: 256 tokens, 0 overlap (drug facts are self-contained)
+
+<span class="c">## Quality filters</span>
+Min abstract length: 150 words
+Exclude: case reports, editorials, reviews older than 2018
+Include: clinical trials, systematic reviews, original research
+
+<span class="c">## Metadata per chunk</span>
+source: "pubmed" / "openfda" / "medmcqa"
+pmid: PubMed ID (for citation)
+disease_category: one of your 8 categories
+year: publication year
+chunk_index: position in original document</pre>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"How did you decide what to index in your RAG knowledge base? Why 512-token chunks? What did you deliberately exclude and why? How do you ensure the indexed content is medically current?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="step" id="s2">
+    <div class="step-header" onclick="toggle('s2')">
+      <div class="step-num ai"><div class="num">S2</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Download, clean, and chunk all three data sources</div>
+        <div class="step-file">notebooks/04_embeddings_indexing.ipynb · scripts/index_knowledge_base.py</div>
+        <div class="step-summary">Gemini writes the data download and chunking pipeline: PubMed via NCBI E-utilities API, MedMCQA from HuggingFace, OpenFDA via REST API. Chunks with LangChain splitters. You give it your kb_spec.md as the spec.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s2">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s2">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Write notebooks/04_embeddings_indexing.ipynb for MediAssist AI knowledge base construction.
+
+Use my kb_spec.md (pasted below) for all decisions on scope, chunking, and quality filters.
+
+Section 1 — PubMed data collection:
+- Use Biopython Entrez to search PubMed
+- MeSH queries: [paste your disease categories as MeSH terms]
+- Fetch 5000 abstracts total across all categories
+- Apply filters: 2018-2024, English, humans, hasabstract
+- Save raw abstracts as JSON with fields: pmid, title, abstract, year, mesh_terms
+
+Section 2 — MedMCQA dataset:
+- Load from HuggingFace: datasets.load_dataset("medmcqa")
+- Keep only: question, options, explanation fields
+- Format as: "Q: {question}\nA: {correct_option}\nExplanation: {explanation}"
+- Keep 10,000 samples from train split
+
+Section 3 — OpenFDA drug data:
+- Call https://api.fda.gov/drug/event.json for adverse events
+- Call https://api.fda.gov/drug/label.json for drug labels
+- Extract: drug name, indications, contraindications, adverse reactions
+- Target: 5000 drug records
+
+Section 4 — Chunking:
+- medical-kb (PubMed + MedMCQA): RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=50)
+- drug-db (OpenFDA): RecursiveCharacterTextSplitter(chunk_size=256, chunk_overlap=0)
+- Add metadata per chunk per my kb_spec.md
+
+Save chunked data as: data/medical_chunks.jsonl and data/drug_chunks.jsonl
+Print stats at the end: total chunks per source.</div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Run this on Kaggle, not locally</div>
+          <div class="dsec-body">
+            Downloading 5000 PubMed abstracts takes time and the resulting data files will be large. Run this notebook on Kaggle free GPU where you have 20GB disk and fast internet. Steps:
+            <ul style="margin-top:8px">
+              <li>Upload the notebook to Kaggle</li>
+              <li>Run it there — let it finish (may take 30–60 min)</li>
+              <li>Download medical_chunks.jsonl and drug_chunks.jsonl to your local machine</li>
+              <li>Commit the .jsonl files to a data/ folder (add to .gitignore if too large, store in S3 instead)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Verify output stats before moving to S3</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>medical_chunks.jsonl has 40,000–70,000 lines</div>
+            <div class="vitem"><div class="vcheck"></div>drug_chunks.jsonl has 10,000–30,000 lines</div>
+            <div class="vitem"><div class="vcheck"></div>Each chunk has: text, source, pmid/drug_name, disease_category, year, chunk_index</div>
+            <div class="vitem"><div class="vcheck"></div>No chunk is empty or under 50 characters</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="step" id="s3">
+    <div class="step-header" onclick="toggle('s3')">
+      <div class="step-num you"><div class="num">S3</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Manually review chunk quality — spot check 50 chunks</div>
+        <div class="step-file">data/medical_chunks.jsonl · data/drug_chunks.jsonl</div>
+        <div class="step-summary">Before indexing anything, you must read 50 random chunks and judge quality. This is human review that cannot be automated — you are checking if the chunks actually contain useful clinical content, not just metadata or references sections.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s3">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s3">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">How to do the spot check</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Quick Python script to sample and review</span>
+import json, random
+
+with open("data/medical_chunks.jsonl") as f:
+    chunks = [json.loads(l) for l in f]
+
+<span class="c"># Sample 50 random chunks</span>
+samples = random.sample(chunks, 50)
+
+<span class="c"># Print and read each one</span>
+for i, chunk in enumerate(samples):
+    print(f"\n{'='*60}")
+    print(f"Chunk {i+1} | Source: {chunk['source']} | Category: {chunk['disease_category']}")
+    print(chunk['text'])
+    input("Press Enter for next...")</pre>
+
+            For each chunk you read, ask yourself:
+            <ul style="margin-top:8px">
+              <li><strong>Is it useful?</strong> Does it contain clinical information (symptoms, diagnosis, treatment)?</li>
+              <li><strong>Is it complete?</strong> Does it make sense as a standalone passage, or is it cut off mid-sentence?</li>
+              <li><strong>Is it clean?</strong> No reference lists, no citation numbers, no HTML artifacts?</li>
+              <li><strong>Is it relevant?</strong> Does it match its disease_category metadata?</li>
+            </ul>
+            If more than 10% of chunks fail any check → go back to S2 and fix the cleaning/chunking script.
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Common quality issues to look for</div>
+          <div class="dsec-body">
+            <ul>
+              <li><strong>Reference sections being chunked</strong> — "1. Smith J, et al. 2019. JAMA 45:123" — useless. Fix: strip text after "References" or "Bibliography" before chunking.</li>
+              <li><strong>Mid-sentence cuts</strong> — chunk ends with "patients with chest pain should be evalu-". Fix: increase chunk overlap to 100 tokens.</li>
+              <li><strong>Metadata-only chunks</strong> — "Received: 2019-03-15. Accepted: 2019-04-01. DOI: 10.1016/..." — useless. Fix: filter chunks under 100 characters.</li>
+              <li><strong>Wrong disease category</strong> — chunk about cardiac surgery in "dermatology" namespace. Fix: review your MeSH query terms.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"How did you ensure the quality of your RAG knowledge base? Did you just index everything automatically, or did you validate the content?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="step" id="s4">
+    <div class="step-header" onclick="toggle('s4')">
+      <div class="step-num ai"><div class="num">S4</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Generate BioSentBERT embeddings and index into Pinecone</div>
+        <div class="step-file">notebooks/04_embeddings_indexing.ipynb (Section 5) · scripts/index_knowledge_base.py</div>
+        <div class="step-summary">Load BioSentBERT, batch-embed all chunks (768-dim vectors), upsert to Pinecone with metadata. Run on Kaggle T4 GPU — embedding 70K chunks takes ~20 minutes on GPU vs 3+ hours on CPU.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s4">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s4">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Add Section 5 to notebooks/04_embeddings_indexing.ipynb for MediAssist AI.
+
+Embedding and indexing pipeline:
+
+1. Load BioSentBERT:
+   from sentence_transformers import SentenceTransformer
+   model = SentenceTransformer("pritamdeka/BioBERT-mnli-snli-scinli-scitail-mednli-stsb")
+   (This is BioSentBERT — 768 dimensions, trained on medical sentence similarity)
+
+2. Embed in batches of 64 chunks (GPU memory efficient):
+   embeddings = model.encode(texts, batch_size=64, show_progress_bar=True, device="cuda")
+
+3. Upsert to Pinecone — medical-kb namespace:
+   - Vector ID: f"{source}_{pmid}_{chunk_index}"
+   - Values: embedding (768-dim list)
+   - Metadata: {text, source, pmid, disease_category, year, chunk_index}
+   - Batch upsert 100 vectors at a time (Pinecone limit)
+
+4. Repeat for drug-db namespace with drug chunks.
+
+5. Print final index stats: total vectors per namespace.
+
+Also write the production version as scripts/index_knowledge_base.py that:
+- Reads from data/medical_chunks.jsonl and data/drug_chunks.jsonl
+- Runs incrementally (skips vectors already in index by checking IDs)
+- Can be triggered by AWS EventBridge weekly
+- Uses PINECONE_API_KEY and PINECONE_INDEX_NAME from settings</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you verify after indexing</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Check index stats in Pinecone dashboard or via SDK</span>
+from pinecone import Pinecone
+pc = Pinecone(api_key=settings.PINECONE_API_KEY)
+index = pc.Index(settings.PINECONE_INDEX_NAME)
+print(index.describe_index_stats())
+
+<span class="c"># Expected output:</span>
+<span class="c"># namespaces: {</span>
+<span class="c">#   'medical-kb': {'vector_count': 55000},</span>
+<span class="c">#   'drug-db': {'vector_count': 18000}</span>
+<span class="c"># }</span>
+
+<span class="c"># Quick retrieval sanity check</span>
+test_query = model.encode(["chest pain shortness of breath"])
+results = index.query(vector=test_query[0].tolist(), top_k=3, namespace="medical-kb", include_metadata=True)
+for r in results.matches:
+    print(r.score, r.metadata['text'][:100])</pre>
+            The sanity check should return chunks about cardiac or pulmonary conditions with similarity scores &gt; 0.75.
+          </div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Verify before moving on</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>Pinecone dashboard shows 40,000+ vectors in medical-kb</div>
+            <div class="vitem"><div class="vcheck"></div>Pinecone dashboard shows 10,000+ vectors in drug-db</div>
+            <div class="vitem"><div class="vcheck"></div>Sanity check query returns relevant results with score > 0.70</div>
+            <div class="vitem"><div class="vcheck"></div>scripts/index_knowledge_base.py committed to GitHub</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 -->
+  <div class="step" id="s5">
+    <div class="step-header" onclick="toggle('s5')">
+      <div class="step-num you"><div class="num">S5</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Decide retrieval strategy: dense-only vs hybrid search</div>
+        <div class="step-file">(decision task — run comparison test)</div>
+        <div class="step-summary">Dense-only retrieval (BioSentBERT cosine) works well for common conditions but misses rare diseases where exact terminology matters. You must run a comparison test on 10 queries and decide based on real results, not theory.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s5">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s5">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Run this comparison test yourself</div>
+          <div class="dsec-body">
+            Test 10 queries — 5 common, 5 rare/specific — against both retrieval methods:
+            <table class="table">
+              <thead><tr><th>Query</th><th>Expected top result</th><th>Test type</th></tr></thead>
+              <tbody>
+                <tr><td>chest pain shortness of breath</td><td>Cardiac/ACS content</td><td>Common</td></tr>
+                <tr><td>fever rash dengue platelet count</td><td>Dengue fever content</td><td>India-specific</td></tr>
+                <tr><td>type 2 diabetes metformin dosage</td><td>Drug content in drug-db</td><td>Drug query</td></tr>
+                <tr><td>Lemierre syndrome</td><td>Rare neck infection content</td><td>Rare disease</td></tr>
+                <tr><td>Kounis syndrome</td><td>Allergic cardiac syndrome</td><td>Rare disease</td></tr>
+              </tbody>
+            </table>
+            <br>For each query, compare:
+            <ul>
+              <li><strong>Dense only:</strong> BioSentBERT embedding → Pinecone cosine search</li>
+              <li><strong>Hybrid:</strong> Dense score × 0.7 + BM25 keyword score × 0.3</li>
+            </ul>
+            Record which method returns more relevant chunks. Make your decision based on where hybrid wins over dense.
+          </div>
+        </div>
+        <div class="dsec think-sec">
+          <div class="dsec-title">Expected finding — what you will likely see</div>
+          <div class="dsec-body">
+            Dense retrieval wins on common conditions (chest pain, fever, cough) — BioSentBERT captures semantic meaning well for well-represented conditions.<br><br>
+            Hybrid wins on rare diseases (Lemierre, Kounis) — exact term matching in BM25 catches what embeddings miss because rare conditions are underrepresented in the training data.<br><br>
+            <strong>Decision you will likely make:</strong> Use hybrid search. Implement BM25 as a fallback only — try dense first, if top result score &lt; 0.65 then rerank with hybrid. This avoids the overhead of BM25 for common queries while covering rare diseases.
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"Why did you implement hybrid search instead of just dense vector retrieval? Can you show me a case where pure dense retrieval failed and hybrid retrieval succeeded?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 -->
+  <div class="step" id="s6">
+    <div class="step-header" onclick="toggle('s6')">
+      <div class="step-num ai"><div class="num">S6</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement retriever.py with your chosen strategy</div>
+        <div class="step-file">backend/app/modules/rag/retriever.py</div>
+        <div class="step-summary">Gemini implements the retriever using your S5 decision. Loads BioSentBERT, embeds the query, searches Pinecone across both namespaces, applies BM25 fallback if top score is below threshold, returns top-5 chunks per namespace with metadata.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s6">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s6">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement backend/app/modules/rag/retriever.py for MediAssist AI.
+
+Load BioSentBERT model at module level (singleton) — model name: "pritamdeka/BioBERT-mnli-snli-scinli-scitail-mednli-stsb"
+
+Main function: retrieve(query: str, top_k: int = 5) -> dict
+
+Steps:
+1. Embed query with BioSentBERT → 768-dim vector
+2. Search Pinecone medical-kb namespace: top_k=5, include_metadata=True
+3. Search Pinecone drug-db namespace: top_k=3, include_metadata=True
+4. If best medical-kb score < 0.65 (rare condition fallback):
+   - Also run BM25 keyword search using rank-bm25 against locally cached chunk texts
+   - Re-rank: combined_score = dense_score * 0.7 + bm25_score * 0.3
+   - Resort by combined_score
+5. Return:
+   {
+     "medical_chunks": [{text, source, pmid, score, disease_category}, ...],
+     "drug_chunks": [{text, drug_name, score}, ...],
+     "retrieval_method": "dense" or "hybrid",
+     "top_score": float,
+     "query_embedding_time_ms": int
+   }
+
+Also implement: retrieve_for_namespace(query: str, namespace: str, top_k: int) -> list
+(Used by doctor finder in Module 5 to search hospital-db separately)
+
+Load Pinecone client from settings. Handle connection errors with retry (3 attempts).
+Log retrieval time and method used for monitoring.</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">Test immediately after delivery</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Test common condition — should use dense</span>
+result = retrieve("chest pain shortness of breath elderly male smoker")
+print(result["retrieval_method"])  <span class="c"># "dense"</span>
+print(result["top_score"])         <span class="c"># should be > 0.75</span>
+print(result["medical_chunks"][0]["text"][:200])  <span class="c"># cardiac content</span>
+
+<span class="c"># Test rare condition — should trigger hybrid</span>
+result = retrieve("Lemierre syndrome neck infection jugular vein")
+print(result["retrieval_method"])  <span class="c"># "hybrid"</span>
+print(result["top_score"])         <span class="c"># might be 0.55-0.65</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 6 -->
+<div id="week6">
+  <div class="section-hdr">
+    <h2>Week 6 — RAG chain + wiring</h2>
+    <span class="pill" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">Days 6–14</span>
+  </div>
+
+  <!-- S7 -->
+  <div class="step" id="s7">
+    <div class="step-header" onclick="toggle('s7')">
+      <div class="step-num you"><div class="num">S7</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Write the medical system prompt for Bedrock</div>
+        <div class="step-file">backend/app/modules/rag/prompts.py</div>
+        <div class="step-summary">The single most important piece of text in the entire project. This prompt determines the tone, accuracy, and safety of every diagnosis MediAssist AI produces. It must be written by you — not generated by Gemini — because every word is a medical and ethical decision.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~5 hrs</span>
+        <button class="expand" id="btn-s7">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s7">
+      <div class="detail-sections">
+        <div class="dsec think-sec">
+          <div class="dsec-title">Write this yourself — think through every section</div>
+          <div class="dsec-body">
+            Your system prompt needs 6 sections. Draft each one on paper first:
+            <ol style="margin-top:10px">
+              <li style="margin-bottom:10px"><strong>Role definition</strong> — Who is this AI? "You are MediAssist AI, a medical information assistant that provides evidence-based health information. You are NOT a doctor and do NOT provide medical diagnoses."</li>
+              <li style="margin-bottom:10px"><strong>What to do</strong> — Analyze the patient context and retrieved medical knowledge to identify the most likely condition(s). Provide a clear, plain-language explanation. Cite your sources.</li>
+              <li style="margin-bottom:10px"><strong>What NOT to do</strong> — Never definitively diagnose. Never recommend specific prescription drugs by name. Never contradict the urgency level determined by the ML model. Never ignore the patient's existing allergies or medications.</li>
+              <li style="margin-bottom:10px"><strong>Output format</strong> — Must return ONLY valid JSON matching DiagnosisResult schema. No prose outside the JSON. No markdown code blocks around it.</li>
+              <li style="margin-bottom:10px"><strong>How to use retrieved context</strong> — Only use information from the provided medical knowledge chunks. If the chunks don't contain relevant information, say so. Cite the source PMID for every factual claim.</li>
+              <li><strong>Risk flag handling</strong> — If patient has cardiac_risk_critical in risk_flags AND reports chest pain, set requires_emergency_attention=True regardless of other signals.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">Your full system prompt (write in prompts.py)</div>
+          <div class="dsec-body">
+<pre class="cmd">MEDICAL_SYSTEM_PROMPT = """
+You are MediAssist AI — a medical information assistant.
+You are NOT a doctor. You do NOT diagnose patients.
+You provide evidence-based health information to help people
+understand their symptoms and seek appropriate care.
+
+PATIENT CONTEXT:
+{patient_context_summary}
+
+RETRIEVED MEDICAL KNOWLEDGE:
+{retrieved_chunks}
+
+TASK:
+Based ONLY on the retrieved medical knowledge above and the
+patient context, provide a structured health information
+response. Do not use any knowledge not present in the
+retrieved chunks.
+
+RULES — follow all of these strictly:
+1. Never say "you have [disease]" — say "symptoms consistent with"
+2. If risk_flags contains "cardiac_risk_critical" AND
+   symptoms include chest pain → set requires_emergency=true
+3. Cite the PMID source for every condition mentioned
+4. If retrieved chunks contain no relevant information →
+   say "insufficient information" for that field
+5. Respect allergies[] and medications[] from patient profile:
+   do not suggest anything the patient is allergic to
+6. For age > 65 → add "geriatric_consideration" field
+7. For patients in India → mention local disease risks
+   (dengue in monsoon, malaria by region, TB prevalence)
+
+DISCLAIMER — include this exact text:
+"This information is for educational purposes only and is not
+a substitute for professional medical advice, diagnosis, or
+treatment. Always seek the advice of a qualified healthcare
+provider with questions about your medical condition."
+
+OUTPUT FORMAT — return ONLY this JSON, nothing else:
+{
+  "conditions": [
+    {
+      "name": "condition name",
+      "confidence": 0.0-1.0,
+      "explanation": "plain language explanation (2-3 sentences)",
+      "cited_pmid": "12345678",
+      "specialist_needed": "Cardiologist"
+    }
+  ],
+  "requires_emergency": true/false,
+  "action_plan": ["step 1", "step 2", "step 3"],
+  "drug_interactions_flagged": [],
+  "insufficient_info": false,
+  "disclaimer": "[exact disclaimer text]"
+}
+"""</pre>
+            After writing it, iterate on it — run it against 5 test cases and refine based on output quality. Expect to revise 3–4 times.
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Top interview question — you must know every word of this prompt</div>
+          <div class="interview-q">"Show me your system prompt. Why did you choose those specific rules? What happens if you give the model information that isn't in the retrieved chunks? How do you prevent hallucination?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 -->
+  <div class="step" id="s8">
+    <div class="step-header" onclick="toggle('s8')">
+      <div class="step-num you"><div class="num">S8</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Build query_builder.py — convert PatientContext to RAG query</div>
+        <div class="step-file">backend/app/modules/rag/query_builder.py</div>
+        <div class="step-summary">The query builder converts a PatientContext object into a rich natural language query string for Pinecone retrieval and a structured prompt context for Bedrock. You build this yourself — the transformation logic is yours to design, and it directly determines retrieval quality.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s8">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s8">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Write query_builder.py yourself</div>
+          <div class="dsec-body">
+            Two functions to write:
+<pre class="cmd"><span class="c"># Function 1: builds the Pinecone retrieval query string</span>
+def build_retrieval_query(context: PatientContext) -> str:
+    parts = []
+
+    <span class="c"># Add confirmed (non-negated) symptoms</span>
+    confirmed = [e.canonical_form for e in context.symptom_entities if not e.negated]
+    if confirmed:
+        parts.append(" ".join(confirmed))
+
+    <span class="c"># Add patient demographics for context</span>
+    p = context.patient_profile
+    parts.append(f"{p.age}-year-old {p.gender}")
+
+    <span class="c"># Add existing conditions</span>
+    if p.conditions:
+        parts.append("history of " + ", ".join(p.conditions))
+
+    <span class="c"># Add X-ray finding if present</span>
+    if context.xray_findings and context.xray_findings.top_condition:
+        parts.append(f"X-ray finding: {context.xray_findings.top_condition}")
+
+    <span class="c"># Add body photo finding if present</span>
+    if context.body_photo_findings:
+        findings = [f["finding"] for f in context.body_photo_findings.get("findings", [])]
+        if findings:
+            parts.append("visible: " + ", ".join(findings))
+
+    return " ".join(parts)
+
+<span class="c"># Function 2: builds the patient_context_summary for LLM prompt</span>
+def build_context_summary(context: PatientContext) -> str:
+    <span class="c"># Structured summary injected into the Bedrock prompt</span>
+    p = context.patient_profile
+    summary = f"""
+Patient: {p.name}, {p.age}yo {p.gender}, BMI: {bmi(p)}
+Conditions: {', '.join(p.conditions) or 'none reported'}
+Allergies: {', '.join(p.allergies) or 'none reported'}
+Medications: {', '.join(p.medications) or 'none reported'}
+Smoking: {p.smoking.value}{f', {p.pack_years} pack-years' if p.pack_years else ''}
+Risk flags: {', '.join(context.risk_flags) or 'none'}
+
+Reported symptoms (confirmed): {', '.join([e.canonical_form for e in context.symptom_entities if not e.negated])}
+Denied symptoms: {', '.join([e.canonical_form for e in context.symptom_entities if e.negated])}
+Disease history mentions: {', '.join(context.disease_history_mentions) or 'none'}
+"""
+    if context.xray_findings:
+        summary += f"\nX-ray: {context.xray_findings}"
+    if context.prescription_data:
+        summary += f"\nPrescription drugs: {[m['name'] for m in context.prescription_data.get('medicines', [])]}"
+    return summary.strip()</pre>
+          </div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Test with a real PatientContext object</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>Negated symptoms are excluded from retrieval query</div>
+            <div class="vitem"><div class="vcheck"></div>Allergies appear in context summary</div>
+            <div class="vitem"><div class="vcheck"></div>Risk flags like "cardiac_risk_critical" appear in summary</div>
+            <div class="vitem"><div class="vcheck"></div>X-ray findings included when present, omitted when None</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9 -->
+  <div class="step" id="s9">
+    <div class="step-header" onclick="toggle('s9')">
+      <div class="step-num ai"><div class="num">S9</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement chain.py — LangChain + Bedrock RAG chain</div>
+        <div class="step-file">backend/app/modules/rag/chain.py</div>
+        <div class="step-summary">Gemini builds the LangChain chain that connects your query builder, retriever, system prompt, and Bedrock into a single async function call. You give it your prompt from S7 and the schemas from S8.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s9">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s9">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement backend/app/modules/rag/chain.py for MediAssist AI.
+
+Main function: async def run_rag_chain(context: PatientContext) -> DiagnosisResult
+
+Steps:
+1. Build retrieval query: query = query_builder.build_retrieval_query(context)
+2. Retrieve chunks: results = retriever.retrieve(query, top_k=5)
+3. Format retrieved chunks as a numbered list for the prompt:
+   chunk_text = "\n".join([f"[{i+1}] (Source: {c['source']}, PMID: {c.get('pmid','N/A')})\n{c['text']}" for i, c in enumerate(results['medical_chunks'] + results['drug_chunks'])])
+4. Build context summary: summary = query_builder.build_context_summary(context)
+5. Format the MEDICAL_SYSTEM_PROMPT from prompts.py with {patient_context_summary} and {retrieved_chunks}
+6. Call bedrock_service.generate_diagnosis(formatted_prompt)
+7. Parse the JSON response into DiagnosisResult Pydantic model
+8. If parse fails: return a safe fallback DiagnosisResult with insufficient_info=True
+
+Also:
+- Log total time taken for the chain
+- Log retrieval method used (dense/hybrid)
+- Handle Bedrock throttling with exponential backoff (3 retries, 2s base delay)
+- Add correlation_id (= context.session_id) to all logs
+
+Import: from app.modules.rag.prompts import MEDICAL_SYSTEM_PROMPT
+Import: from app.models.response_models import DiagnosisResult</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you test after delivery</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Build a test PatientContext manually and run the full chain</span>
+import asyncio
+from app.core.patient_context import PatientContext
+from app.modules.rag.chain import run_rag_chain
+
+<span class="c"># Test case: 55yo male smoker, chest pain</span>
+context = PatientContext(
+    symptom_entities=[...],   <span class="c"># chest pain, dyspnea</span>
+    risk_flags=["cardiac_risk_critical", "age_over_50"],
+    patient_profile=PatientProfile(name="Test", age=55, gender="male",
+      smoking="current", pack_years=20, conditions=["hypertension"]),
+    ...
+)
+result = asyncio.run(run_rag_chain(context))
+print(result.conditions[0].name)      <span class="c"># e.g. "Acute Coronary Syndrome"</span>
+print(result.requires_emergency)      <span class="c"># True — cardiac_risk_critical + chest pain</span>
+print(result.conditions[0].cited_pmid) <span class="c"># real PMID from your knowledge base</span></pre>
+            Check: is the diagnosis plausible? Is it citing real PMIDs from your index? Does it respect the allergies? Is requires_emergency True for the cardiac risk case?
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10 -->
+  <div class="step" id="s10">
+    <div class="step-header" onclick="toggle('s10')">
+      <div class="step-num shared"><div class="num">S10</div><div class="slabel">Shared</div></div>
+      <div class="step-body">
+        <div class="step-title">Wire chain.py into analyze.py — replace stub response</div>
+        <div class="step-file">backend/app/api/routes/analyze.py</div>
+        <div class="step-summary">You update analyze.py to call run_rag_chain() after building PatientContext, then pass the result to response_builder. Gemini handles the async wiring. You review and approve the final route structure.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s10">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s10">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Update backend/app/api/routes/analyze.py to use the real RAG chain.
+
+After build_patient_context() returns a PatientContext object:
+1. Call: diagnosis = await run_rag_chain(context)
+2. Call: urgency = severity_scorer.score(context)  [stub for now — Module 4]
+3. Call: doctors = await doctor_finder.find(context) [stub for now — Module 5]
+4. Call: response = response_builder.build(context, diagnosis, urgency, doctors)
+5. Save to DynamoDB: await dynamodb_service.save_session(response)
+6. Return response
+
+Add timing logs at each step — log how long each awaited call takes.
+Add a global 28-second timeout (Lambda limit is 30s) — if the chain takes longer, return a partial response with what completed.
+Handle all exceptions per step: if RAG chain fails, return urgency + doctors without diagnosis rather than a 500 error.</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you review before approving</div>
+          <div class="dsec-body">
+            Before committing, read the updated analyze.py yourself and verify:
+            <ul style="margin-top:8px">
+              <li>The 28-second timeout is implemented correctly</li>
+              <li>A RAG chain failure doesn't return 500 — it returns a partial response</li>
+              <li>DynamoDB save happens after response is built, not before</li>
+              <li>Session ID is consistent through context → response → DynamoDB</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S11 -->
+  <div class="step" id="s11">
+    <div class="step-header" onclick="toggle('s11')">
+      <div class="step-num you"><div class="num">S11</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Retrieval quality evaluation — Precision@5 on 20 queries</div>
+        <div class="step-file">notebooks/ · (manual evaluation)</div>
+        <div class="step-summary">You run 20 test symptom queries through the retriever and manually judge if the top-5 results are relevant. This is qualitative human review — only you can determine what's medically relevant. This is your Module 3 sign-off test.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s11">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s11">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Run these 20 test queries and score results</div>
+          <div class="dsec-body">
+            For each query, retrieve top-5 chunks and mark each as Relevant (1) or Not Relevant (0). Calculate Precision@5 = relevant_count / 5.
+            <table class="table">
+              <thead><tr><th>Query</th><th>Expected relevant topic</th><th>Your P@5</th></tr></thead>
+              <tbody>
+                <tr><td>chest pain left arm shortness breath</td><td>Cardiac / ACS</td><td>___</td></tr>
+                <tr><td>high fever rash joint pain India monsoon</td><td>Dengue fever</td><td>___</td></tr>
+                <tr><td>chronic cough weight loss night sweats</td><td>Tuberculosis</td><td>___</td></tr>
+                <tr><td>severe headache sudden worst in life</td><td>Subarachnoid hemorrhage</td><td>___</td></tr>
+                <tr><td>abdominal pain right lower quadrant fever</td><td>Appendicitis</td><td>___</td></tr>
+                <tr><td>yellow skin eyes dark urine</td><td>Jaundice / liver disease</td><td>___</td></tr>
+                <tr><td>penicillin allergy chest infection</td><td>Antibiotic alternatives</td><td>___</td></tr>
+                <tr><td>swollen ankle pitting edema heart failure</td><td>Cardiac / renal edema</td><td>___</td></tr>
+                <tr><td>blood sugar 400 frequent urination fatigue</td><td>Diabetic hyperglycemia</td><td>___</td></tr>
+                <tr><td>skin rash circular expanding tick bite</td><td>Lyme disease</td><td>___</td></tr>
+                <tr><td>metformin side effects lactic acidosis</td><td>Drug safety / drug-db</td><td>___</td></tr>
+                <tr><td>child fever rash spots mouth foot hand</td><td>HFMD / viral</td><td>___</td></tr>
+                <tr><td>sudden vision loss one eye painless</td><td>Retinal artery occlusion</td><td>___</td></tr>
+                <tr><td>burning urine frequency women</td><td>UTI / cystitis</td><td>___</td></tr>
+                <tr><td>elderly fall hip pain cannot walk</td><td>Hip fracture</td><td>___</td></tr>
+                <tr><td>saans nahi aa rahi bukhar teen din</td><td>Dyspnea + fever (Hindi)</td><td>___</td></tr>
+                <tr><td>pregnancy high blood pressure protein urine</td><td>Preeclampsia</td><td>___</td></tr>
+                <tr><td>depression insomnia anhedonia fatigue</td><td>MDD / depression</td><td>___</td></tr>
+                <tr><td>facial drooping slurred speech arm weak sudden</td><td>Stroke / TIA</td><td>___</td></tr>
+                <tr><td>malaria Rajasthan fever chills rigors</td><td>Malaria</td><td>___</td></tr>
+              </tbody>
+            </table>
+            <br><strong>Target: average Precision@5 ≥ 0.65</strong><br>
+            If below 0.65: identify failing queries, check if content is in your knowledge base (may need to add more PubMed MeSH terms). If content IS in the KB but retrieval misses it — tune chunk size or BM25 weight.
+          </div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Module 3 complete when all of these pass</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>Pinecone has 40K+ vectors in medical-kb, 10K+ in drug-db</div>
+            <div class="vitem"><div class="vcheck"></div>Average Precision@5 ≥ 0.65 across 20 test queries</div>
+            <div class="vitem"><div class="vcheck"></div>Hindi query ("saans nahi aa rahi") returns relevant results</div>
+            <div class="vitem"><div class="vcheck"></div>Real /analyze call with chest pain + cardiac risk profile returns diagnosis with requires_emergency=true</div>
+            <div class="vitem"><div class="vcheck"></div>DiagnosisResult includes cited PMIDs from your knowledge base (not hallucinated)</div>
+            <div class="vitem"><div class="vcheck"></div>Full analyze call completes under 28 seconds on Lambda</div>
+            <div class="vitem"><div class="vcheck"></div>RAG chain failure returns partial response, not 500</div>
+            <div class="vitem"><div class="vcheck"></div>Weekly ETL script committed and tested locally</div>
+            <div class="vitem"><div class="vcheck"></div>GitHub Actions CI green</div>
+            <div class="vitem"><div class="vcheck"></div>You can explain your system prompt, chunk strategy, and retrieval method in detail</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="done" class="done-box">
+  <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px">Module 3 — Definition of done</div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.8">
+    Module 3 is complete when a real <code style="font-family:var(--mono);font-size:11px">POST /api/v1/analyze</code> with a 55-year-old male smoker presenting with chest pain returns a <strong>grounded DiagnosisResult</strong> — condition name, confidence ≥ 0.6, cited PubMed PMIDs from your indexed knowledge base, <code>requires_emergency=true</code> due to cardiac risk flags, and an action plan. Average Precision@5 across 20 test queries is ≥ 0.65. The system does not hallucinate — every factual claim is traced to a retrieved chunk.
+    <br><br>
+    Module 4 (Data Science Models) can now begin — it trains the XGBoost symptom classifier and LightGBM urgency scorer that replace the current stubs in analyze.py.
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function toggle(id){
+  const d=document.getElementById('detail-'+id);
+  const b=document.getElementById('btn-'+id);
+  if(!d)return;
+  const open=d.classList.toggle('open');
+  if(b)b.textContent=open?'Close ▴':'Details ▾';
+}
+const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{
+  const sections=['overview','week5','week6','done'];
+  let current='overview';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&window.scrollY>=el.offsetTop-80)current=id;
+  });
+  navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+current));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediAssist AI — Task Ownership</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F4F6F9;--white:#FFFFFF;--navy:#0B1829;--navy2:#112236;
+  --border:#DDE4ED;--border2:#C8D3DF;
+  --teal:#0D7C66;--teal-bg:#E4F5F1;--teal-mid:#0A5F50;
+  --amber:#D97706;--amber-bg:#FEF3C7;
+  --red:#B91C1C;--red-bg:#FEE2E2;
+  --purple:#5B4DBE;--purple-bg:#EDE9FE;
+  --slate:#4A6078;--muted:#7A90A4;--light:#F2F7FA;
+  --you:#0D7C66;--you-bg:#E4F5F1;--you-border:#0D7C66;
+  --ai:#1D6FA5;--ai-bg:#DBEAFE;--ai-border:#1D6FA5;
+  --shared:#854F0B;--shared-bg:#FEF3C7;--shared-border:#D97706;
+  --mono:'JetBrains Mono',monospace;
+  --r:8px;--r-lg:12px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--navy);font-size:14px;line-height:1.65}
+
+/* header */
+.header{background:var(--navy2);padding:36px 40px 28px;border-bottom:1px solid rgba(255,255,255,.06)}
+.header h1{font-size:24px;font-weight:600;color:#fff;letter-spacing:-.02em;margin-bottom:6px}
+.header p{font-size:13px;color:rgba(255,255,255,.45);max-width:580px}
+.legend{display:flex;gap:20px;margin-top:18px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500}
+.leg-dot{width:10px;height:10px;border-radius:50%}
+
+/* filter bar */
+.filterbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 40px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.fb-btn{font-size:12.5px;font-weight:500;color:var(--muted);padding:13px 16px;white-space:nowrap;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.fb-btn:hover{color:var(--navy)}
+.fb-btn.active{color:var(--navy);border-bottom-color:var(--teal)}
+
+/* main */
+.main{max-width:1100px;margin:0 auto;padding:32px 40px 60px}
+
+/* phase block */
+.phase{margin-bottom:36px}
+.phase-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.phase-num{width:28px;height:28px;border-radius:50%;background:var(--navy2);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono)}
+.phase-title{font-size:16px;font-weight:600;color:var(--navy)}
+.phase-weeks{font-size:11px;font-weight:500;background:var(--light);border:1px solid var(--border);border-radius:20px;padding:2px 10px;color:var(--muted)}
+
+/* task cards */
+.tasks{display:flex;flex-direction:column;gap:10px}
+.task{border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--border);background:var(--white);transition:box-shadow .15s}
+.task:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+
+.task-header{display:grid;grid-template-columns:90px 1fr auto;gap:0;cursor:pointer;align-items:stretch}
+.task-owner{padding:14px 16px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3;flex-shrink:0}
+.owner-you{background:var(--you-bg);color:var(--teal-mid);border-right:3px solid var(--you-border)}
+.owner-ai{background:var(--ai-bg);color:#1E40AF;border-right:3px solid var(--ai-border)}
+.owner-shared{background:var(--shared-bg);color:#92400E;border-right:3px solid var(--shared-border)}
+
+.task-main{padding:13px 16px;flex:1}
+.task-name{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:3px}
+.task-file{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:5px}
+.task-why{font-size:12.5px;color:var(--slate);line-height:1.55}
+
+.task-meta{padding:13px 16px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px;flex-shrink:0;min-width:140px}
+.effort{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.effort-high{background:#FEE2E2;color:#991B1B}
+.effort-med{background:#FEF3C7;color:#92400E}
+.effort-low{background:#D1FAE5;color:#065F46}
+.expand-btn{font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:4px}
+
+.task-detail{padding:0 16px 16px 16px;border-top:1px solid var(--border);margin-top:0;display:none}
+.task-detail.open{display:block;padding-top:14px}
+
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+.detail-box{background:var(--light);border-radius:var(--r);padding:12px 14px}
+.detail-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.detail-content{font-size:12.5px;color:var(--slate);line-height:1.6}
+.detail-content ul{padding-left:14px;display:flex;flex-direction:column;gap:3px}
+
+.libs{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.lib{font-family:var(--mono);font-size:11px;background:var(--white);border:1px solid var(--border);padding:2px 8px;border-radius:4px;color:var(--slate)}
+
+.interview-box{background:#FEF3C7;border:1px solid #FCD34D;border-radius:var(--r);padding:11px 14px;margin-top:10px}
+.interview-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:#92400E;text-transform:uppercase;margin-bottom:4px}
+.interview-q{font-size:12.5px;color:#78350F;font-style:italic;line-height:1.55}
+
+/* summary bar */
+.summary{background:var(--navy);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px}
+.sum-cell{text-align:center;padding:4px 8px}
+.sum-n{font-size:26px;font-weight:600;line-height:1;margin-bottom:4px}
+.sum-l{font-size:11px;color:rgba(255,255,255,.4);font-weight:500}
+
+@media(max-width:700px){
+  .main{padding:20px 16px 40px}
+  .header{padding:24px 16px}
+  .filterbar{padding:0 16px}
+  .task-header{grid-template-columns:72px 1fr}
+  .task-meta{display:none}
+  .detail-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>MediAssist AI — Task Ownership</h1>
+  <p>Every task in the project mapped to who owns it. Green = you must do. Blue = Gemini/Antigravity does. Amber = you decide, AI codes.</p>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>You must do — judgment required</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--ai)"></div>AI does — delegate fully</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--amber)"></div>Shared — you decide, AI codes</div>
+  </div>
+</div>
+
+<div class="filterbar">
+  <button class="fb-btn active" onclick="filter('all')">All tasks</button>
+  <button class="fb-btn" onclick="filter('you')">You only</button>
+  <button class="fb-btn" onclick="filter('ai')">AI only</button>
+  <button class="fb-btn" onclick="filter('shared')">Shared</button>
+  <button class="fb-btn" onclick="filter('high')">High effort</button>
+</div>
+
+<div class="main">
+
+<div class="summary" id="summary">
+  <div class="sum-cell"><div class="sum-n" style="color:var(--teal)" id="cnt-you">0</div><div class="sum-l">Tasks you own</div></div>
+  <div class="sum-cell"><div class="sum-n" style="color:#60A5FA" id="cnt-ai">0</div><div class="sum-l">Tasks fully delegated</div></div>
+  <div class="sum-cell"><div class="sum-n" style="color:#FCD34D" id="cnt-shared">0</div><div class="sum-l">Shared decisions</div></div>
+</div>
+
+<div id="phases"></div>
+</div>
+
+<script>
+const DATA = [
+  {
+    phase: 1,
+    title: "Project setup & FastAPI skeleton",
+    weeks: "Weeks 1–2",
+    tasks: [
+      {
+        owner: "ai",
+        name: "Repo & folder structure",
+        file: "mediassist-ai/ (root)",
+        why: "Standard Python project layout — Gemini knows this cold. Exact structure already defined in your directory plan.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Creates all folders, __init__.py files, .gitignore, .env.example, README skeleton.",
+        libs: ["cookiecutter", "git"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "FastAPI app boilerplate",
+        file: "backend/app/main.py",
+        why: "Boilerplate wiring — CORS config, router registration, Mangum adapter for Lambda. Purely structural, no decisions needed.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Writes main.py with CORS, registers all routers, adds Mangum wrapper for Lambda compatibility.",
+        libs: ["fastapi", "mangum", "uvicorn"],
+        interview: null
+      },
+      {
+        owner: "you",
+        name: "Define Pydantic request/response schemas",
+        file: "backend/app/models/request_models.py · response_models.py",
+        why: "This is the CONTRACT between your frontend and backend. Every field you define here — especially in PatientProfile — must reflect your medical reasoning about what data actually changes diagnosis. You can't delegate the decision of which fields matter.",
+        effort: "high",
+        youDo: "Decide every field in PatientProfile: which lifestyle fields are risk-relevant, what ranges are valid, what's optional vs required. Define the shape of AnalyzeResponse — what does diagnosis output look like structurally.",
+        aiDoes: "Converts your field decisions into Pydantic model code with validators and type hints.",
+        libs: ["pydantic", "python-dotenv"],
+        interview: "Interviewer will ask: why is pack_years a separate field from smoking status? Why is blood_group optional? You must own these answers."
+      },
+      {
+        owner: "ai",
+        name: "AWS infra setup (S3, DynamoDB, ECR)",
+        file: "scripts/ · .env.example",
+        why: "Pure cloud configuration — bucket creation, DynamoDB table schema, IAM roles. Standard AWS setup, no domain judgment needed.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Writes boto3 setup scripts, DynamoDB table config with TTL, S3 bucket policy, IAM role definitions.",
+        libs: ["boto3", "awscli"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "Pinecone index setup",
+        file: "notebooks/04_embeddings_indexing.ipynb",
+        why: "Pinecone index creation with 3 namespaces (medical-kb, drug-db, hospital-db) is configuration-level work.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Creates index, sets dimension to 768 (BioSentBERT output size), configures cosine metric, sets up namespaces.",
+        libs: ["pinecone-client"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "config.py + environment loading",
+        file: "backend/app/config.py",
+        why: "Standard Pydantic BaseSettings pattern. No decisions required.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Writes config.py loading all env vars — AWS keys, Pinecone key, Bedrock model IDs, Google Places key, DynamoDB table name.",
+        libs: ["pydantic-settings"],
+        interview: null
+      }
+    ]
+  },
+  {
+    phase: 2,
+    title: "Multimodal input handler",
+    weeks: "Weeks 3–4",
+    tasks: [
+      {
+        owner: "you",
+        name: "NLP preprocessing strategy",
+        file: "backend/app/modules/nlp/preprocessor.py",
+        why: "You must decide WHICH medical NER model to use (en_core_sci_sm vs en_core_sci_md vs en_core_sci_lg), what entity types to extract (DISEASE, SYMPTOM, BODY_PART, DURATION), and how to handle negation ('no chest pain' ≠ 'chest pain'). These are medical NLP decisions.",
+        effort: "high",
+        youDo: "Choose scispaCy model size vs accuracy tradeoff. Define entity types to extract. Decide how to handle negation, uncertainty ('maybe', 'slight'). Design the output schema: list of {entity, type, confidence, negated}.",
+        aiDoes: "Implements the pipeline code once you define the strategy.",
+        libs: ["spacy", "scispacy", "en_core_sci_sm"],
+        interview: "Why scispaCy over generic spaCy? Why did you choose en_core_sci_sm over the larger model? How do you handle 'no fever' vs 'fever'?"
+      },
+      {
+        owner: "you",
+        name: "Symptom normalization mapping",
+        file: "backend/app/modules/nlp/symptom_normalizer.py",
+        why: "The SNOMED CT synonym dictionary is entirely your domain judgment. You decide which synonyms map to which canonical concept. 'Chest ache', 'chest pain', 'thoracic pain', 'precordial pain' must all map to the same retrieval concept — only you can verify these mappings are medically correct.",
+        effort: "high",
+        youDo: "Build/curate the synonym mapping dictionary for the top 100–150 symptoms your system covers. Verify mappings are medically accurate. Decide the canonical form for each concept.",
+        aiDoes: "Writes the normalization function code, fuzzy matching fallback logic.",
+        libs: ["rapidfuzz", "json"],
+        interview: "How did you decide your canonical symptom vocabulary? How do you handle symptoms that don't match any known concept?"
+      },
+      {
+        owner: "ai",
+        name: "S3 image upload handler",
+        file: "backend/app/services/s3_service.py",
+        why: "Pure AWS SDK wrapper — presigned URL generation, upload, download. Standard boto3 pattern.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Writes full s3_service.py: presigned URL generation, upload, download, delete. Adds 24hr lifecycle rule.",
+        libs: ["boto3"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "AWS Textract OCR handler",
+        file: "backend/app/modules/ocr/textract_handler.py",
+        why: "Textract API call is straightforward SDK usage. The extraction parsing (finding medicine names) is pattern matching that Gemini handles well.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Calls Textract AnalyzeDocument, parses response blocks, extracts drug names/dosage/doctor notes as structured JSON.",
+        libs: ["boto3 (textract)"],
+        interview: null
+      },
+      {
+        owner: "shared",
+        name: "Body photo analysis via Bedrock",
+        file: "backend/app/services/bedrock_service.py",
+        why: "You must design the PROMPT — what to ask Bedrock Nova Pro when it sees a body photo. The AI writes the calling code, but the medical prompt is yours.",
+        effort: "med",
+        youDo: "Write the Bedrock vision system prompt: what to look for, how to describe visible symptoms, what output format to return, how to handle unclear images.",
+        aiDoes: "Implements the boto3 Bedrock call, base64 encoding, response parsing.",
+        libs: ["boto3 (bedrock-runtime)", "base64"],
+        interview: "What does your Bedrock system prompt tell the model to look for? How do you handle a photo that isn't a body part?"
+      },
+      {
+        owner: "you",
+        name: "Patient context merger design",
+        file: "backend/app/core/patient_context.py",
+        why: "This is the most important design decision in the whole backend. How you merge 5 inputs into one PatientContext object determines the quality of every downstream module. The merge logic — what takes priority when inputs conflict, how to weight confidence scores — is your call.",
+        effort: "high",
+        youDo: "Design the PatientContext schema. Decide merge priority rules: if X-ray says pneumonia (78% confidence) but symptoms text says 'mild cough', how do you weight them? Define how personal profile fields attach as risk modifiers.",
+        aiDoes: "Implements the merge function and Pydantic PatientContext model once you define the schema and rules.",
+        libs: ["pydantic"],
+        interview: "This is a top-3 interview question. 'Walk me through how your system merges multimodal inputs into a unified patient context and why you made those design choices.'"
+      }
+    ]
+  },
+  {
+    phase: 3,
+    title: "RAG pipeline + knowledge base",
+    weeks: "Weeks 5–6",
+    tasks: [
+      {
+        owner: "you",
+        name: "Dataset selection & curation strategy",
+        file: "notebooks/04_embeddings_indexing.ipynb",
+        why: "Deciding WHICH medical sources to index — and which to exclude — is a research judgment. PubMed has 35M papers; you can't index all of them. Which disease categories does your system cover? Which PubMed MeSH terms do you query? This determines your RAG quality ceiling.",
+        effort: "high",
+        youDo: "Define the disease scope of your system. Select PubMed query terms. Decide chunk size (256 vs 512 tokens) and overlap. Decide which OpenFDA fields to index. Evaluate whether MedMCQA or PubMed abstracts give better retrieval for your use case.",
+        aiDoes: "Writes the data download scripts, chunking pipeline, embedding generation, Pinecone upsert code.",
+        libs: ["biopython (Entrez)", "langchain.text_splitter"],
+        interview: "Why did you choose 512-token chunks? How did you decide which PubMed articles to index? What's in your knowledge base and what's deliberately excluded?"
+      },
+      {
+        owner: "you",
+        name: "RAG query prompt engineering",
+        file: "backend/app/modules/rag/query_builder.py + chain.py",
+        why: "The LangChain system prompt sent to Bedrock is entirely your responsibility. This is what determines whether the RAG output is medically sound, appropriately cautious, and properly personalized. No AI can write this for you — it requires medical understanding and prompt engineering skill.",
+        effort: "high",
+        youDo: "Write the medical system prompt: tone (authoritative but not diagnostic), what to include (condition name, confidence, explanation, citations), what to refuse (definitive diagnosis), how to incorporate patient profile context, medical disclaimer wording. Iteratively test and refine on 20+ sample cases.",
+        aiDoes: "Implements the LangChain chain, retriever integration, and prompt template wrapper code.",
+        libs: ["langchain", "langchain-aws"],
+        interview: "Show me your system prompt. Why did you choose this tone? How do you prevent the model from being overconfident? How do you enforce citation of retrieved sources?"
+      },
+      {
+        owner: "shared",
+        name: "Retrieval strategy (dense vs hybrid)",
+        file: "backend/app/modules/rag/retriever.py",
+        why: "You must decide: dense-only (BioSentBERT cosine) vs hybrid (dense + BM25 keyword). This matters for rare conditions that embeddings miss but exact terms would catch.",
+        effort: "med",
+        youDo: "Decide retrieval strategy. Test on 10 rare condition queries and compare dense vs hybrid results. Choose top-k value (5 vs 10) per namespace.",
+        aiDoes: "Implements the retriever with your chosen strategy, BM25 fallback logic, re-ranking.",
+        libs: ["pinecone-client", "rank-bm25", "sentence-transformers"],
+        interview: "Why hybrid search? What does BM25 catch that dense retrieval misses in medical text?"
+      },
+      {
+        owner: "ai",
+        name: "Embedding generation pipeline",
+        file: "notebooks/04_embeddings_indexing.ipynb",
+        why: "Running BioSentBERT on chunked text and upserting to Pinecone is pure implementation once you've defined what to embed.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Loads PubMedBERT/BioSentBERT, batches embeddings, upserts to Pinecone with metadata (source, date, condition tags).",
+        libs: ["sentence-transformers", "pinecone-client", "torch"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "Weekly ETL pipeline",
+        file: "backend/scripts/index_knowledge_base.py",
+        why: "Scheduled data refresh is pure engineering — fetch, chunk, embed, upsert. No domain decisions after you've defined the dataset scope.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Writes ETL script + EventBridge cron config for weekly PubMed/OpenFDA updates.",
+        libs: ["boto3", "biopython", "schedule"],
+        interview: null
+      }
+    ]
+  },
+  {
+    phase: 4,
+    title: "Data science models",
+    weeks: "Weeks 7–8",
+    tasks: [
+      {
+        owner: "you",
+        name: "EDA on disease-symptom dataset",
+        file: "notebooks/01_eda_symptoms.ipynb",
+        why: "EDA results must be INTERPRETED by you. Gemini can generate plots but cannot tell you 'this disease appears only 0.3% of the time which means my XGBoost model will completely ignore it unless I use SMOTE with ratio 0.4'. That reasoning is yours.",
+        effort: "high",
+        youDo: "Run EDA, interpret class distribution, identify imbalance severity per class, decide SMOTE strategy and ratios, identify which features correlate with which diseases, flag data quality issues.",
+        aiDoes: "Generates EDA code, plots class distributions, correlation heatmaps, missing value analysis.",
+        libs: ["pandas", "seaborn", "matplotlib", "plotly"],
+        interview: "What did your EDA reveal about class imbalance? How did that influence your choice of evaluation metric and resampling strategy?"
+      },
+      {
+        owner: "you",
+        name: "Feature engineering for XGBoost classifier",
+        file: "notebooks/05_symptom_classifier.ipynb",
+        why: "The risk_multiplier features are YOUR invention. smoker_flag × age_over_50 × cardiac_symptom_present as a combined feature — that comes from medical reasoning, not from Gemini. This is the single most important DS contribution in your portfolio.",
+        effort: "high",
+        youDo: "Design all engineered features: BMI category bins, risk multiplier combinations, symptom co-occurrence flags, duration bins (acute <3 days vs subacute vs chronic), season/location risk flags. Justify each feature with medical reasoning.",
+        aiDoes: "Implements feature engineering code, one-hot encoding pipeline, feature importance plots.",
+        libs: ["pandas", "scikit-learn", "feature-engine"],
+        interview: "Walk me through your feature engineering. Why did you combine smoking × age × cardiac symptoms into a single feature instead of keeping them separate? This is a top-5 interview question for this project."
+      },
+      {
+        owner: "you",
+        name: "XGBoost hyperparameter strategy",
+        file: "notebooks/05_symptom_classifier.ipynb",
+        why: "You must define the search space and optimization target. For imbalanced medical data, optimizing for accuracy gives you a useless model. Choosing macro-F1 as the objective and setting scale_pos_weight requires understanding your data.",
+        effort: "high",
+        youDo: "Define search space: n_estimators range, max_depth range, learning rate range, scale_pos_weight per class. Choose optimization metric (macro-F1, not accuracy). Set early stopping criteria. Decide train/val/test split ratios.",
+        aiDoes: "Runs Optuna/GridSearchCV with your defined search space, logs all runs to MLflow.",
+        libs: ["xgboost", "optuna", "mlflow", "scikit-learn"],
+        interview: "Why macro-F1 over accuracy? What scale_pos_weight did you use and how did you calculate it? What was your final AUC-ROC?"
+      },
+      {
+        owner: "you",
+        name: "CNN fine-tuning strategy for X-ray model",
+        file: "notebooks/03_xray_cnn_training.ipynb",
+        why: "Transfer learning decisions require understanding: how many layers to freeze, which layers to unfreeze, what learning rate to use for frozen vs unfrozen layers, what augmentations are medically valid for X-rays.",
+        effort: "high",
+        youDo: "Decide: freeze ResNet-50 layers 1–6, fine-tune layers 7–16 + head. Choose differential learning rates (1e-4 for new head, 1e-5 for fine-tuned layers). Validate that augmentations are medically appropriate — horizontal flip OK, vertical flip NOT OK for chest X-rays. Decide AUC threshold per class.",
+        aiDoes: "Implements PyTorch training loop, DataLoader with your chosen augmentations, checkpoint saving, SageMaker entry point.",
+        libs: ["torch", "torchvision", "albumentations", "sagemaker"],
+        interview: "Why did you freeze the first 6 blocks? Why different learning rates for the head vs fine-tuned layers? Why can't you vertically flip chest X-rays during augmentation?"
+      },
+      {
+        owner: "you",
+        name: "Severity scoring model design",
+        file: "notebooks/06_severity_scorer.ipynb",
+        why: "The urgency thresholds and the definition of the 4 classes (Low/Moderate/Urgent/Emergency) are medical decisions. When exactly does a case cross from 'Urgent' to 'Emergency'? This boundary has real-world consequences — you must own it.",
+        effort: "high",
+        youDo: "Define urgency class boundaries with explicit criteria. Design the risk_multiplier feature (smoker × age50+ × cardiac = instant Emergency upgrade). Decide minimum recall threshold for Emergency class (false negatives are life-threatening — set recall ≥ 0.95 for Emergency).",
+        aiDoes: "Trains LightGBM model, implements threshold tuning, generates confusion matrix.",
+        libs: ["lightgbm", "scikit-learn", "imbalanced-learn"],
+        interview: "What recall did you achieve on the Emergency class? Why did you set a minimum recall threshold there specifically? What happens in your system when a patient is classified as Emergency?"
+      },
+      {
+        owner: "you",
+        name: "Model evaluation & deciding what's good enough",
+        file: "notebooks/ (all)",
+        why: "Gemini can generate metrics. It cannot tell you whether 0.78 AUC-ROC on pneumonia classification is acceptable for your use case, or whether you need to collect more data. That judgment is yours.",
+        effort: "high",
+        youDo: "Review all evaluation outputs. For each model: decide if metrics are acceptable or need another training run. Identify which disease classes underperform and why. Document final model performance in README.",
+        aiDoes: "Generates all evaluation code: confusion matrices, ROC curves, PR curves, per-class F1 breakdown, MLflow experiment summaries.",
+        libs: ["scikit-learn", "mlflow", "matplotlib"],
+        interview: "What was your worst-performing disease class and why? What did you do about it?"
+      },
+      {
+        owner: "ai",
+        name: "ONNX model export + Lambda integration",
+        file: "backend/app/modules/ml/symptom_classifier.py · xray_classifier.py",
+        why: "Pure implementation: torch.onnx.export, joblib.dump, loading in Lambda from S3. No decisions required.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Exports all models to ONNX/pkl, writes Lambda cold-start loader, verifies inference matches training output.",
+        libs: ["onnxruntime", "joblib", "boto3"],
+        interview: null
+      }
+    ]
+  },
+  {
+    phase: 5,
+    title: "Doctor finder + output layer",
+    weeks: "Weeks 9–10",
+    tasks: [
+      {
+        owner: "you",
+        name: "Specialty mapping dictionary",
+        file: "backend/app/modules/doctors/specialty_mapper.py",
+        why: "The condition → specialist mapping is medical knowledge. 'Acute Coronary Syndrome' → 'Cardiologist' seems obvious, but many conditions have multiple valid specialties and you must decide the priority order.",
+        effort: "med",
+        youDo: "Build the mapping table for all conditions your system can diagnose. For ambiguous cases (e.g. diabetes complications → endocrinologist OR nephrologist OR ophthalmologist) define priority rules.",
+        aiDoes: "Implements the lookup + fallback logic in Python.",
+        libs: ["json"],
+        interview: "How do you handle a condition that can be treated by multiple specialists? What's your fallback when no specialist is found nearby?"
+      },
+      {
+        owner: "ai",
+        name: "Google Places API integration",
+        file: "backend/app/modules/doctors/finder.py",
+        why: "Pure API integration — Nearby Search call, result parsing, distance calculation, ranking. Standard implementation.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Calls Google Places Nearby Search, filters by specialty, calculates distance from user lat/lng, returns top-5 ranked by rating × distance score.",
+        libs: ["requests", "geopy"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "Response assembler",
+        file: "backend/app/core/response_builder.py",
+        why: "Pure merge code — takes all module outputs and assembles the final JSON. No decisions, just implementation.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Merges diagnosis + urgency + action_plan + doctors + session_id into final response. Validates against Pydantic schema. Attaches medical disclaimer.",
+        libs: ["pydantic"],
+        interview: null
+      },
+      {
+        owner: "you",
+        name: "Medical disclaimer wording",
+        file: "backend/app/core/response_builder.py",
+        why: "The exact wording of your disclaimer is your responsibility — legally and ethically. What does the system say to ensure users don't treat this as a substitute for professional care?",
+        effort: "med",
+        youDo: "Write the disclaimer text. Decide when to show additional warnings (Emergency urgency → stronger language). Decide if low-confidence diagnoses get additional caveats.",
+        aiDoes: "Embeds your disclaimer text into the response builder.",
+        libs: [],
+        interview: "What does your disclaimer say? How does it change for Emergency urgency level? Why did you word it that way?"
+      },
+      {
+        owner: "ai",
+        name: "DynamoDB session storage",
+        file: "backend/app/services/dynamodb_service.py",
+        why: "Standard CRUD on DynamoDB. Save/get session by UUID. Set TTL. No domain decisions.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Writes save_session(), get_session(), save_feedback(). Adds 90-day TTL attribute.",
+        libs: ["boto3"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "All FastAPI route handlers",
+        file: "backend/app/api/routes/",
+        why: "Orchestration glue code. Each route calls modules in order, handles errors, returns responses. Purely structural once modules exist.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Writes analyze.py, doctors.py, history.py, health.py, feedback.py. Handles async, error handling, HTTP status codes.",
+        libs: ["fastapi", "python-multipart"],
+        interview: null
+      }
+    ]
+  },
+  {
+    phase: 6,
+    title: "Testing, deployment & review",
+    weeks: "Weeks 11–12",
+    tasks: [
+      {
+        owner: "ai",
+        name: "Docker container + SageMaker train.py",
+        file: "Dockerfile · scripts/train.py",
+        why: "Standard Docker multi-stage build and SageMaker entry point. Gemini has seen thousands of these.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Writes Dockerfile (multi-stage, arm64 for Graviton2), train.py SageMaker entry point, requirements.txt.",
+        libs: ["docker", "sagemaker"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "GitHub Actions CI/CD pipeline",
+        file: ".github/workflows/deploy.yml",
+        why: "Standard pattern: test → build → push to ECR → update Lambda. Gemini handles YAML pipelines well.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Writes full deploy.yml: pytest → docker build → ECR push → Lambda update.",
+        libs: ["github-actions", "aws-cli"],
+        interview: null
+      },
+      {
+        owner: "ai",
+        name: "Test suite",
+        file: "backend/tests/",
+        why: "Writing mocked tests for your modules is mechanical once the modules exist.",
+        effort: "med",
+        youDo: null,
+        aiDoes: "Writes pytest tests for all routes and modules. Mocks S3, Bedrock, Textract with moto and pytest-mock.",
+        libs: ["pytest", "moto", "pytest-mock", "httpx"],
+        interview: null
+      },
+      {
+        owner: "you",
+        name: "End-to-end validation on real cases",
+        file: "(manual testing)",
+        why: "Only you can judge if the output makes medical sense. Run 15–20 real symptom cases through the full system. Evaluate: is the diagnosis reasonable? Is the urgency appropriate? Are the doctor results relevant? This is qualitative human review.",
+        effort: "high",
+        youDo: "Create 20 test cases covering different age/gender/lifestyle combinations. For each case: evaluate diagnosis quality, urgency appropriateness, action plan quality. Document failures and feed them back to Gemini as fixes.",
+        aiDoes: "Nothing — this is pure human judgment.",
+        libs: [],
+        interview: "Tell me about a case where your system gave a wrong or unexpected output. How did you find it? What did you do?"
+      },
+      {
+        owner: "you",
+        name: "MLflow experiment analysis + model selection",
+        file: "notebooks/ (all)",
+        why: "Across 3–5 training runs per model, you must read the experiment dashboard and make final model selection decisions. This is not automatable.",
+        effort: "high",
+        youDo: "Compare runs in MLflow. Select final model checkpoints based on val metrics, not just training metrics. Document why you chose each final model. Note overfitting cases and what you did.",
+        aiDoes: "Nothing — this is judgment work.",
+        libs: ["mlflow"],
+        interview: "How many training runs did you do per model? What did you compare them on? What trade-offs did you make in final model selection?"
+      },
+      {
+        owner: "ai",
+        name: "Lambda deployment (ECR → Lambda update)",
+        file: "AWS Console / CLI",
+        why: "Mechanical deployment steps — build Docker image, push to ECR, update Lambda function code.",
+        effort: "low",
+        youDo: null,
+        aiDoes: "Writes deployment script or runs GitHub Actions pipeline for production Lambda update.",
+        libs: ["docker", "awscli"],
+        interview: null
+      },
+      {
+        owner: "you",
+        name: "Frontend ↔ Backend contract verification",
+        file: "frontend/src/types/api.types.ts ↔ backend/app/models/",
+        why: "You must personally verify that the TypeScript interfaces in Lovable exactly match your Pydantic models. Silent mismatches (wrong field name, missing optional) cause frontend bugs that are hard to debug remotely.",
+        effort: "med",
+        youDo: "Compare every field in request_models.py and response_models.py against api.types.ts. Test from Lovable with real requests. Verify optional fields behave correctly on the frontend.",
+        aiDoes: "Generates the TypeScript types file based on your Pydantic models.",
+        libs: [],
+        interview: null
+      },
+      {
+        owner: "you",
+        name: "Portfolio writeup + README",
+        file: "README.md + portfolio",
+        why: "Documenting your OWN reasoning — why you made each technical decision — cannot be delegated. Recruiters and interviewers will ask about choices. If Gemini writes your README, you won't be able to defend it.",
+        effort: "high",
+        youDo: "Write architecture section explaining YOUR choices. Document DS decisions with justifications. Write a limitations section (what the system can't do). Write the demo walkthrough.",
+        aiDoes: "Formats, proofreads, adds code snippets, generates API documentation sections.",
+        libs: [],
+        interview: "Your README is your first interview. Every claim in it must come from your own understanding."
+      }
+    ]
+  }
+];
+
+function render(filterType){
+  const container = document.getElementById('phases');
+  container.innerHTML = '';
+  let totalYou=0, totalAi=0, totalShared=0;
+
+  DATA.forEach(phase => {
+    const tasks = phase.tasks.filter(t => {
+      if(filterType==='all') return true;
+      if(filterType==='you') return t.owner==='you';
+      if(filterType==='ai') return t.owner==='ai';
+      if(filterType==='shared') return t.owner==='shared';
+      if(filterType==='high') return t.effort==='high';
+      return true;
+    });
+    if(!tasks.length) return;
+
+    totalYou += tasks.filter(t=>t.owner==='you').length;
+    totalAi += tasks.filter(t=>t.owner==='ai').length;
+    totalShared += tasks.filter(t=>t.owner==='shared').length;
+
+    const phaseEl = document.createElement('div');
+    phaseEl.className = 'phase';
+
+    const header = `<div class="phase-header">
+      <div class="phase-num">${phase.phase}</div>
+      <div class="phase-title">${phase.title}</div>
+      <div class="phase-weeks">${phase.weeks}</div>
+    </div>`;
+
+    const tasksHtml = tasks.map((t,i)=>{
+      const idx = `${phase.phase}-${i}`;
+      const ownerClass = t.owner==='you'?'owner-you':t.owner==='ai'?'owner-ai':'owner-shared';
+      const ownerLabel = t.owner==='you'?'You must do':t.owner==='ai'?'AI does it':'Shared';
+      const effortClass = t.effort==='high'?'effort-high':t.effort==='med'?'effort-med':'effort-low';
+      const effortLabel = t.effort==='high'?'High effort':t.effort==='med'?'Medium':'Low effort';
+
+      const youRow = t.youDo ? `<div class="detail-box">
+        <div class="detail-label">What you do</div>
+        <div class="detail-content">${t.youDo}</div>
+      </div>` : '';
+
+      const aiRow = t.aiDoes ? `<div class="detail-box">
+        <div class="detail-label">What Gemini/Antigravity does</div>
+        <div class="detail-content">${t.aiDoes}</div>
+      </div>` : '';
+
+      const libHtml = t.libs.length ? `<div class="libs">${t.libs.map(l=>`<span class="lib">${l}</span>`).join('')}</div>` : '';
+
+      const intHtml = t.interview ? `<div class="interview-box">
+        <div class="interview-label">Interview question you must own</div>
+        <div class="interview-q">${t.interview}</div>
+      </div>` : '';
+
+      return `<div class="task" data-owner="${t.owner}" data-effort="${t.effort}">
+        <div class="task-header" onclick="toggle('${idx}')">
+          <div class="task-owner ${ownerClass}">${ownerLabel}</div>
+          <div class="task-main">
+            <div class="task-name">${t.name}</div>
+            <div class="task-file">${t.file}</div>
+            <div class="task-why">${t.why.substring(0,120)}${t.why.length>120?'…':''}</div>
+          </div>
+          <div class="task-meta">
+            <span class="effort ${effortClass}">${effortLabel}</span>
+            <button class="expand-btn" id="btn-${idx}">Details ▾</button>
+          </div>
+        </div>
+        <div class="task-detail" id="detail-${idx}">
+          <div class="detail-grid">
+            ${youRow}
+            ${aiRow}
+          </div>
+          ${libHtml}
+          ${intHtml}
+        </div>
+      </div>`;
+    }).join('');
+
+    phaseEl.innerHTML = header + `<div class="tasks">${tasksHtml}</div>`;
+    container.appendChild(phaseEl);
+  });
+
+  document.getElementById('cnt-you').textContent = totalYou;
+  document.getElementById('cnt-ai').textContent = totalAi;
+  document.getElementById('cnt-shared').textContent = totalShared;
+}
+
+function toggle(idx){
+  const d = document.getElementById('detail-'+idx);
+  const b = document.getElementById('btn-'+idx);
+  if(!d) return;
+  const open = d.classList.toggle('open');
+  if(b) b.textContent = open ? 'Close ▴' : 'Details ▾';
+}
+
+function filter(type){
+  document.querySelectorAll('.fb-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  render(type);
+}
+
+render('all');
+</script>
+</body>
+</html>

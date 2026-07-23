@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediAssist AI — Project Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0B1829;
+    --navy2:  #112236;
+    --teal:   #0D7C66;
+    --teal2:  #0A5F50;
+    --mint:   #E4F5F1;
+    --mint2:  #C8EDE6;
+    --slate:  #4A6078;
+    --muted:  #7A90A4;
+    --light:  #F2F7FA;
+    --white:  #FFFFFF;
+    --border: #D8E6EF;
+    --red:    #C0392B;
+    --amber:  #D97706;
+    --green:  #059669;
+    --blue:   #1D6FA5;
+    --purple: #5B4DBE;
+    --coral:  #C45033;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--light);
+    color: var(--navy);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--navy);
+    padding: 56px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 340px; height: 340px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(13,124,102,0.25);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: 60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 1px solid rgba(13,124,102,0.15);
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: -.02em;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+  .header h1 span { color: var(--teal); }
+  .header-sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.55);
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .meta-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .meta-value {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    font-weight: 500;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    background: var(--navy2);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0 48px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav a {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.45);
+    text-decoration: none;
+    padding: 14px 16px;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  .nav a:hover { color: rgba(255,255,255,0.85); border-bottom-color: var(--teal); }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
+  .section { padding: 52px 0 44px; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+
+  .section-eyebrow {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--navy);
+    letter-spacing: -.02em;
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    max-width: 620px;
+  }
+
+  /* ── STAT STRIP ── */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .stat-cell {
+    background: var(--white);
+    padding: 20px 24px;
+  }
+  .stat-n {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--teal);
+    letter-spacing: -.02em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-l {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    gap: 14px;
+  }
+  .card-grid-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .card-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .card-body { font-size: 13px; color: var(--slate); line-height: 1.6; }
+
+  /* ── TAG ── */
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin: 2px 2px 0 0;
+  }
+  .tag-teal   { background: var(--mint);  color: var(--teal2); }
+  .tag-navy   { background: #E8EDF2;      color: var(--navy);  }
+  .tag-amber  { background: #FEF3C7;      color: #92400E; }
+  .tag-red    { background: #FEE2E2;      color: #991B1B; }
+  .tag-purple { background: #EDE9FE;      color: #4C1D95; }
+  .tag-blue   { background: #DBEAFE;      color: #1E40AF; }
+  .tag-green  { background: #D1FAE5;      color: #065F46; }
+
+  /* ── INPUT/OUTPUT FLOW ── */
+  .flow-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .flow-num {
+    background: var(--navy);
+    color: rgba(255,255,255,0.6);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    letter-spacing: .05em;
+  }
+  .flow-body { padding: 16px 20px; flex: 1; }
+  .flow-title { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+  .flow-desc  { font-size: 13px; color: var(--slate); line-height: 1.55; }
+  .flow-tags  { margin-top: 8px; }
+
+  /* ── DS MODULE TABLE ── */
+  .ds-table { width: 100%; border-collapse: collapse; }
+  .ds-table th {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 10px 14px;
+    background: var(--light);
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  .ds-table td {
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: top;
+    background: var(--white);
+  }
+  .ds-table tr:hover td { background: #FAFCFF; }
+  .ds-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--teal);
+  }
+  .ds-name { font-weight: 600; color: var(--navy); font-size: 13.5px; }
+  .lib-pill {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin: 2px 2px 0 0;
+    color: var(--slate);
+  }
+
+  /* ── PHASE TIMELINE ── */
+  .phase-list { display: flex; flex-direction: column; gap: 0; }
+  .phase-item {
+    display: flex;
+    gap: 0;
+    position: relative;
+  }
+  .phase-item:not(:last-child) .phase-line { border-left: 2px dashed var(--border); }
+  .phase-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 48px;
+    flex-shrink: 0;
+  }
+  .phase-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .phase-line { flex: 1; width: 2px; }
+  .phase-right {
+    padding: 0 0 36px 18px;
+    flex: 1;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding-top: 4px;
+  }
+  .phase-title { font-size: 15px; font-weight: 600; color: var(--navy); }
+  .phase-week {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 10px;
+  }
+  .phase-tasks {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .phase-tasks li {
+    font-size: 13px;
+    color: var(--slate);
+    padding-left: 16px;
+    position: relative;
+  }
+  .phase-tasks li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--teal);
+    font-weight: 500;
+  }
+
+  /* ── TECH STACK ── */
+  .stack-group { margin-bottom: 28px; }
+  .stack-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .stack-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .stack-chip {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 140px;
+  }
+  .stack-chip-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .stack-chip-name { font-size: 13px; font-weight: 500; color: var(--navy); }
+  .stack-chip-role { font-size: 11px; color: var(--muted); }
+
+  /* ── API ENDPOINT ── */
+  .endpoint-box {
+    background: var(--navy);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .endpoint-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .method-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: var(--teal);
+    color: var(--white);
+    padding: 3px 9px;
+    border-radius: 4px;
+    letter-spacing: .04em;
+  }
+  .endpoint-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+  }
+  .endpoint-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-left: auto;
+  }
+  .code-block {
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.75);
+    overflow-x: auto;
+  }
+  .c-key   { color: #7DD3FC; }
+  .c-str   { color: #86EFAC; }
+  .c-num   { color: #FCA5A5; }
+  .c-com   { color: rgba(255,255,255,0.28); }
+  .c-teal  { color: #5EEAD4; }
+
+  /* ── DATASETS ── */
+  .dataset-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    gap: 16px;
+  }
+  .dataset-name { font-size: 14px; font-weight: 600; color: var(--navy); min-width: 200px; }
+  .dataset-desc { font-size: 13px; color: var(--slate); flex: 1; }
+  .dataset-use  { font-size: 12px; }
+
+  /* ── OUTPUT CARDS ── */
+  .output-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    border-left: 3px solid var(--teal);
+  }
+  .output-level {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .level-low      { background: #D1FAE5; color: #065F46; }
+  .level-moderate { background: #FEF3C7; color: #92400E; }
+  .level-urgent   { background: #FEE2E2; color: #991B1B; }
+  .level-emerg    { background: #FEE2E2; color: var(--red); border: 1px solid #FCA5A5; }
+
+  /* ── DISCLAIMER ── */
+  .disclaimer {
+    background: #FFF7ED;
+    border: 1px solid #FDE68A;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .disclaimer-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .disclaimer-text { font-size: 13px; color: #78350F; line-height: 1.6; }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: var(--navy);
+    padding: 32px 48px;
+    text-align: center;
+  }
+  .footer-text { font-size: 13px; color: rgba(255,255,255,0.3); }
+  .footer-name { color: rgba(255,255,255,0.65); font-weight: 500; }
+
+  @media (max-width: 768px) {
+    .header, .container, .nav, .footer { padding-left: 20px; padding-right: 20px; }
+    .header h1 { font-size: 26px; }
+    .stat-strip { grid-template-columns: 1fr 1fr; }
+    .card-grid-2, .card-grid-3, .card-grid-4 { grid-template-columns: 1fr; }
+    .dataset-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .stack-chip { min-width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <p class="header-eyebrow">Full Product Build · AI/ML + RAG + Data Science</p>
+  <h1>Medi<span>Assist</span> AI<br>Project Plan</h1>
+  <p class="header-sub">A multimodal medical intelligence system that ingests symptoms, X-rays, body photos, prescriptions, <strong style="color:rgba(255,255,255,0.75)">and a personal health profile</strong> — then delivers grounded diagnosis, urgency scoring, and nearby specialist recommendations fully personalized to the user.</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Built by</span><span class="meta-value">Aakash — JECRC University, Jaipur</span></div>
+    <div class="meta-item"><span class="meta-label">Stack</span><span class="meta-value">FastAPI · AWS Bedrock · LangChain · Pinecone</span></div>
+    <div class="meta-item"><span class="meta-label">Frontend</span><span class="meta-value">Lovable (React + Tailwind)</span></div>
+    <div class="meta-item"><span class="meta-label">Timeline</span><span class="meta-value">8 Weeks</span></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#overview">Overview</a>
+  <a href="#inputs">Inputs</a>
+  <a href="#personalprofile">Personal Profile</a>
+  <a href="#outputs">Outputs</a>
+  <a href="#datascience">Data Science</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#stack">Tech Stack</a>
+  <a href="#api">API Design</a>
+  <a href="#datasets">Datasets</a>
+  <a href="#timeline">Timeline</a>
+</nav>
+
+<div class="container">
+
+  <!-- OVERVIEW -->
+  <section class="section" id="overview">
+    <p class="section-eyebrow">Project Overview</p>
+    <h2 class="section-title">What MediAssist AI does</h2>
+    <p class="section-sub">A single FastAPI backend orchestrates multimodal AI, classical ML, and a RAG knowledge pipeline to give users medically grounded insights.</p>
+
+    <div class="stat-strip">
+      <div class="stat-cell"><div class="stat-n">5</div><div class="stat-l">Input modalities</div></div>
+      <div class="stat-cell"><div class="stat-n">9</div><div class="stat-l">Data science modules</div></div>
+      <div class="stat-cell"><div class="stat-n">3</div><div class="stat-l">Output layers</div></div>
+      <div class="stat-cell"><div class="stat-n">1</div><div class="stat-l">Unified API endpoint</div></div>
+    </div>
+
+    <div class="card-grid card-grid-3">
+      <div class="card">
+        <div class="card-icon" style="background:#E4F5F1">🔬</div>
+        <div class="card-title">Multimodal AI Analysis</div>
+        <div class="card-body">AWS Bedrock Nova Pro processes text, X-rays, body photos, and prescriptions together — building a unified patient context before any diagnosis step.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:#EDE9FE">🧠</div>
+        <div class="card-title">RAG-Powered Diagnosis</div>
+        <div class="card-body">LangChain retrieves relevant chunks from indexed medical knowledge bases (PubMed, SNOMED, OpenFDA) and passes them to the LLM for grounded, cited answers.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:#FEF3C7">📍</div>
+        <div class="card-title">Doctor &amp; Hospital Finder</div>
+        <div class="card-body">Based on the identified specialty need and the user's location, the system returns top-rated specialists and hospitals with ratings, contact info, and distance.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INPUTS -->
+  <section class="section" id="inputs">
+    <p class="section-eyebrow">Input Layer</p>
+    <h2 class="section-title">What users send to the system</h2>
+    <p class="section-sub">All five input types flow into a single <code style="font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--light);padding:2px 6px;border-radius:4px;">/analyze</code> endpoint and are unified into a structured patient context object before processing.</p>
+
+    <div class="flow-row">
+      <div class="flow-num" style="background:#0B1829">01</div>
+      <div class="flow-body">
+        <div class="flow-title">Symptoms text</div>
+        <div class="flow-desc">Free-text description of how the patient feels. Goes through NLP preprocessing (tokenization, medical NER, symptom normalization) before being embedded for vector search.</div>
+        <div class="flow-tags"><span class="tag tag-teal">Free text</span><span class="tag tag-navy">spaCy NER</span><span class="tag tag-navy">BioSentBERT</span></div>
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num" style="background:#0D7C66">02</div>
+      <div class="flow-body">
+        <div class="flow-title">X-ray / medical scan</div>
+        <div class="flow-desc">Uploaded to S3, then analyzed by a fine-tuned ResNet-50 CNN (NIH ChestX-ray14 dataset) for condition classification. Confidence + predicted label become part of the patient context. Bedrock Nova Pro handles visual reasoning on top.</div>
+        <div class="flow-tags"><span class="tag tag-blue">ResNet-50</span><span class="tag tag-blue">Bedrock Vision</span><span class="tag tag-navy">S3 Upload</span><span class="tag tag-teal">PyTorch</span></div>
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num" style="background:#112236">03</div>
+      <div class="flow-body">
+        <div class="flow-title">Body photo (affected area)</div>
+        <div class="flow-desc">Photos of visible symptoms — swelling, rash, bruising, deformity. Sent directly to Bedrock Nova Pro for multimodal reasoning. The model describes what it sees and flags potential visual indicators.</div>
+        <div class="flow-tags"><span class="tag tag-purple">Bedrock Nova Pro</span><span class="tag tag-navy">Multimodal</span><span class="tag tag-navy">Base64 S3</span></div>
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-num" style="background:#4A6078">04</div>
+      <div class="flow-body">
+        <div class="flow-title">Prescription / medical document</div>
+        <div class="flow-desc">Scanned or photographed prescription. AWS Textract performs OCR and extracts medicine names, dosage, doctor notes, and diagnosis codes. Extracted text is fed into the RAG pipeline to cross-reference drug interactions and history.</div>
+        <div class="flow-tags"><span class="tag tag-amber">AWS Textract</span><span class="tag tag-navy">OCR</span><span class="tag tag-teal">Drug DB lookup</span></div>
+      </div>
+    </div>
+    <div class="flow-row" style="border-left:3px solid #D97706">
+      <div class="flow-num" style="background:#92400E">05</div>
+      <div class="flow-body">
+        <div class="flow-title">Personal health profile <span style="font-size:11px;font-weight:600;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:middle">NEW</span></div>
+        <div class="flow-desc">Structured patient profile collected via the frontend form before analysis. Includes demographics, medical history, lifestyle habits, and family history. This context is injected directly into the RAG query and the LLM system prompt — making the diagnosis, urgency score, and action plan fully personalized rather than generic.</div>
+        <div class="flow-tags"><span class="tag tag-amber">JSON form data</span><span class="tag tag-navy">Risk multipliers</span><span class="tag tag-teal">Personalized output</span><span class="tag tag-purple">DynamoDB profile</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PERSONAL PROFILE -->
+  <section class="section" id="personalprofile">
+    <p class="section-eyebrow">Personal Profile Layer</p>
+    <h2 class="section-title">What personal data is collected and why</h2>
+    <p class="section-sub">The same symptom means very different things depending on who has it. A 55-year-old male smoker with chest pain is a cardiac emergency. A 22-year-old athlete with the same symptom is probably muscle strain. Without this context, the model is guessing.</p>
+
+    <div class="card-grid card-grid-3" style="margin-bottom:24px">
+      <div class="card" style="border-top:3px solid var(--teal)">
+        <div class="card-icon" style="background:#E4F5F1">👤</div>
+        <div class="card-title">Basic demographics</div>
+        <div class="card-body">
+          <ul style="list-style:none;font-size:13px;color:var(--slate);display:flex;flex-direction:column;gap:5px">
+            <li>→ Full name (for report personalization)</li>
+            <li>→ Age (changes disease probability drastically)</li>
+            <li>→ Gender (risk profiles differ significantly)</li>
+            <li>→ Height + weight (BMI — obesity risk flag)</li>
+            <li>→ Blood group (relevant for drug compatibility)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--purple)">
+        <div class="card-icon" style="background:#EDE9FE">🏥</div>
+        <div class="card-title">Medical history</div>
+        <div class="card-body">
+          <ul style="list-style:none;font-size:13px;color:var(--slate);display:flex;flex-direction:column;gap:5px">
+            <li>→ Existing conditions (diabetes, hypertension…)</li>
+            <li>→ Known allergies (penicillin, NSAIDs, etc.)</li>
+            <li>→ Current medications (drug conflict detection)</li>
+            <li>→ Past surgeries or procedures</li>
+            <li>→ Vaccination history (if relevant)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--amber)">
+        <div class="card-icon" style="background:#FEF3C7">🚬</div>
+        <div class="card-title">Lifestyle &amp; habits</div>
+        <div class="card-body">
+          <ul style="list-style:none;font-size:13px;color:var(--slate);display:flex;flex-direction:column;gap:5px">
+            <li>→ Smoking (yes/no, pack-years if yes)</li>
+            <li>→ Alcohol consumption (units per week)</li>
+            <li>→ Physical activity level (sedentary → active)</li>
+            <li>→ Diet type (junk / balanced / vegan)</li>
+            <li>→ Sleep quality (hours, disruptions)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-grid card-grid-2">
+      <div class="card" style="border-top:3px solid var(--red)">
+        <div class="card-icon" style="background:#FEE2E2">🧬</div>
+        <div class="card-title">Family history</div>
+        <div class="card-body">
+          Heart disease, cancer, diabetes, and other hereditary conditions in immediate family. Significantly raises prior probability of those conditions appearing in the diagnosis. A 40-year-old with a father who had a heart attack at 45 is immediately flagged at higher cardiac risk.
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--blue)">
+        <div class="card-icon" style="background:#DBEAFE">📍</div>
+        <div class="card-title">Location context</div>
+        <div class="card-body">
+          City and region matter medically. Dengue risk is high in Jaipur during monsoon. Malaria risk differs by zone. Air quality index affects respiratory symptom interpretation. The system uses location to apply region-specific disease priors in the RAG query.
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;background:var(--navy);border-radius:12px;overflow:hidden">
+      <div style="padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:.06em;text-transform:uppercase">How profile data changes the output — real example</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+        <div style="padding:20px 24px;border-right:1px solid rgba(255,255,255,0.07)">
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Without personal profile</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7">
+            Symptom: "chest pain + shortness of breath"<br><br>
+            Diagnosis: <span style="color:#FCA5A5">Possible cardiac or pulmonary issue</span><br>
+            Urgency: <span style="color:#FCA5A5">Moderate</span><br>
+            Action: "Consult a doctor soon"
+          </div>
+        </div>
+        <div style="padding:20px 24px">
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">With personal profile (male, 55, smoker, hypertension)</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7">
+            Symptom: "chest pain + shortness of breath"<br><br>
+            Diagnosis: <span style="color:#86EFAC">Possible Acute Coronary Syndrome — high cardiac risk profile</span><br>
+            Urgency: <span style="color:#86EFAC">🚨 Emergency</span><br>
+            Action: "Call 112 now. Stop smoking. Alert family."
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px">How profile data flows into each system layer</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;background:var(--mint);color:var(--teal2);padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0">XGBoost Classifier</span>
+          <span style="font-size:13px;color:var(--slate)">Age, gender, BMI, smoking status, and existing conditions are direct <strong>feature inputs</strong> to the symptom-to-disease model. Model accuracy improves significantly with these features vs. symptoms alone.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;background:#FEF3C7;color:#92400E;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0">Urgency Model</span>
+          <span style="font-size:13px;color:var(--slate)">Lifestyle habits act as <strong>risk multipliers</strong> — smoker + age 50+ + chest pain automatically elevates urgency from moderate to emergency regardless of other signals.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;background:#EDE9FE;color:#4C1D95;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0">RAG Query</span>
+          <span style="font-size:13px;color:var(--slate)">Patient context JSON is appended to the retrieval query — pulls <strong>age/gender-specific</strong> and <strong>condition-specific</strong> medical guidelines instead of generic articles.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;background:#DBEAFE;color:#1E40AF;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0">LLM Prompt</span>
+          <span style="font-size:13px;color:var(--slate)">Full profile is injected into the system prompt. The LLM's action plan now says <em>"You should quit smoking"</em> instead of generic advice. Drug suggestions respect allergy and current medication fields.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;background:#D1FAE5;color:#065F46;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0">Doctor Finder</span>
+          <span style="font-size:13px;color:var(--slate)">Filters specialists by <strong>language preference, gender preference</strong> (female gynecologist), and <strong>age specialization</strong> (pediatric for children, geriatric for 65+).</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 16px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;background:#FEE2E2;color:#991B1B;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0">DS Analytics</span>
+          <span style="font-size:13px;color:var(--slate)">Stored profiles enable <strong>longitudinal analysis</strong> — track symptom progression over time, correlate lifestyle habits with conditions, power cohort-level health insights as a future feature.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- OUTPUTS -->
+  <section class="section" id="outputs">
+    <p class="section-eyebrow">Output Layer</p>
+    <h2 class="section-title">What the system returns</h2>
+    <p class="section-sub">Every response is a structured JSON object with three layers — diagnosis, urgency, and recommendations. The frontend renders each layer as a distinct UI panel.</p>
+
+    <div class="card-grid card-grid-3" style="margin-bottom:28px">
+      <div class="output-card">
+        <div class="card-title" style="margin-bottom:8px">🩺 Diagnosis Report</div>
+        <div class="card-body">Possible condition name with confidence score, plain-language explanation, and cited source from the RAG knowledge base. Always includes a medical disclaimer.</div>
+      </div>
+      <div class="output-card" style="border-left-color:var(--amber)">
+        <div class="card-title" style="margin-bottom:8px">⚡ Urgency Scoring</div>
+        <div class="card-body">ML severity model classifies the case as Low, Moderate, Urgent, or Emergency. Drives the action plan — rest at home vs. book appointment vs. go to ER now.</div>
+      </div>
+      <div class="output-card" style="border-left-color:var(--purple)">
+        <div class="card-title" style="margin-bottom:8px">📍 Doctor Finder</div>
+        <div class="card-body">Top 3–5 specialists near the user's location, filtered by the required specialty. Returns name, rating, distance, and contact info via Google Places API / NMC Registry.</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px;font-size:13px;font-weight:600;color:var(--navy)">Urgency levels — what each means</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:180px">
+        <span class="output-level level-low">● Low</span>
+        <div class="card-body">Rest, hydration, monitor symptoms. Follow up with GP in 3–5 days if no improvement.</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:180px">
+        <span class="output-level level-moderate">● Moderate</span>
+        <div class="card-body">Book a doctor appointment within 24–48 hours. Avoid strenuous activity.</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:180px">
+        <span class="output-level level-urgent">● Urgent</span>
+        <div class="card-body">Visit an urgent care clinic today. Do not delay. Take prescribed medications.</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:180px">
+        <span class="output-level level-emerg">🚨 Emergency</span>
+        <div class="card-body">Go to the emergency room immediately or call 112. This requires immediate medical attention.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA SCIENCE -->
+  <section class="section" id="datascience">
+    <p class="section-eyebrow">Data Science Modules</p>
+    <h2 class="section-title">8 DS components inside the project</h2>
+    <p class="section-sub">This is what separates MediAssist AI from a simple "call an LLM" app. Each module is a standalone deliverable and a portfolio piece on its own.</p>
+
+    <table class="ds-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Module</th>
+          <th>What it does</th>
+          <th>Libraries / Tools</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="ds-num">01</span></td>
+          <td><span class="ds-name">EDA on medical datasets</span></td>
+          <td>Analyze symptom frequency, disease distribution, class imbalance. Clean and prepare training data.</td>
+          <td><span class="lib-pill">pandas</span><span class="lib-pill">numpy</span><span class="lib-pill">seaborn</span><span class="lib-pill">matplotlib</span></td>
+          <td><span class="tag tag-teal">Analysis</span></td>
+        </tr>
+        <tr>
+          <td><span class="ds-num">02</span></td>
+          <td><span class="ds-name">NLP preprocessing</span></td>
+          <td>Tokenize, lemmatize, remove stopwords, extract medical named entities (symptoms, drugs, body parts).</td>
+          <td><span class="lib-pill">spaCy</span><span class="lib-pill">scispaCy</span><span class="lib-pill">NLTK</span><span class="lib-pill">transformers</span></td>
+          <td><span class="tag tag-navy">NLP</span></td>
+        </tr>
+        <tr>
+          <td><span class="ds-num">03</span></td>
+          <td><span class="ds-name">Medical image classifier</span></td>
+          <td>Fine-tune ResNet-50 on NIH ChestX-ray14 for 14-class lung condition detection. Outputs label + confidence.</td>
+          <td><span class="lib-pill">PyTorch</span><span class="lib-pill">torchvision</span><span class="lib-pill">OpenCV</span><span class="lib-pill">albumentations</span></td>
+          <td><span class="tag tag-blue">Deep Learning</span></td>
+        </tr>
+        <tr>
+          <td><span class="ds-num">04</span></td>
+          <td><span class="ds-name">Embeddings + vector search</span></td>
+          <td>Convert medical text chunks to dense vectors using BioSentBERT. Index into Pinecone for semantic retrieval.</td>
+          <td><span class="lib-pill">sentence-transformers</span><span class="lib-pill">Pinecone</span><span class="lib-pill">FAISS</span></td>
+          <td><span class="tag tag-purple">RAG Core</span></td>
+        </tr>
+        <tr>
+          <td><span class="ds-num">05</span></td>
+          <td><span class="ds-name">Symptom-to-disease classifier</span></td>
+          <td>Multi-label ML model mapping structured symptoms to a ranked list of possible diseases. Trained on Kaggle medical dataset.</td>
+          <td><span class="lib-pill">scikit-learn</span><span class="lib-pill">XGBoost</span><span class="lib-pill">RandomForest</span></td>
+          <td><span class="tag tag-amber">ML Model</span></td>
+        </tr>
+        <tr>
+          <td><span class="ds-num">06</span></td>
+          <td><span class="ds-name">Severity / urgency scorer</span></td>
+          <td>Classify case severity (Low/Moderate/Urgent/Emergency) using patient context. Drives the action plan output.</td>
+          <td><span class="lib-pill">scikit-learn</span><span class="lib-pill">LogisticRegression</span><span class="lib-pill">LightGBM</span></td>
+          <td><span class="tag tag-amber">ML Model</span></td>
+        </tr>
+        <tr>
+          <td><span class="ds-num">07</span></td>
+          <td><span class="ds-name">Model evaluation pipeline</span></td>
+          <td>Track precision, recall, F1, AUC-ROC for all models. Compare runs, detect drift, and version models with MLflow.</td>
+          <td><span class="lib-pill">mlflow</span><span class="lib-pill">sklearn metrics</span><span class="lib-pill">wandb</span></td>
+          <td><span class="tag tag-green">Eval / MLOps</span></td>
+        </tr>
+        <tr>
+          <td><span class="ds-num">08</span></td>
+          <td><span class="ds-name">ETL data pipeline</span></td>
+          <td>Pull new data from OpenFDA, PubMed. Clean, chunk, embed, and re-index into Pinecone on a schedule.</td>
+          <td><span class="lib-pill">AWS Lambda</span><span class="lib-pill">EventBridge</span><span class="lib-pill">boto3</span><span class="lib-pill">LangChain</span></td>
+          <td><span class="tag tag-navy">Pipeline</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="section" id="architecture">
+    <p class="section-eyebrow">System Architecture</p>
+    <h2 class="section-title">How the layers connect</h2>
+    <p class="section-sub">Five logical layers, each with a clear responsibility. The RAG pipeline is the backbone; DS models run as microservices alongside it.</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <div style="background:var(--navy);padding:12px 20px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.4)">Layer 1</span>
+          <span style="font-size:14px;font-weight:600;color:var(--white)">Input &amp; Preprocessing</span>
+        </div>
+        <div style="padding:16px 20px;font-size:13px;color:var(--slate)">
+          <strong style="color:var(--navy)">Receives:</strong> Text symptoms, images (X-ray / body photo), prescription scan<br>
+          <strong style="color:var(--navy)">Does:</strong> S3 upload → Bedrock Vision → Textract OCR → spaCy NER → unified patient context JSON<br>
+          <strong style="color:var(--navy)">Output:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--light);padding:1px 5px;border-radius:3px">PatientContext { symptoms[], image_findings, ocr_text, location }</code>
+        </div>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <div style="background:#0D7C66;padding:12px 20px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.5)">Layer 2</span>
+          <span style="font-size:14px;font-weight:600;color:var(--white)">DS Inference Layer</span>
+        </div>
+        <div style="padding:16px 20px;font-size:13px;color:var(--slate)">
+          <strong style="color:var(--navy)">Receives:</strong> PatientContext<br>
+          <strong style="color:var(--navy)">Does:</strong> CNN image classification → Symptom classifier (XGBoost) → Severity scorer (LightGBM) → all results merged<br>
+          <strong style="color:var(--navy)">Output:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--light);padding:1px 5px;border-radius:3px">DSResults { predicted_condition, confidence, severity_level, specialty_needed }</code>
+        </div>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <div style="background:#534AB7;padding:12px 20px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.5)">Layer 3</span>
+          <span style="font-size:14px;font-weight:600;color:var(--white)">RAG Pipeline</span>
+        </div>
+        <div style="padding:16px 20px;font-size:13px;color:var(--slate)">
+          <strong style="color:var(--navy)">Receives:</strong> PatientContext + DSResults<br>
+          <strong style="color:var(--navy)">Does:</strong> BioSentBERT embed query → Pinecone similarity search → retrieve top-k medical chunks → LangChain prompt → Bedrock Claude 3.5<br>
+          <strong style="color:var(--navy)">Output:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--light);padding:1px 5px;border-radius:3px">Diagnosis { condition, explanation, citations[], action_plan }</code>
+        </div>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <div style="background:#854F0B;padding:12px 20px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.5)">Layer 4</span>
+          <span style="font-size:14px;font-weight:600;color:var(--white)">Doctor Finder</span>
+        </div>
+        <div style="padding:16px 20px;font-size:13px;color:var(--slate)">
+          <strong style="color:var(--navy)">Receives:</strong> specialty_needed + user location (lat/lng)<br>
+          <strong style="color:var(--navy)">Does:</strong> Query Google Places API or NMC Registry → filter by specialty + rating → rank by distance<br>
+          <strong style="color:var(--navy)">Output:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--light);padding:1px 5px;border-radius:3px">Recommendations [ { name, specialty, rating, distance, contact } ]</code>
+        </div>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <div style="background:#4A6078;padding:12px 20px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.5)">Layer 5</span>
+          <span style="font-size:14px;font-weight:600;color:var(--white)">Response Assembly</span>
+        </div>
+        <div style="padding:16px 20px;font-size:13px;color:var(--slate)">
+          <strong style="color:var(--navy)">Receives:</strong> All layer outputs<br>
+          <strong style="color:var(--navy)">Does:</strong> Merge → validate → attach disclaimer → serialize to JSON → return HTTP 200<br>
+          <strong style="color:var(--navy)">Output:</strong> Final unified JSON response to Lovable React frontend
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section class="section" id="stack">
+    <p class="section-eyebrow">Tech Stack</p>
+    <h2 class="section-title">Tools and services used</h2>
+    <p class="section-sub">You focus entirely on the Python backend. Lovable handles the React frontend.</p>
+
+    <div class="stack-group">
+      <div class="stack-group-label">Backend API</div>
+      <div class="stack-row">
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#E4F5F1;color:#0D7C66;font-size:12px">FA</div><div><div class="stack-chip-name">FastAPI</div><div class="stack-chip-role">Main API framework</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#E4F5F1;color:#0D7C66;font-size:12px">Py</div><div><div class="stack-chip-name">Python 3.11</div><div class="stack-chip-role">Core language</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#DBEAFE;color:#1E40AF;font-size:12px">λ</div><div><div class="stack-chip-name">AWS Lambda</div><div class="stack-chip-role">Serverless deployment</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#DBEAFE;color:#1E40AF;font-size:12px">AG</div><div><div class="stack-chip-name">API Gateway</div><div class="stack-chip-role">HTTP routing</div></div></div>
+      </div>
+    </div>
+
+    <div class="stack-group">
+      <div class="stack-group-label">AI / LLM</div>
+      <div class="stack-row">
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#EDE9FE;color:#4C1D95;font-size:12px">BR</div><div><div class="stack-chip-name">AWS Bedrock</div><div class="stack-chip-role">Nova Pro (multimodal)</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#E4F5F1;color:#0D7C66;font-size:12px">LC</div><div><div class="stack-chip-name">LangChain</div><div class="stack-chip-role">RAG orchestration</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#FEF3C7;color:#92400E;font-size:12px">TX</div><div><div class="stack-chip-name">AWS Textract</div><div class="stack-chip-role">OCR for prescriptions</div></div></div>
+      </div>
+    </div>
+
+    <div class="stack-group">
+      <div class="stack-group-label">Data Science</div>
+      <div class="stack-row">
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#DBEAFE;color:#1E40AF;font-size:12px">PT</div><div><div class="stack-chip-name">PyTorch</div><div class="stack-chip-role">CNN image model</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#FEF3C7;color:#92400E;font-size:12px">XG</div><div><div class="stack-chip-name">XGBoost</div><div class="stack-chip-role">Symptom classifier</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#D1FAE5;color:#065F46;font-size:12px">SK</div><div><div class="stack-chip-name">scikit-learn</div><div class="stack-chip-role">ML + evaluation</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#E4F5F1;color:#0D7C66;font-size:11px">ST</div><div><div class="stack-chip-name">SentenceTransformers</div><div class="stack-chip-role">BioSentBERT embeddings</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#EDE9FE;color:#4C1D95;font-size:11px">ML</div><div><div class="stack-chip-name">MLflow</div><div class="stack-chip-role">Experiment tracking</div></div></div>
+      </div>
+    </div>
+
+    <div class="stack-group">
+      <div class="stack-group-label">Storage &amp; Vector DB</div>
+      <div class="stack-row">
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#FEE2E2;color:#991B1B;font-size:12px">PC</div><div><div class="stack-chip-name">Pinecone</div><div class="stack-chip-role">Vector DB (prod)</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#E8EDF2;color:var(--navy);font-size:12px">FA</div><div><div class="stack-chip-name">FAISS</div><div class="stack-chip-role">Vector DB (local dev)</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#FEF3C7;color:#92400E;font-size:12px">S3</div><div><div class="stack-chip-name">AWS S3</div><div class="stack-chip-role">Image + file storage</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#DBEAFE;color:#1E40AF;font-size:12px">DB</div><div><div class="stack-chip-name">DynamoDB</div><div class="stack-chip-role">Session + history</div></div></div>
+      </div>
+    </div>
+
+    <div class="stack-group" style="margin-bottom:0">
+      <div class="stack-group-label">Frontend</div>
+      <div class="stack-row">
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#DBEAFE;color:#1E40AF;font-size:12px">Lv</div><div><div class="stack-chip-name">Lovable</div><div class="stack-chip-role">React + Tailwind UI</div></div></div>
+        <div class="stack-chip"><div class="stack-chip-icon" style="background:#E8EDF2;color:var(--navy);font-size:12px">Vr</div><div><div class="stack-chip-name">Vercel</div><div class="stack-chip-role">Frontend deploy</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- API DESIGN -->
+  <section class="section" id="api">
+    <p class="section-eyebrow">API Design</p>
+    <h2 class="section-title">Endpoint contract</h2>
+    <p class="section-sub">Single POST endpoint. Multipart form-data to handle both JSON fields and file uploads together.</p>
+
+    <div class="endpoint-box">
+      <div class="endpoint-header">
+        <span class="method-badge">POST</span>
+        <span class="endpoint-path">/api/v1/analyze</span>
+        <span class="endpoint-desc">Main analysis endpoint</span>
+      </div>
+      <div class="code-block">
+<span class="c-com"># Request — multipart/form-data</span>
+{
+  <span class="c-com">// ── Symptom & media inputs ──</span>
+  <span class="c-key">"symptoms"</span>:   <span class="c-str">"severe chest pain, shortness of breath, left arm numbness"</span>,
+  <span class="c-key">"location"</span>:   { <span class="c-key">"lat"</span>: <span class="c-num">26.9124</span>, <span class="c-key">"lng"</span>: <span class="c-num">75.7873</span>, <span class="c-key">"city"</span>: <span class="c-str">"Jaipur"</span> },
+  <span class="c-key">"xray_image"</span>:  <span class="c-com">File (optional)</span>,
+  <span class="c-key">"body_photo"</span>:  <span class="c-com">File (optional)</span>,
+  <span class="c-key">"prescription"</span>: <span class="c-com">File (optional)</span>,
+
+  <span class="c-com">// ── Personal profile (NEW) ──</span>
+  <span class="c-key">"patient"</span>: {
+    <span class="c-com">// Basic demographics</span>
+    <span class="c-key">"name"</span>:         <span class="c-str">"Rahul Sharma"</span>,
+    <span class="c-key">"age"</span>:          <span class="c-num">55</span>,
+    <span class="c-key">"gender"</span>:       <span class="c-str">"male"</span>,
+    <span class="c-key">"height_cm"</span>:    <span class="c-num">172</span>,
+    <span class="c-key">"weight_kg"</span>:    <span class="c-num">88</span>,
+    <span class="c-key">"blood_group"</span>:  <span class="c-str">"B+"</span>,
+
+    <span class="c-com">// Medical history</span>
+    <span class="c-key">"conditions"</span>:   [<span class="c-str">"hypertension"</span>, <span class="c-str">"type-2 diabetes"</span>],
+    <span class="c-key">"allergies"</span>:    [<span class="c-str">"penicillin"</span>],
+    <span class="c-key">"medications"</span>:  [<span class="c-str">"metformin 500mg"</span>, <span class="c-str">"amlodipine 5mg"</span>],
+
+    <span class="c-com">// Lifestyle & habits</span>
+    <span class="c-key">"smoking"</span>:      { <span class="c-key">"status"</span>: <span class="c-str">"yes"</span>, <span class="c-key">"pack_years"</span>: <span class="c-num">20</span> },
+    <span class="c-key">"alcohol"</span>:      <span class="c-str">"occasional"</span>,
+    <span class="c-key">"activity"</span>:     <span class="c-str">"sedentary"</span>,
+    <span class="c-key">"diet"</span>:         <span class="c-str">"high-fat"</span>,
+    <span class="c-key">"sleep_hours"</span>:  <span class="c-num">5</span>,
+
+    <span class="c-com">// Family history</span>
+    <span class="c-key">"family_history"</span>: [<span class="c-str">"heart disease"</span>, <span class="c-str">"diabetes"</span>]
+  }
+}
+
+<span class="c-com"># Response — 200 OK</span>
+{
+  <span class="c-key">"diagnosis"</span>: {
+    <span class="c-key">"condition"</span>:    <span class="c-str">"Possible Acute Coronary Syndrome"</span>,
+    <span class="c-key">"confidence"</span>:  <span class="c-num">0.84</span>,
+    <span class="c-key">"explanation"</span>: <span class="c-str">"Symptoms are consistent with..."</span>,
+    <span class="c-key">"citations"</span>:   [<span class="c-str">"PubMed:32156789"</span>, <span class="c-str">"SNOMED:57054005"</span>]
+  },
+  <span class="c-key">"urgency"</span>: {
+    <span class="c-key">"level"</span>:       <span class="c-str">"emergency"</span>,
+    <span class="c-key">"action_plan"</span>: <span class="c-str">"Call 112 immediately. Do not drive yourself."</span>
+  },
+  <span class="c-key">"recommendations"</span>: [
+    {
+      <span class="c-key">"name"</span>:      <span class="c-str">"Dr. Rajesh Sharma"</span>,
+      <span class="c-key">"specialty"</span>: <span class="c-str">"Cardiologist"</span>,
+      <span class="c-key">"rating"</span>:   <span class="c-num">4.8</span>,
+      <span class="c-key">"distance"</span>: <span class="c-str">"2.3 km"</span>,
+      <span class="c-key">"hospital"</span>: <span class="c-str">"Fortis Jaipur"</span>,
+      <span class="c-key">"contact"</span>:  <span class="c-str">"+91-141-2547000"</span>
+    }
+  ],
+  <span class="c-key">"disclaimer"</span>: <span class="c-str">"This is AI-generated information. Consult a doctor."</span>,
+  <span class="c-key">"session_id"</span>: <span class="c-str">"sess_abc123"</span>
+}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px">
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px">Additional endpoints</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--slate);line-height:2">
+          GET  /api/v1/history/{session_id}<br>
+          POST /api/v1/feedback<br>
+          GET  /api/v1/health<br>
+          POST /api/v1/doctors/search
+        </div>
+      </div>
+      <div style="flex:1;min-width:200px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 18px">
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px">Error handling</div>
+        <div style="font-size:13px;color:var(--slate);line-height:1.8">
+          400 — Invalid input / missing required fields<br>
+          413 — File too large (max 10 MB per image)<br>
+          422 — Validation error (Pydantic)<br>
+          500 — Internal model or AWS error
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATASETS -->
+  <section class="section" id="datasets">
+    <p class="section-eyebrow">Data Sources</p>
+    <h2 class="section-title">Datasets and knowledge bases</h2>
+    <p class="section-sub">All free / open access. These feed both the ML model training and the RAG vector knowledge base.</p>
+
+    <div class="dataset-row">
+      <div class="dataset-name">NIH ChestX-ray14</div>
+      <div class="dataset-desc">112,000 frontal chest X-rays with 14 disease labels. Used to train and fine-tune the ResNet-50 image classifier.</div>
+      <div class="dataset-use"><span class="tag tag-blue">CNN Training</span></div>
+    </div>
+    <div class="dataset-row">
+      <div class="dataset-name">Kaggle: Disease Symptom Dataset</div>
+      <div class="dataset-desc">Structured mapping of symptoms to 41 common diseases. Core training data for the XGBoost symptom classifier.</div>
+      <div class="dataset-use"><span class="tag tag-amber">ML Training</span></div>
+    </div>
+    <div class="dataset-row">
+      <div class="dataset-name">PubMed Abstracts</div>
+      <div class="dataset-desc">30M+ biomedical research abstracts. Chunked and indexed into Pinecone as the primary RAG medical knowledge base.</div>
+      <div class="dataset-use"><span class="tag tag-purple">RAG KB</span></div>
+    </div>
+    <div class="dataset-row">
+      <div class="dataset-name">OpenFDA API</div>
+      <div class="dataset-desc">Drug labels, adverse events, recalls. Used for drug interaction checks from prescription OCR output.</div>
+      <div class="dataset-use"><span class="tag tag-teal">Drug DB</span></div>
+    </div>
+    <div class="dataset-row">
+      <div class="dataset-name">SNOMED CT (subset)</div>
+      <div class="dataset-desc">Standardized medical terminology ontology. Used to normalize symptom names before vector embedding.</div>
+      <div class="dataset-use"><span class="tag tag-navy">NLP Normalization</span></div>
+    </div>
+    <div class="dataset-row">
+      <div class="dataset-name">Google Places API / NMC Registry</div>
+      <div class="dataset-desc">Real-time hospital and doctor data for India. Powers the location-aware doctor and specialist finder feature.</div>
+      <div class="dataset-use"><span class="tag tag-green">Doctor Finder</span></div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="section" id="timeline">
+    <p class="section-eyebrow">Build Timeline</p>
+    <h2 class="section-title">8-week delivery plan</h2>
+    <p class="section-sub">Each phase produces working, testable code. No phase is just setup — every week you have something to show.</p>
+
+    <div class="phase-list">
+
+      <div class="phase-item">
+        <div class="phase-left">
+          <div class="phase-dot">1</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-header">
+            <span class="phase-title">Project skeleton + data pipeline</span>
+            <span class="phase-week">Week 1</span>
+          </div>
+          <ul class="phase-tasks">
+            <li>Set up FastAPI project structure with Pydantic models</li>
+            <li>Configure AWS (S3 bucket, IAM roles, Bedrock access)</li>
+            <li>Download and perform EDA on all datasets (Module 1)</li>
+            <li>Build ETL pipeline to clean and chunk PubMed abstracts (Module 8)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-left">
+          <div class="phase-dot">2</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-header">
+            <span class="phase-title">NLP preprocessing + embeddings</span>
+            <span class="phase-week">Week 2</span>
+          </div>
+          <ul class="phase-tasks">
+            <li>Build spaCy + scispaCy NLP preprocessing pipeline (Module 2)</li>
+            <li>Generate BioSentBERT embeddings for all knowledge chunks (Module 4)</li>
+            <li>Index embeddings into Pinecone and test similarity search</li>
+            <li>Verify retrieval quality with sample medical queries</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-left">
+          <div class="phase-dot">3</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-header">
+            <span class="phase-title">Symptom classifier + severity scorer</span>
+            <span class="phase-week">Week 3</span>
+          </div>
+          <ul class="phase-tasks">
+            <li>Train XGBoost multi-label symptom-to-disease classifier (Module 5)</li>
+            <li>Train LightGBM severity scoring model (Module 6)</li>
+            <li>Set up MLflow tracking and evaluate all models with F1, AUC-ROC (Module 7)</li>
+            <li>Serialize and version models for Lambda deployment</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-left">
+          <div class="phase-dot">4</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-header">
+            <span class="phase-title">CNN image classifier</span>
+            <span class="phase-week">Week 4</span>
+          </div>
+          <ul class="phase-tasks">
+            <li>Fine-tune ResNet-50 on NIH ChestX-ray14 (Module 3)</li>
+            <li>Apply data augmentation with albumentations library</li>
+            <li>Evaluate with AUC per class, export to TorchScript for inference</li>
+            <li>Wire image preprocessing and S3 upload into FastAPI</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-left">
+          <div class="phase-dot">5</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-header">
+            <span class="phase-title">Multimodal input + RAG chain</span>
+            <span class="phase-week">Week 5</span>
+          </div>
+          <ul class="phase-tasks">
+            <li>Build Bedrock Nova Pro multimodal calls for X-ray + body photos</li>
+            <li>Build Textract OCR integration for prescriptions</li>
+            <li>Assemble LangChain RetrievalQA chain connecting Pinecone + Bedrock</li>
+            <li>Test end-to-end: symptoms in → RAG diagnosis out</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-left">
+          <div class="phase-dot">6</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-header">
+            <span class="phase-title">Doctor finder + response assembly</span>
+            <span class="phase-week">Week 6</span>
+          </div>
+          <ul class="phase-tasks">
+            <li>Integrate Google Places API for location-based doctor search</li>
+            <li>Build specialty-to-search-query mapping table</li>
+            <li>Assemble final response builder merging all module outputs</li>
+            <li>Add medical disclaimer, session ID, and DynamoDB session storage</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-left">
+          <div class="phase-dot">7</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-header">
+            <span class="phase-title">Deploy + integration testing</span>
+            <span class="phase-week">Week 7</span>
+          </div>
+          <ul class="phase-tasks">
+            <li>Containerize with Docker, deploy to AWS Lambda via Mangum</li>
+            <li>Configure API Gateway with CORS for Lovable frontend</li>
+            <li>Run end-to-end integration tests across all 4 input types</li>
+            <li>Share API base URL with Lovable for frontend wiring</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="phase-item">
+        <div class="phase-left">
+          <div class="phase-dot" style="background:var(--green)">✓</div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-header">
+            <span class="phase-title">Polish, docs + portfolio packaging</span>
+            <span class="phase-week">Week 8</span>
+          </div>
+          <ul class="phase-tasks">
+            <li>Write project README with architecture diagram and demo screenshots</li>
+            <li>Generate Swagger/OpenAPI docs from FastAPI (auto-generated)</li>
+            <li>Record 3-minute demo video showing all 4 input types</li>
+            <li>Push to GitHub with clean commit history for recruiters</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="disclaimer">
+      <div class="disclaimer-icon">⚠️</div>
+      <div class="disclaimer-text"><strong>Medical AI disclaimer:</strong> MediAssist AI is built for educational, portfolio, and research purposes. It does not replace professional medical advice, diagnosis, or treatment. Every API response must include a clear disclaimer and encourage users to consult a licensed physician. Do not deploy this to real patients without clinical validation.</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer">
+  <p class="footer-text">MediAssist AI Project Plan · <span class="footer-name">Aakash — B.Tech CSE (AI/ML), JECRC University, Jaipur</span> · Reg. 23BCON2098</p>
+</div>
+
+</body>
+</html>

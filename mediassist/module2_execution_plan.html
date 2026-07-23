@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Module 2 — Multimodal Input Handler</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E1117;--surface:#161B22;--surface2:#1C2230;--surface3:#21293A;
+  --border:#253044;--border2:#2E3D55;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.1);--teal-mid:#00A98E;
+  --you:#00C9A7;--you-bg:rgba(0,201,167,.08);--you-border:rgba(0,201,167,.3);
+  --ai:#58A6FF;--ai-bg:rgba(88,166,255,.08);--ai-border:rgba(88,166,255,.3);
+  --amber:#F0A500;--amber-bg:rgba(240,165,0,.08);--amber-border:rgba(240,165,0,.3);
+  --red:#FF7B72;--red-bg:rgba(255,123,114,.08);
+  --purple:#D2A8FF;--purple-bg:rgba(210,168,255,.08);
+  --green:#3FB950;--green-bg:rgba(63,185,80,.08);
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);font-size:13.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:32px 48px 28px}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+h1{font-size:26px;font-weight:600;color:var(--white);letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
+.header-sub{font-size:13px;color:var(--muted);max-width:580px;line-height:1.7}
+.header-stats{display:flex;gap:1px;background:var(--border);border-radius:var(--r-lg);overflow:hidden;flex-shrink:0}
+.hstat{background:var(--surface2);padding:12px 20px;text-align:center;min-width:80px}
+.hstat-n{font-size:20px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:3px}
+.hstat-l{font-size:10px;color:var(--dim);font-weight:500;letter-spacing:.04em}
+.legend{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 48px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nav a{font-size:12px;font-weight:500;color:var(--dim);text-decoration:none;padding:11px 14px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;display:block}
+.nav a:hover{color:var(--white)}
+.nav a.active{color:var(--white);border-bottom-color:var(--teal)}
+
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 130px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.sbar-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 18px 4px}
+.sbar-link{display:flex;align-items:center;gap:8px;padding:7px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .15s;border-left:2px solid transparent}
+.sbar-link:hover{color:var(--white);background:var(--surface2)}
+.sbar-link.active{color:var(--white);background:var(--teal-dim);border-left-color:var(--teal)}
+.sbar-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+.main{padding:32px 44px 60px;max-width:880px}
+
+/* flow diagram */
+.flow{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px 24px;margin-bottom:28px}
+.flow-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+.flow-row{display:flex;align-items:center;gap:0;flex-wrap:wrap;gap:6px}
+.flow-box{font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:var(--r);border:1px solid;white-space:nowrap}
+.fb-you{background:var(--you-bg);border-color:var(--you-border);color:var(--teal)}
+.fb-ai{background:var(--ai-bg);border-color:var(--ai-border);color:var(--ai)}
+.fb-shared{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber)}
+.fb-output{background:var(--surface2);border-color:var(--border2);color:var(--muted)}
+.flow-arrow{color:var(--dim);font-size:14px;flex-shrink:0}
+
+/* overview cards */
+.overview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
+.ocard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+.ocard-icon{font-size:20px;margin-bottom:10px}
+.ocard-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:5px}
+.ocard-body{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* deliverables */
+.deliverables{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:28px}
+.deliv-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.deliv-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.deliv-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted)}
+.deliv-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+
+/* section header */
+.section-hdr{margin:32px 0 14px;display:flex;align-items:center;gap:12px}
+.section-hdr h2{font-size:15px;font-weight:600;color:var(--white)}
+.pill{font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+
+/* steps */
+.step{margin-bottom:10px;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;transition:border-color .15s}
+.step:hover{border-color:var(--border2)}
+.step-header{display:grid;grid-template-columns:72px 1fr auto;align-items:stretch;cursor:pointer}
+.step-num{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;border-right:1px solid var(--border);min-width:72px}
+.step-num .num{font-family:var(--mono);font-size:13px;font-weight:600;line-height:1;margin-bottom:4px}
+.step-num .slabel{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3}
+.step-num.you{background:var(--you-bg);border-right-color:var(--you-border)}
+.step-num.you .num{color:var(--teal)}
+.step-num.you .slabel{color:var(--teal-mid)}
+.step-num.ai{background:var(--ai-bg);border-right-color:var(--ai-border)}
+.step-num.ai .num{color:var(--ai)}
+.step-num.ai .slabel{color:#4B8FCE}
+.step-num.shared{background:var(--amber-bg);border-right-color:var(--amber-border)}
+.step-num.shared .num{color:var(--amber)}
+.step-num.shared .slabel{color:#C47F00}
+.step-body{padding:14px 16px}
+.step-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px}
+.step-file{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:6px}
+.step-summary{font-size:12.5px;color:var(--muted);line-height:1.6}
+.step-right{padding:12px 14px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:7px;min-width:120px}
+.effort{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.e-high{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,123,114,.2)}
+.e-med{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.e-low{background:var(--green-bg);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.expand{font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:color .15s}
+.expand:hover{color:var(--white)}
+.time-badge{font-family:var(--mono);font-size:10px;background:var(--surface3);border:1px solid var(--border);padding:3px 8px;border-radius:3px;color:var(--dim)}
+
+/* detail */
+.step-detail{display:none;border-top:1px solid var(--border);padding:18px}
+.step-detail.open{display:block}
+.detail-sections{display:flex;flex-direction:column;gap:14px}
+.dsec{background:var(--surface2);border-radius:var(--r-lg);padding:14px 16px;border:1px solid var(--border)}
+.dsec-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.dsec.you-sec{border-left:2px solid var(--you)}.dsec.you-sec .dsec-title{color:var(--teal)}
+.dsec.ai-sec{border-left:2px solid var(--ai)}.dsec.ai-sec .dsec-title{color:var(--ai)}
+.dsec.cmd-sec{border-left:2px solid var(--purple)}.dsec.cmd-sec .dsec-title{color:var(--purple)}
+.dsec.warn-sec{border-left:2px solid var(--amber)}.dsec.warn-sec .dsec-title{color:var(--amber)}
+.dsec.verify-sec{border-left:2px solid var(--green)}.dsec.verify-sec .dsec-title{color:var(--green)}
+.dsec.prompt-sec{border-left:2px solid #D2A8FF}.dsec.prompt-sec .dsec-title{color:#D2A8FF}
+.dsec.think-sec{border-left:2px solid var(--red)}.dsec.think-sec .dsec-title{color:var(--red)}
+.dsec-body{font-size:12.5px;color:var(--muted);line-height:1.7}
+.dsec-body ul{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body ol{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body li{color:var(--muted)}
+.dsec-body strong{color:var(--white);font-weight:500}
+pre.cmd{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;color:#79C0FF;overflow-x:auto;line-height:1.7;margin-top:6px;white-space:pre-wrap}
+pre.cmd .c{color:var(--dim)}
+pre.cmd .s{color:#A5D6FF}
+pre.cmd .k{color:var(--teal)}
+.verify-list{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.vitem{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--muted)}
+.vcheck{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;margin-top:1px;background:var(--surface3)}
+.prompt-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-top:6px;font-size:11.5px;color:#A5D6FF;font-family:var(--mono);line-height:1.7;white-space:pre-wrap}
+.table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+.table th{background:var(--bg);color:var(--dim);font-weight:600;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top}
+.table tr:last-child td{border-bottom:none}
+.table td:first-child{color:var(--white);font-weight:500;font-family:var(--mono);font-size:11px}
+.interview-box{background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:var(--r);padding:12px 14px;margin-top:10px}
+.interview-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--amber);text-transform:uppercase;margin-bottom:5px}
+.interview-q{font-size:12.5px;color:rgba(240,165,0,.7);font-style:italic;line-height:1.6}
+.done-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:22px 24px;margin-top:32px}
+
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr}.sidebar{display:none}
+  .main{padding:20px 16px 40px}.header{padding:24px 16px}
+  .overview-grid{grid-template-columns:1fr}.deliv-list{grid-template-columns:1fr}
+  .step-header{grid-template-columns:60px 1fr}.step-right{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="eyebrow">MediAssist AI · Module 2 of 6</div>
+      <h1>Multimodal Input Handler</h1>
+      <p class="header-sub">Builds the pipeline that accepts all 5 inputs — symptoms text, X-ray image, body photo, prescription scan, and personal profile — preprocesses each one independently, then merges everything into a single PatientContext object that every downstream module reads from.</p>
+    </div>
+    <div>
+      <div class="header-stats">
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">2</div><div class="hstat-l">weeks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">12</div><div class="hstat-l">steps</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--ai)">5</div><div class="hstat-l">AI tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--you)">6</div><div class="hstat-l">your tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--amber)">1</div><div class="hstat-l">shared</div></div>
+      </div>
+      <div class="legend" style="margin-top:12px;justify-content:flex-end">
+        <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>You do it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--ai)"></div>Gemini does it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--amber)"></div>Shared</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a href="#overview" class="active">Overview</a>
+  <a href="#week3">Week 3 — NLP + Images</a>
+  <a href="#week4">Week 4 — OCR + Merge</a>
+  <a href="#done">Definition of done</a>
+</div>
+
+<div class="layout">
+<div class="sidebar">
+  <div class="sbar-section">Week 3 — NLP + Images</div>
+  <a class="sbar-link active" href="#s1"><div class="sbar-dot" style="background:var(--you)"></div>S1 · Install NLP models</a>
+  <a class="sbar-link" href="#s2"><div class="sbar-dot" style="background:var(--you)"></div>S2 · NLP strategy</a>
+  <a class="sbar-link" href="#s3"><div class="sbar-dot" style="background:var(--ai)"></div>S3 · preprocessor.py</a>
+  <a class="sbar-link" href="#s4"><div class="sbar-dot" style="background:var(--you)"></div>S4 · Symptom synonym map</a>
+  <a class="sbar-link" href="#s5"><div class="sbar-dot" style="background:var(--ai)"></div>S5 · symptom_normalizer.py</a>
+  <a class="sbar-link" href="#s6"><div class="sbar-dot" style="background:var(--ai)"></div>S6 · S3 + image handler</a>
+  <div class="sbar-section">Week 4 — OCR + Context</div>
+  <a class="sbar-link" href="#s7"><div class="sbar-dot" style="background:var(--ai)"></div>S7 · Textract OCR</a>
+  <a class="sbar-link" href="#s8"><div class="sbar-dot" style="background:var(--shared)"></div>S8 · Bedrock body photo</a>
+  <a class="sbar-link" href="#s9"><div class="sbar-dot" style="background:var(--you)"></div>S9 · Context merger design</a>
+  <a class="sbar-link" href="#s10"><div class="sbar-dot" style="background:var(--ai)"></div>S10 · patient_context.py</a>
+  <a class="sbar-link" href="#s11"><div class="sbar-dot" style="background:var(--you)"></div>S11 · Wire analyze.py</a>
+  <a class="sbar-link" href="#s12"><div class="sbar-dot" style="background:var(--you)"></div>S12 · End-to-end test</a>
+</div>
+
+<main class="main">
+
+<!-- OVERVIEW -->
+<div id="overview">
+  <div class="flow">
+    <div class="flow-title">Data flow — Module 2</div>
+    <div class="flow-row">
+      <div class="flow-box fb-you">Symptoms text</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">NLP + NER</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">Normalize</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">symptom_entities[]</div>
+    </div>
+    <div class="flow-row" style="margin-top:8px">
+      <div class="flow-box fb-ai">X-ray upload</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">S3 store</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">image_preprocessor</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">preprocessed tensor</div>
+    </div>
+    <div class="flow-row" style="margin-top:8px">
+      <div class="flow-box fb-shared">Body photo</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-shared">Bedrock vision</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">visual_findings{}</div>
+    </div>
+    <div class="flow-row" style="margin-top:8px">
+      <div class="flow-box fb-ai">Prescription</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">Textract OCR</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">prescription_data{}</div>
+    </div>
+    <div class="flow-row" style="margin-top:8px">
+      <div class="flow-box fb-output">PatientProfile (from M1)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">risk modifiers</div>
+    </div>
+    <div class="flow-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <div class="flow-box fb-you" style="font-size:12px;padding:8px 14px">All 5 outputs →</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you" style="font-size:12px;padding:8px 14px">patient_context.py merger</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output" style="font-size:12px;padding:8px 14px;border-color:var(--teal);color:var(--teal)">PatientContext object → Module 3</div>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="ocard">
+      <div class="ocard-icon">🎯</div>
+      <div class="ocard-title">Goal of this module</div>
+      <div class="ocard-body">Every input type is independently processed and merged into one PatientContext object. The analyze.py route now returns a real partially-filled response — not a stub.</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">⚠️</div>
+      <div class="ocard-title">Your hardest task</div>
+      <div class="ocard-body">S2 (NLP strategy) and S9 (context merger design) are pure thinking tasks. The quality of your PatientContext schema determines the quality of everything in Module 3 and beyond.</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">✅</div>
+      <div class="ocard-title">Done when</div>
+      <div class="ocard-body">POST /api/v1/analyze with real symptoms text returns extracted entities. Upload a real X-ray and get it stored in S3. Upload a prescription and get extracted drug names back.</div>
+    </div>
+  </div>
+
+  <div class="deliverables">
+    <div class="deliv-title">Deliverables at end of Module 2</div>
+    <div class="deliv-list">
+      <div class="deliv-item"><span class="deliv-icon">💬</span>NLP pipeline extracting symptom entities from text</div>
+      <div class="deliv-item"><span class="deliv-icon">📖</span>Symptom synonym dictionary (100+ mappings)</div>
+      <div class="deliv-item"><span class="deliv-icon">🪣</span>S3 upload + download working for all image types</div>
+      <div class="deliv-item"><span class="deliv-icon">🖼️</span>Image preprocessor (resize, normalize, tensor)</div>
+      <div class="deliv-item"><span class="deliv-icon">📄</span>Textract OCR extracting drug names from prescriptions</div>
+      <div class="deliv-item"><span class="deliv-icon">🤖</span>Bedrock vision analyzing body photos</div>
+      <div class="deliv-item"><span class="deliv-icon">👤</span>PatientContext merger combining all 5 inputs</div>
+      <div class="deliv-item"><span class="deliv-icon">🔗</span>analyze.py route wired to all input handlers</div>
+      <div class="deliv-item"><span class="deliv-icon">🧪</span>Unit tests for NLP pipeline and context merger</div>
+      <div class="deliv-item"><span class="deliv-icon">📬</span>Real Postman/curl test with all 5 inputs working</div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 3 -->
+<div id="week3">
+  <div class="section-hdr">
+    <h2>Week 3 — NLP pipeline + image handling</h2>
+    <span class="pill" style="background:var(--you-bg);color:var(--teal);border:1px solid var(--you-border)">Days 1–5</span>
+  </div>
+
+  <!-- S1 -->
+  <div class="step" id="s1">
+    <div class="step-header" onclick="toggle('s1')">
+      <div class="step-num you"><div class="num">S1</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Install and verify scispaCy medical NLP models</div>
+        <div class="step-file">venv · en_core_sci_sm · en_ner_bc5cdr_md</div>
+        <div class="step-summary">scispaCy requires separate model downloads after pip install. You do this yourself because it runs on your machine and needs verification that the medical NER model loads correctly before writing any code around it.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-low">Low</span>
+        <span class="time-badge">~45 min</span>
+        <button class="expand" id="btn-s1">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s1">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Exact commands to run</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Make sure venv is active</span>
+source venv/bin/activate
+
+<span class="c"># Install scispaCy</span>
+pip install scispacy
+
+<span class="c"># Install the small science model (fast, good for symptoms)</span>
+pip install https://s3-us-west-2.amazonaws.com/ai2-s3-scispacy/releases/v0.5.4/en_core_sci_sm-0.5.4.tar.gz
+
+<span class="c"># Install BC5CDR model — specifically trained for disease + chemical NER</span>
+pip install https://s3-us-west-2.amazonaws.com/ai2-s3-scispacy/releases/v0.5.4/en_ner_bc5cdr_md-0.5.4.tar.gz
+
+<span class="c"># Verify both load correctly</span>
+python -c "import spacy; nlp = spacy.load('en_core_sci_sm'); print('en_core_sci_sm OK')"
+python -c "import spacy; nlp = spacy.load('en_ner_bc5cdr_md'); print('en_ner_bc5cdr_md OK')"</pre>
+          </div>
+        </div>
+        <div class="dsec think-sec">
+          <div class="dsec-title">Why two models — understand this before S2</div>
+          <div class="dsec-body">
+            <ul>
+              <li><strong>en_core_sci_sm</strong> — general biomedical model. Good at identifying medical concepts broadly. Faster.</li>
+              <li><strong>en_ner_bc5cdr_md</strong> — trained specifically on disease and chemical names from the BC5CDR corpus. More accurate for disease names and drug names.</li>
+              <li>You will use both in a pipeline: en_ner_bc5cdr_md first for disease/drug NER, en_core_sci_sm for everything else (body parts, symptoms not in BC5CDR).</li>
+            </ul>
+          </div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Verify before moving on</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>Both models load without errors</div>
+            <div class="vitem"><div class="vcheck"></div>Quick test: <code style="font-family:var(--mono);font-size:11px">doc = nlp("patient has chest pain and fever"); print([(e.text, e.label_) for e in doc.ents])</code> returns entities</div>
+            <div class="vitem"><div class="vcheck"></div>Add both model URLs to requirements.txt as comments for reference</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="step" id="s2">
+    <div class="step-header" onclick="toggle('s2')">
+      <div class="step-num you"><div class="num">S2</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Design the NLP preprocessing strategy — on paper first</div>
+        <div class="step-file">(thinking task — no code yet)</div>
+        <div class="step-summary">Before Gemini writes a single line of NLP code, you must define exactly what the preprocessor should extract, how to handle negation, uncertainty, and duration — and what the output schema looks like. This is purely your domain reasoning.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s2">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s2">
+      <div class="detail-sections">
+        <div class="dsec think-sec">
+          <div class="dsec-title">Questions you must answer before writing any code</div>
+          <div class="dsec-body">
+            Write answers to these on paper. They become your spec for Gemini in S3:
+            <ol style="margin-top:10px">
+              <li><strong>What entity types do you want extracted?</strong><br>
+              Minimum: SYMPTOM, BODY_PART, DURATION, SEVERITY, DISEASE_HISTORY, NEGATION_FLAG<br>
+              Decision: do you want MEDICATION extracted here too, or leave that for Textract OCR?</li>
+              <br>
+              <li><strong>How do you handle negation?</strong><br>
+              "no chest pain" must NOT be treated as "chest pain".<br>
+              "denies fever" = negated fever.<br>
+              Decision: use spaCy's dependency parser to detect negation tokens (no, not, denies, without, never) within 3 tokens of an entity.</li>
+              <br>
+              <li><strong>How do you handle uncertainty?</strong><br>
+              "possible pneumonia", "might have diabetes" = uncertain.<br>
+              Decision: flag entities with uncertainty_flag=True when preceded by: possible, possible, maybe, might, could, suspected.</li>
+              <br>
+              <li><strong>How do you handle duration?</strong><br>
+              "chest pain for 3 days" → extract duration="3 days", map to duration_category: acute (&lt;7 days), subacute (7–30 days), chronic (&gt;30 days).</li>
+              <br>
+              <li><strong>What is the output schema?</strong> Design this yourself:</li>
+            </ol>
+<pre class="cmd"><span class="c"># Output schema — decide this yourself</span>
+{
+  <span class="k">"extracted_symptoms"</span>: [
+    {
+      <span class="k">"text"</span>: <span class="s">"chest pain"</span>,
+      <span class="k">"canonical_form"</span>: <span class="s">"chest pain"</span>,  <span class="c"># after normalization</span>
+      <span class="k">"body_part"</span>: <span class="s">"chest"</span>,
+      <span class="k">"negated"</span>: false,
+      <span class="k">"uncertain"</span>: false,
+      <span class="k">"severity"</span>: <span class="s">"severe"</span>,   <span class="c"># mild/moderate/severe/None</span>
+      <span class="k">"duration"</span>: <span class="s">"3 days"</span>,
+      <span class="k">"duration_category"</span>: <span class="s">"acute"</span>
+    }
+  ],
+  <span class="k">"disease_history_mentions"</span>: [<span class="s">"diabetes"</span>, <span class="s">"hypertension"</span>],
+  <span class="k">"raw_text"</span>: <span class="s">"original input"</span>,
+  <span class="k">"confidence"</span>: 0.85
+}</pre>
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Why this is yours and not Gemini's</div>
+          <div class="dsec-body">
+            If you let Gemini design the NLP output schema, it will produce something generic — probably just a list of entity strings. Your schema above is what separates a portfolio-worthy medical NLP system from a toy. The negation handling, uncertainty flags, and duration categorization are medically informed decisions that an interviewer will ask you to defend.
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview questions you must own</div>
+          <div class="interview-q">"How does your system handle a patient saying 'I have no chest pain'?" / "What happens if a patient says 'possible' pneumonia — does your system treat that the same as confirmed pneumonia?" / "How do you define acute vs chronic in your duration categorization?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="step" id="s3">
+    <div class="step-header" onclick="toggle('s3')">
+      <div class="step-num ai"><div class="num">S3</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement preprocessor.py</div>
+        <div class="step-file">backend/app/modules/nlp/preprocessor.py</div>
+        <div class="step-summary">You give Gemini your exact spec from S2. It implements the spaCy + scispaCy pipeline with your defined entity types, negation detection, uncertainty flags, and your output schema.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s3">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s3">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini (paste your S2 output schema into it)</div>
+          <div class="prompt-box">Implement backend/app/modules/nlp/preprocessor.py for MediAssist AI.
+
+Use two spaCy models in a pipeline:
+1. en_ner_bc5cdr_md — for DISEASE and CHEMICAL entities
+2. en_core_sci_sm — for all other biomedical entities
+
+The main function is: extract_symptoms(text: str) -> dict
+
+It must:
+1. Run both models on the input text
+2. Extract entities of types: DISEASE, CHEMICAL, symptom-like concepts
+3. For each entity, detect negation: check if "no", "not", "without", "denies", "never" appears within 3 dependency-tree tokens
+4. Detect uncertainty: check if entity is preceded by "possible", "possible", "maybe", "might", "could", "suspected" within 5 tokens
+5. Extract duration mentions using regex patterns: "X days", "X weeks", "X months", "for X", "since X"
+6. Map duration to category: acute (<7 days), subacute (7-30 days), chronic (>30 days)
+7. Extract severity qualifiers: mild, moderate, severe, excruciating, slight
+8. Return schema: [paste your exact schema from S2 here]
+
+Also implement: detect_disease_history(text: str) -> List[str]
+  Extracts past medical history mentions: "history of X", "diagnosed with X", "has X"
+
+Load models once at module level (not inside the function — Lambda cold start).
+Add error handling: if text is empty or None, return empty result, don't raise.
+Add logging for each extraction step.</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you do after Gemini delivers</div>
+          <div class="dsec-body">
+            Test with these 5 cases manually in Python:
+<pre class="cmd"><span class="c"># Test 1 — basic symptoms</span>
+result = extract_symptoms("I have severe chest pain and fever for 3 days")
+<span class="c"># Expect: chest pain (severe, acute, not negated), fever (acute, not negated)</span>
+
+<span class="c"># Test 2 — negation</span>
+result = extract_symptoms("No chest pain, but I have a headache")
+<span class="c"># Expect: chest pain (negated=True), headache (negated=False)</span>
+
+<span class="c"># Test 3 — uncertainty</span>
+result = extract_symptoms("Possibly pneumonia, patient has mild cough")
+<span class="c"># Expect: pneumonia (uncertain=True), cough (mild, uncertain=False)</span>
+
+<span class="c"># Test 4 — chronic duration</span>
+result = extract_symptoms("Back pain for the past 3 months, getting worse")
+<span class="c"># Expect: back pain (duration_category=chronic)</span>
+
+<span class="c"># Test 5 — disease history</span>
+result = detect_disease_history("Patient has history of diabetes and was diagnosed with hypertension")
+<span class="c"># Expect: ["diabetes", "hypertension"]</span></pre>
+            If any test fails, tell Gemini exactly which test failed and paste the wrong output. Ask it to fix only that specific behavior.
+          </div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Verify before moving on</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>All 5 manual tests return correct output</div>
+            <div class="vitem"><div class="vcheck"></div>Empty string input returns empty result, no exception</div>
+            <div class="vitem"><div class="vcheck"></div>Models load once at module level (check with a timer — second call is much faster)</div>
+            <div class="vitem"><div class="vcheck"></div>Committed to GitHub</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="step" id="s4">
+    <div class="step-header" onclick="toggle('s4')">
+      <div class="step-num you"><div class="num">S4</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Build the symptom synonym dictionary</div>
+        <div class="step-file">backend/app/modules/nlp/symptom_synonyms.json</div>
+        <div class="step-summary">A JSON mapping of symptom synonyms to canonical SNOMED-like concept names. This is medical knowledge work — only you can verify these mappings are clinically correct. Gemini would produce plausible but unverified mappings.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s4">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s4">
+      <div class="detail-sections">
+        <div class="dsec think-sec">
+          <div class="dsec-title">What to build and why it must be you</div>
+          <div class="dsec-body">
+            A patient might type any of these for the same symptom:
+            <ul style="margin-top:8px">
+              <li>"chest pain", "chest ache", "chest tightness", "chest pressure", "precordial pain", "thoracic pain", "pain in chest", "my chest hurts"</li>
+            </ul>
+            All of these must map to the canonical concept <strong>"chest pain"</strong> before going into the vector search — otherwise the retrieval system treats them as different conditions.<br><br>
+            Gemini will suggest mappings but it will also make medically incorrect ones. For example it might map "shortness of breath" and "anxiety" to the same concept — they share dyspnea as a symptom but are not the same thing. You must review every mapping.
+          </div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">How to build it efficiently</div>
+          <div class="dsec-body">
+            Use a two-step process:
+            <ol style="margin-top:8px">
+              <li>Ask Gemini to generate a draft mapping for the top 60 most common symptoms in India (chest pain, fever, cough, headache, abdominal pain, breathlessness, vomiting, diarrhea, fatigue, dizziness, back pain, joint pain, skin rash, swelling, numbness, palpitations, etc.)</li>
+              <li>You review every mapping line by line. Remove incorrect synonyms. Add ones Gemini missed. Verify canonical names are medically standard.</li>
+            </ol>
+            Target: minimum 100 canonical concepts, 5–15 synonyms each.
+<pre class="cmd"><span class="c"># symptom_synonyms.json structure</span>
+{
+  <span class="k">"chest pain"</span>: [
+    <span class="s">"chest ache"</span>, <span class="s">"chest tightness"</span>, <span class="s">"chest pressure"</span>,
+    <span class="s">"precordial pain"</span>, <span class="s">"thoracic pain"</span>, <span class="s">"chest discomfort"</span>,
+    <span class="s">"pain in chest"</span>, <span class="s">"my chest hurts"</span>, <span class="s">"chest heaviness"</span>
+  ],
+  <span class="k">"dyspnea"</span>: [
+    <span class="s">"shortness of breath"</span>, <span class="s">"difficulty breathing"</span>,
+    <span class="s">"breathlessness"</span>, <span class="s">"can't breathe"</span>, <span class="s">"saans nahi aa rahi"</span>,
+    <span class="s">"hard to breathe"</span>, <span class="s">"breathing difficulty"</span>
+  ],
+  <span class="c">// ... 98 more entries</span>
+}</pre>
+            <strong>Important:</strong> Include common Hindi/Hinglish terms that Indian patients type (saans, bukhar, sir dard, pet dard). Your project is built for India.
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"Your system handles Indian patients — how did you account for symptoms described in Hindi or Hinglish? Can you show me examples from your synonym dictionary?"</div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Verify before moving on</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>Minimum 100 canonical concepts in the JSON</div>
+            <div class="vitem"><div class="vcheck"></div>At least 20 entries include Hindi/Hinglish variants</div>
+            <div class="vitem"><div class="vcheck"></div>You have personally read and approved every mapping</div>
+            <div class="vitem"><div class="vcheck"></div>No medically incorrect synonyms (ask a doctor friend to spot-check if possible)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 -->
+  <div class="step" id="s5">
+    <div class="step-header" onclick="toggle('s5')">
+      <div class="step-num ai"><div class="num">S5</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement symptom_normalizer.py</div>
+        <div class="step-file">backend/app/modules/nlp/symptom_normalizer.py</div>
+        <div class="step-summary">Takes extracted symptom entities from preprocessor.py and maps them to canonical forms using your synonym dictionary + fuzzy matching fallback. Pure implementation once the dictionary exists.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-low">Low</span>
+        <span class="time-badge">~1 hr</span>
+        <button class="expand" id="btn-s5">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s5">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement backend/app/modules/nlp/symptom_normalizer.py.
+
+It loads symptom_synonyms.json at module level and exposes:
+  normalize_symptom(text: str) -> dict
+
+Logic:
+1. Lowercase and strip the input text
+2. Check exact match against all synonym lists — return canonical key if found
+3. If no exact match: use rapidfuzz.process.extractOne with score_cutoff=80 against all synonyms
+4. If fuzzy match found (score >= 80): return canonical key + match_score
+5. If no match at all: return {"canonical": text, "matched": False, "score": 0.0}
+
+Also expose:
+  normalize_all(symptom_entities: list) -> list
+  Applies normalize_symptom to each entity dict from preprocessor output,
+  updating the canonical_form field.
+
+Load the JSON from: Path(__file__).parent / "symptom_synonyms.json"
+Use rapidfuzz, not fuzzywuzzy (faster).</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you test after delivery</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Test exact match</span>
+normalize_symptom("chest ache")
+<span class="c"># Expected: {"canonical": "chest pain", "matched": True, "score": 100}</span>
+
+<span class="c"># Test fuzzy match</span>
+normalize_symptom("chset pain")   <span class="c"># typo</span>
+<span class="c"># Expected: {"canonical": "chest pain", "matched": True, "score": ~88}</span>
+
+<span class="c"># Test Hindi term</span>
+normalize_symptom("saans nahi aa rahi")
+<span class="c"># Expected: {"canonical": "dyspnea", "matched": True, "score": 100}</span>
+
+<span class="c"># Test unknown term</span>
+normalize_symptom("xyzzy blorp")
+<span class="c"># Expected: {"canonical": "xyzzy blorp", "matched": False, "score": 0.0}</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 -->
+  <div class="step" id="s6">
+    <div class="step-header" onclick="toggle('s6')">
+      <div class="step-num ai"><div class="num">S6</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">S3 image upload handler + image preprocessor</div>
+        <div class="step-file">backend/app/services/s3_service.py · backend/app/modules/image/image_preprocessor.py</div>
+        <div class="step-summary">Full S3 service for presigned URL generation, upload and download. Plus OpenCV image preprocessing — resize to 224×224, normalize with ImageNet stats, convert to tensor — used by both the X-ray classifier (Module 4) and Bedrock body photo analysis.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s6">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s6">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement two files for MediAssist AI:
+
+FILE 1: backend/app/services/s3_service.py
+Functions:
+- upload_file(file_bytes: bytes, filename: str, content_type: str) -> str
+  Uploads to S3 bucket from settings.S3_BUCKET_NAME
+  Returns S3 key (e.g. "uploads/uuid4-filename.jpg")
+- download_file(s3_key: str) -> bytes
+  Downloads from S3, returns raw bytes
+- generate_presigned_url(s3_key: str, expiry_seconds: int = 3600) -> str
+  Returns presigned URL for direct frontend upload
+- delete_file(s3_key: str) -> bool
+
+FILE 2: backend/app/modules/image/image_preprocessor.py
+Functions:
+- preprocess_for_model(image_bytes: bytes) -> np.ndarray
+  Resize to 224x224, convert BGR to RGB, normalize with ImageNet mean/std
+  ([0.485,0.456,0.406] and [0.229,0.224,0.225]), return float32 array
+- preprocess_xray(image_bytes: bytes) -> np.ndarray
+  Same as above PLUS: apply CLAHE (Contrast Limited Adaptive Histogram Equalization)
+  for better X-ray contrast. Use OpenCV CLAHE with clipLimit=2.0, tileGridSize=(8,8)
+- image_to_base64(image_bytes: bytes) -> str
+  Converts image bytes to base64 string for Bedrock vision API
+
+Use opencv-python-headless and Pillow. Read image bytes with PIL.Image.open(BytesIO(image_bytes)).</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you test after delivery</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Test S3 upload</span>
+with open("test_xray.jpg", "rb") as f:
+    key = upload_file(f.read(), "test_xray.jpg", "image/jpeg")
+print(key)  <span class="c"># Should print S3 key</span>
+
+<span class="c"># Test download</span>
+data = download_file(key)
+print(len(data))  <span class="c"># Should be same size as original file</span>
+
+<span class="c"># Test image preprocessing</span>
+with open("test_xray.jpg", "rb") as f:
+    arr = preprocess_xray(f.read())
+print(arr.shape)   <span class="c"># (224, 224, 3)</span>
+print(arr.dtype)   <span class="c"># float32</span></pre>
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Why CLAHE for X-rays specifically</div>
+          <div class="dsec-body">
+            X-ray images have very low contrast in certain regions — lung edges, subtle infiltrates. CLAHE enhances local contrast without amplifying noise, making subtle pathologies more visible to the CNN. Standard normalization alone is not enough for X-rays. This is a real medical imaging technique — mention it in your portfolio.
+          </div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Verify before moving on</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>Upload test image → appears in S3 console</div>
+            <div class="vitem"><div class="vcheck"></div>Download returns same bytes as uploaded</div>
+            <div class="vitem"><div class="vcheck"></div>preprocess_xray output shape is (224, 224, 3) and dtype float32</div>
+            <div class="vitem"><div class="vcheck"></div>image_to_base64 returns a valid base64 string (test by decoding it back)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 4 -->
+<div id="week4">
+  <div class="section-hdr">
+    <h2>Week 4 — OCR, Bedrock vision, and context merger</h2>
+    <span class="pill" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">Days 6–14</span>
+  </div>
+
+  <!-- S7 -->
+  <div class="step" id="s7">
+    <div class="step-header" onclick="toggle('s7')">
+      <div class="step-num ai"><div class="num">S7</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">AWS Textract prescription OCR handler</div>
+        <div class="step-file">backend/app/modules/ocr/textract_handler.py</div>
+        <div class="step-summary">Calls AWS Textract AnalyzeDocument on a prescription image and parses the response into structured data: medicine names, dosage, frequency, doctor instructions. Pure API implementation — Gemini handles this well.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s7">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s7">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement backend/app/modules/ocr/textract_handler.py for MediAssist AI.
+
+Main function: extract_prescription(image_bytes: bytes) -> dict
+
+Steps:
+1. Upload image to S3 using s3_service.upload_file()
+2. Call AWS Textract AnalyzeDocument API with FeatureTypes=["FORMS", "TABLES"]
+3. Parse the response to extract:
+   a. All raw text blocks (LINE type) → concatenate as raw_text
+   b. Medicine names: lines matching patterns like drug names (use a regex or keyword approach)
+      Look for: patterns like "Tab.", "Cap.", "Syp.", "Inj.", "mg", "ml" near words
+   c. Dosage info: "500mg", "10ml", "1-0-1", "BD", "TDS", "OD" patterns
+   d. Doctor name: usually first block or preceded by "Dr."
+   e. Diagnosis codes or chief complaint if visible
+
+Return schema:
+{
+  "raw_text": "full extracted text",
+  "medicines": [{"name": "Amoxicillin", "dosage": "500mg", "frequency": "TDS"}],
+  "doctor_name": "Dr. Sharma",
+  "diagnosis_text": "extracted diagnosis line if present",
+  "extraction_confidence": 0.0-1.0 (average Textract block confidence)
+}
+
+Clean up S3 file after extraction.
+Handle case where image is unclear (low confidence < 0.5) by returning extraction_confidence < 0.5 and flagging it.
+Use boto3 textract client from settings.AWS_REGION.</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you test after delivery</div>
+          <div class="dsec-body">
+            Find a sample prescription image online (or photograph a real one with all personal info covered). Upload it and verify:
+<pre class="cmd">with open("sample_prescription.jpg", "rb") as f:
+    result = extract_prescription(f.read())
+
+print(result["medicines"])      <span class="c"># Should show drug names</span>
+print(result["raw_text"])       <span class="c"># Full text from prescription</span>
+print(result["extraction_confidence"])  <span class="c"># Should be > 0.7 for clear image</span></pre>
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Important — Textract costs money per call</div>
+          <div class="dsec-body">
+            Textract charges ~$0.015 per page for AnalyzeDocument. During development, test with max 10–15 calls. After confirming it works, write a mock for your unit tests so you don't call real Textract in the test suite.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 -->
+  <div class="step" id="s8">
+    <div class="step-header" onclick="toggle('s8')">
+      <div class="step-num shared"><div class="num">S8</div><div class="slabel">Shared</div></div>
+      <div class="step-body">
+        <div class="step-title">Bedrock vision prompt + body photo handler</div>
+        <div class="step-file">backend/app/services/bedrock_service.py</div>
+        <div class="step-summary">You write the medical system prompt that tells Bedrock what to look for in a body photo. Gemini implements the boto3 calling code. The prompt is your most important contribution here — it determines output quality.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s8">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s8">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Your job — write the Bedrock vision system prompt</div>
+          <div class="dsec-body">
+            Write this prompt yourself, in a text file, before giving it to Gemini. Think carefully about:
+            <ul style="margin-top:8px">
+              <li><strong>What should it look for?</strong> Visible swelling, redness, rash patterns, wounds, discoloration, deformity.</li>
+              <li><strong>What output format?</strong> Structured JSON with findings, not prose.</li>
+              <li><strong>What should it refuse?</strong> Faces (privacy), genitals, unclear images, images that clearly aren't body parts.</li>
+              <li><strong>How certain should it be?</strong> Never say "you have X" — say "visible findings consistent with X".</li>
+              <li><strong>What if the image is unclear?</strong> Return low confidence, don't guess.</li>
+            </ul>
+            Your prompt draft:
+<pre class="cmd">You are a medical image analysis assistant. Analyze the provided body part photograph.
+
+TASK: Identify visible physical findings only. Do NOT diagnose.
+
+Look for:
+- Swelling or edema (location, severity: mild/moderate/severe)
+- Skin color changes (redness, pallor, cyanosis, jaundice, bruising)
+- Rash characteristics (type: macular/papular/vesicular, distribution, color)
+- Wounds or injuries (type, approximate size, signs of infection)
+- Visible deformity or asymmetry
+- Any other clinically relevant visible finding
+
+RULES:
+- If you cannot clearly see a body part, return confidence < 0.3
+- Never identify faces or personal information
+- Never make a definitive diagnosis — only describe visible findings
+- Use clinical terminology
+
+Return ONLY valid JSON:
+{
+  "findings": [
+    {"finding": "swelling", "location": "left ankle", "severity": "moderate", "description": "pitting edema visible"},
+  ],
+  "image_quality": "good/fair/poor",
+  "confidence": 0.0-1.0,
+  "body_part_detected": "left ankle",
+  "requires_urgent_attention": true/false,
+  "disclaimer": "This is a visual finding description only, not a medical diagnosis."
+}</pre>
+          </div>
+        </div>
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini (after you write your system prompt)</div>
+          <div class="prompt-box">Implement backend/app/services/bedrock_service.py for MediAssist AI.
+
+Two functions:
+
+1. analyze_body_photo(image_bytes: bytes) -> dict
+   - Convert image to base64 using image_preprocessor.image_to_base64()
+   - Call AWS Bedrock InvokeModel with model: settings.BEDROCK_MODEL_ID (nova-pro-v1:0)
+   - Use this exact system prompt: [paste your written prompt here]
+   - User message: "Please analyze this body part photograph and return your findings as JSON."
+   - Parse the response content, extract JSON from it (handle if model wraps in markdown)
+   - Return parsed dict, or {"error": "parse_failed", "confidence": 0} on failure
+
+2. generate_diagnosis(prompt: str, context_chunks: list) -> str
+   - Text-only call (no image) for RAG diagnosis generation (Module 3 will use this)
+   - Takes assembled prompt string and list of retrieved chunks
+   - Returns model response as string
+   - Leave as stub for now — Module 3 will fill this in
+
+Use boto3 bedrock-runtime client. Handle throttling with exponential backoff (3 retries).
+Import settings from app.config.</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">Test after delivery — use a real body photo</div>
+          <div class="dsec-body">
+            Take a photo of your own hand or arm (no sensitive areas). Run it through:
+<pre class="cmd">with open("hand.jpg", "rb") as f:
+    result = analyze_body_photo(f.read())
+print(result)
+<span class="c"># Expect: JSON with findings[], body_part_detected, confidence</span></pre>
+            Iterate on your system prompt if the output isn't structured correctly. This might take 3–4 prompt revisions.
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"Show me the system prompt you use for body photo analysis. Why did you instruct it to never diagnose? How do you handle an image that isn't a body part?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9 -->
+  <div class="step" id="s9">
+    <div class="step-header" onclick="toggle('s9')">
+      <div class="step-num you"><div class="num">S9</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Design the PatientContext schema and merge rules</div>
+        <div class="step-file">(thinking task — no code yet)</div>
+        <div class="step-summary">The most architecturally important task in the entire project. PatientContext is the object that every downstream module reads. Its schema and merge rules determine the quality of diagnosis, urgency scoring, and RAG retrieval. Design it on paper first.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s9">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s9">
+      <div class="detail-sections">
+        <div class="dsec think-sec">
+          <div class="dsec-title">Answer these questions on paper — they become your merge rules</div>
+          <div class="dsec-body">
+            <ol>
+              <li style="margin-bottom:12px"><strong>What happens when inputs conflict?</strong><br>
+              Example: patient says "mild cough" (text), X-ray shows "possible pneumonia 78% confidence" (image).<br>
+              Rule decision: X-ray finding takes priority over subjective symptom description for severity assessment, but both are passed downstream. The RAG query includes both. The LLM reconciles.</li>
+
+              <li style="margin-bottom:12px"><strong>What happens when an input is missing?</strong><br>
+              Not every patient uploads everything. Define: if no X-ray → xray_findings = None. If no prescription → prescription_data = None. None values must be gracefully handled everywhere downstream without errors.</li>
+
+              <li style="margin-bottom:12px"><strong>How does the personal profile attach as risk modifiers?</strong><br>
+              Design the computed risk_flags field: a list of strings that summarize the patient's risk profile for easy injection into the RAG prompt.<br>
+              Example: age=55, smoker, hypertension → risk_flags = ["cardiac_risk_high", "respiratory_risk_high", "age_over_50"]</li>
+
+              <li style="margin-bottom:12px"><strong>What is the overall confidence of the context?</strong><br>
+              If only symptoms text is provided → context_confidence = 0.5<br>
+              If symptoms + X-ray → context_confidence = 0.75<br>
+              If all 5 inputs → context_confidence = 0.95<br>
+              This tells the LLM how much evidence it has to work with.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">Design the PatientContext schema yourself</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Write this schema yourself in a .txt or .md file first</span>
+PatientContext:
+  <span class="c"># From NLP module</span>
+  symptom_entities: List[SymptomEntity]   <span class="c"># from preprocessor + normalizer</span>
+  disease_history_mentions: List[str]     <span class="c"># from detect_disease_history()</span>
+
+  <span class="c"># From image module</span>
+  xray_findings: Optional[XrayResult]    <span class="c"># None if no X-ray uploaded</span>
+  body_photo_findings: Optional[dict]    <span class="c"># from Bedrock vision</span>
+
+  <span class="c"># From OCR module</span>
+  prescription_data: Optional[dict]      <span class="c"># from Textract</span>
+
+  <span class="c"># From personal profile (request model)</span>
+  patient_profile: PatientProfile        <span class="c"># full Pydantic object</span>
+
+  <span class="c"># Computed by merger — YOUR design decisions</span>
+  risk_flags: List[str]                  <span class="c"># ["cardiac_risk_high", "age_over_50", ...]</span>
+  context_confidence: float              <span class="c"># 0.0–1.0 based on inputs provided</span>
+  inputs_provided: List[str]             <span class="c"># ["symptoms_text", "xray", "prescription"]</span>
+  primary_concern: Optional[str]         <span class="c"># highest-confidence symptom or finding</span>
+  location: Optional[LocationData]       <span class="c"># for doctor finder</span>
+  session_id: str                        <span class="c"># UUID, generated at merge time</span></pre>
+
+            Then define your risk_flags computation rules:
+<pre class="cmd"><span class="c"># Your risk flag rules — write these yourself</span>
+if age >= 50: risk_flags.append("age_over_50")
+if age >= 65: risk_flags.append("geriatric_patient")
+if smoking == "current" and age >= 40: risk_flags.append("respiratory_risk_high")
+if smoking == "current" and cardiac_symptom_present: risk_flags.append("cardiac_risk_critical")
+if "hypertension" in conditions and age >= 45: risk_flags.append("cardiac_risk_high")
+if "diabetes" in conditions: risk_flags.append("metabolic_risk")
+if bmi > 30: risk_flags.append("obesity_risk")
+<span class="c"># Add your own rules based on medical reasoning</span></pre>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Top interview question for this project</div>
+          <div class="interview-q">"Walk me through how your system merges 5 different input modalities into a single patient context. What happens when a patient says 'mild cough' but the X-ray shows possible pneumonia? How does your system handle that conflict?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10 -->
+  <div class="step" id="s10">
+    <div class="step-header" onclick="toggle('s10')">
+      <div class="step-num ai"><div class="num">S10</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement patient_context.py</div>
+        <div class="step-file">backend/app/core/patient_context.py</div>
+        <div class="step-summary">Gemini implements your PatientContext Pydantic model and the build_patient_context() merge function using the schema and rules you designed in S9. Pure implementation of your decisions.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s10">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s10">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Implement backend/app/core/patient_context.py for MediAssist AI.
+
+Create a Pydantic model PatientContext with these fields:
+[paste your exact schema from S9 here]
+
+Create function: build_patient_context(
+    symptoms_text: Optional[str],
+    patient_profile: PatientProfile,
+    xray_image_bytes: Optional[bytes],
+    body_photo_bytes: Optional[bytes],
+    prescription_bytes: Optional[bytes],
+    location: Optional[LocationData]
+) -> PatientContext
+
+Orchestration steps:
+1. If symptoms_text: call nlp.preprocessor.extract_symptoms() then nlp.symptom_normalizer.normalize_all()
+2. If xray_image_bytes: call s3_service.upload_file(), then image_preprocessor.preprocess_xray() — store s3_key, return XrayResult stub (actual classifier in Module 4)
+3. If body_photo_bytes: call bedrock_service.analyze_body_photo()
+4. If prescription_bytes: call ocr.textract_handler.extract_prescription()
+5. Compute risk_flags using these exact rules: [paste your risk flag rules from S9]
+6. Compute context_confidence: base=0.3, +0.2 if symptoms, +0.2 if xray, +0.15 if body_photo, +0.15 if prescription
+7. Set primary_concern = highest-confidence symptom or xray finding
+8. Generate session_id = str(uuid.uuid4())
+9. Return fully populated PatientContext
+
+Run steps 1-4 concurrently using asyncio.gather() for performance.
+All errors in individual steps should be caught and logged — never let one failed input crash the whole context build.</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you verify after delivery</div>
+          <div class="dsec-body">
+            Check these specific behaviors:
+            <ul style="margin-top:8px">
+              <li>Calling with only symptoms_text (no images) should work and return context_confidence ≈ 0.5</li>
+              <li>Calling with all 5 inputs should return context_confidence ≈ 0.95</li>
+              <li>A patient with age=55, smoking=current, conditions=["hypertension"] should have risk_flags including "cardiac_risk_critical"</li>
+              <li>Any single step failing (e.g. Textract error) must NOT crash the whole function — it logs and returns None for that field</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S11 -->
+  <div class="step" id="s11">
+    <div class="step-header" onclick="toggle('s11')">
+      <div class="step-num you"><div class="num">S11</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Wire patient_context.py into analyze.py route</div>
+        <div class="step-file">backend/app/api/routes/analyze.py</div>
+        <div class="step-summary">You update the analyze route to call build_patient_context() with all inputs and return the context as part of the response. You do this yourself — you must understand the wiring between route and core module before Module 3 adds the RAG chain on top.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s11">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s11">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">What to update in analyze.py yourself</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># backend/app/api/routes/analyze.py — update yourself</span>
+from app.core.patient_context import build_patient_context
+from app.models.request_models import AnalyzeRequest, PatientProfile
+from app.models.response_models import AnalyzeResponse
+
+@router.post("/analyze")
+async def analyze(
+    symptoms_text: Optional[str] = Form(None),
+    patient: str = Form(...),       <span class="c"># JSON string</span>
+    location: Optional[str] = Form(None),
+    xray_image: Optional[UploadFile] = File(None),
+    body_photo: Optional[UploadFile] = File(None),
+    prescription: Optional[UploadFile] = File(None),
+):
+    <span class="c"># 1. Parse patient profile</span>
+    patient_profile = PatientProfile.model_validate_json(patient)
+
+    <span class="c"># 2. Read image bytes if provided</span>
+    xray_bytes = await xray_image.read() if xray_image else None
+    photo_bytes = await body_photo.read() if body_photo else None
+    rx_bytes = await prescription.read() if prescription else None
+
+    <span class="c"># 3. Build patient context</span>
+    context = await build_patient_context(
+        symptoms_text=symptoms_text,
+        patient_profile=patient_profile,
+        xray_image_bytes=xray_bytes,
+        body_photo_bytes=photo_bytes,
+        prescription_bytes=rx_bytes,
+        location=LocationData.model_validate_json(location) if location else None
+    )
+
+    <span class="c"># 4. For now — return context as partial response</span>
+    <span class="c"># Module 3 will add RAG chain here</span>
+    return {
+        "session_id": context.session_id,
+        "context_built": True,
+        "inputs_processed": context.inputs_provided,
+        "risk_flags": context.risk_flags,
+        "symptoms_extracted": len(context.symptom_entities),
+        "context_confidence": context.context_confidence,
+        "status": "context_ready_rag_pending"  <span class="c"># placeholder until Module 3</span>
+    }</pre>
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Why you do this step, not Gemini</div>
+          <div class="dsec-body">
+            The wiring between analyze.py and patient_context.py is a decision point. You must understand exactly how the async call is structured, what happens if build_patient_context takes 8 seconds (Lambda timeout?), and how errors bubble up. If Gemini writes this, you won't be able to debug it when something goes wrong in production.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S12 -->
+  <div class="step" id="s12">
+    <div class="step-header" onclick="toggle('s12')">
+      <div class="step-num you"><div class="num">S12</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">End-to-end integration test — all 5 inputs</div>
+        <div class="step-file">(manual testing + tests/test_analyze.py)</div>
+        <div class="step-summary">You run a full end-to-end test with all 5 inputs against the live Lambda endpoint. This is qualitative review — only you can judge if the extracted entities, risk flags, and OCR output make sense for a given patient scenario.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s12">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s12">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Run these 4 test scenarios yourself</div>
+          <div class="dsec-body">
+            <table class="table">
+              <thead><tr><th>Scenario</th><th>Inputs</th><th>What to verify</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>Text only</td>
+                  <td>symptoms_text + patient profile (male, 55, smoker, hypertension)</td>
+                  <td>risk_flags includes cardiac_risk_critical. symptom_entities extracted correctly. context_confidence ≈ 0.5</td>
+                </tr>
+                <tr>
+                  <td>Text + X-ray</td>
+                  <td>symptoms_text + chest X-ray image + patient profile</td>
+                  <td>S3 key exists in S3 console. context_confidence ≈ 0.7. inputs_provided includes "xray"</td>
+                </tr>
+                <tr>
+                  <td>Body photo</td>
+                  <td>Photo of hand/ankle + patient profile + brief symptom text</td>
+                  <td>body_photo_findings has findings[], confidence > 0.3, no crash</td>
+                </tr>
+                <tr>
+                  <td>Full — all 5</td>
+                  <td>Everything: text + X-ray + body photo + prescription + profile</td>
+                  <td>context_confidence ≈ 0.95. All inputs_provided present. No timeout (under 25s)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Then ask Gemini to write unit tests based on your manual test results</div>
+          <div class="prompt-box">Write backend/tests/test_analyze.py for MediAssist AI Module 2.
+
+Test the /api/v1/analyze endpoint using httpx.AsyncClient and pytest-asyncio.
+Mock all external services: S3 (moto), Textract (pytest-mock), Bedrock (pytest-mock).
+
+Write 4 test cases:
+1. test_text_only_input — symptoms_text + patient profile → verify context_built=True, risk_flags present
+2. test_with_xray_upload — add a small test JPEG → verify "xray" in inputs_provided
+3. test_negation_handling — symptoms_text="no chest pain, has headache" → verify chest pain is negated
+4. test_invalid_patient_age — age=-1 → verify 422 response
+
+Use real test fixtures for a 55-year-old male smoker with hypertension.
+Mock Bedrock to return a fixed JSON response. Mock Textract to return a fixed prescription response.</div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Module 2 complete when all of these pass</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>All 4 manual test scenarios return correct output</div>
+            <div class="vitem"><div class="vcheck"></div>Negation handling works ("no chest pain" → negated=True)</div>
+            <div class="vitem"><div class="vcheck"></div>Hindi synonym maps correctly ("saans nahi aa rahi" → "dyspnea")</div>
+            <div class="vitem"><div class="vcheck"></div>X-ray upload appears in S3 bucket after test</div>
+            <div class="vitem"><div class="vcheck"></div>Prescription OCR extracts at least medicine names</div>
+            <div class="vitem"><div class="vcheck"></div>Full 5-input test completes under 25 seconds</div>
+            <div class="vitem"><div class="vcheck"></div>All 4 unit tests pass with mocked services</div>
+            <div class="vitem"><div class="vcheck"></div>GitHub Actions CI still green after all commits</div>
+            <div class="vitem"><div class="vcheck"></div>You can explain your merge rules and risk flag logic verbally</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="done" class="done-box">
+  <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px">Module 2 — Definition of done</div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.8">
+    Module 2 is complete when a real <code style="font-family:var(--mono);font-size:11px">POST /api/v1/analyze</code> request with all 5 inputs returns a PatientContext-based response showing extracted symptom entities, correct risk flags for the patient profile, S3-stored image reference, OCR-extracted prescription data, and Bedrock body photo findings — all under 25 seconds on Lambda. Unit tests pass with mocked AWS services. GitHub Actions CI is green.
+    <br><br>
+    Module 3 (RAG Pipeline) can now begin — it takes the <code style="font-family:var(--mono);font-size:11px">PatientContext</code> object built here and passes it to the LangChain retrieval chain.
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function toggle(id){
+  const d=document.getElementById('detail-'+id);
+  const b=document.getElementById('btn-'+id);
+  if(!d)return;
+  const open=d.classList.toggle('open');
+  if(b)b.textContent=open?'Close ▴':'Details ▾';
+}
+const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{
+  const sections=['overview','week3','week4','done'];
+  let current='overview';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&window.scrollY>=el.offsetTop-80)current=id;
+  });
+  navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+current));
+});
+</script>
+</body>
+</html>

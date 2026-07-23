@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Module 4 — Data Science Models</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E1117;--surface:#161B22;--surface2:#1C2230;--surface3:#21293A;
+  --border:#253044;--border2:#2E3D55;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.1);--teal-mid:#00A98E;
+  --you:#00C9A7;--you-bg:rgba(0,201,167,.08);--you-border:rgba(0,201,167,.3);
+  --ai:#58A6FF;--ai-bg:rgba(88,166,255,.08);--ai-border:rgba(88,166,255,.3);
+  --amber:#F0A500;--amber-bg:rgba(240,165,0,.08);--amber-border:rgba(240,165,0,.3);
+  --red:#FF7B72;--red-bg:rgba(255,123,114,.08);
+  --purple:#D2A8FF;--purple-bg:rgba(210,168,255,.08);
+  --green:#3FB950;--green-bg:rgba(63,185,80,.08);
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);font-size:13.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:32px 48px 28px}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+h1{font-size:26px;font-weight:600;color:var(--white);letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
+.header-sub{font-size:13px;color:var(--muted);max-width:580px;line-height:1.7}
+.header-stats{display:flex;gap:1px;background:var(--border);border-radius:var(--r-lg);overflow:hidden;flex-shrink:0}
+.hstat{background:var(--surface2);padding:12px 20px;text-align:center;min-width:80px}
+.hstat-n{font-size:20px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:3px}
+.hstat-l{font-size:10px;color:var(--dim);font-weight:500;letter-spacing:.04em}
+.legend{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 48px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nav a{font-size:12px;font-weight:500;color:var(--dim);text-decoration:none;padding:11px 14px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;display:block}
+.nav a:hover{color:var(--white)}
+.nav a.active{color:var(--white);border-bottom-color:var(--teal)}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 130px)}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.sbar-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 18px 4px}
+.sbar-link{display:flex;align-items:center;gap:8px;padding:7px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .15s;border-left:2px solid transparent}
+.sbar-link:hover{color:var(--white);background:var(--surface2)}
+.sbar-link.active{color:var(--white);background:var(--teal-dim);border-left-color:var(--teal)}
+.sbar-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.main{padding:32px 44px 60px;max-width:880px}
+.flow{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px 24px;margin-bottom:28px}
+.flow-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+.flow-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.flow-row:last-child{margin-bottom:0}
+.flow-box{font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:var(--r);border:1px solid;white-space:nowrap}
+.fb-you{background:var(--you-bg);border-color:var(--you-border);color:var(--teal)}
+.fb-ai{background:var(--ai-bg);border-color:var(--ai-border);color:var(--ai)}
+.fb-output{background:var(--surface2);border-color:var(--border2);color:var(--muted)}
+.fb-key{background:rgba(0,201,167,.15);border-color:var(--teal);color:var(--teal);font-weight:600}
+.flow-arrow{color:var(--dim);font-size:14px;flex-shrink:0}
+.flow-divider{border-top:1px solid var(--border);margin:10px 0}
+.overview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
+.ocard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+.ocard-icon{font-size:20px;margin-bottom:10px}
+.ocard-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:5px}
+.ocard-body{font-size:12px;color:var(--muted);line-height:1.6}
+.deliverables{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:28px}
+.deliv-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.deliv-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.deliv-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted)}
+.deliv-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.section-hdr{margin:32px 0 14px;display:flex;align-items:center;gap:12px}
+.section-hdr h2{font-size:15px;font-weight:600;color:var(--white)}
+.pill{font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.model-banner{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:28px}
+.mbanner{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;border-top:3px solid}
+.mbanner-icon{font-size:18px;margin-bottom:8px}
+.mbanner-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px}
+.mbanner-sub{font-size:11.5px;color:var(--muted);line-height:1.5}
+.mbanner-metric{font-family:var(--mono);font-size:10px;margin-top:8px;padding:3px 8px;border-radius:3px;display:inline-block}
+.step{margin-bottom:10px;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;transition:border-color .15s}
+.step:hover{border-color:var(--border2)}
+.step-header{display:grid;grid-template-columns:72px 1fr auto;align-items:stretch;cursor:pointer}
+.step-num{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;border-right:1px solid var(--border);min-width:72px}
+.step-num .num{font-family:var(--mono);font-size:13px;font-weight:600;line-height:1;margin-bottom:4px}
+.step-num .slabel{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.3}
+.step-num.you{background:var(--you-bg);border-right-color:var(--you-border)}.step-num.you .num{color:var(--teal)}.step-num.you .slabel{color:var(--teal-mid)}
+.step-num.ai{background:var(--ai-bg);border-right-color:var(--ai-border)}.step-num.ai .num{color:var(--ai)}.step-num.ai .slabel{color:#4B8FCE}
+.step-num.shared{background:var(--amber-bg);border-right-color:var(--amber-border)}.step-num.shared .num{color:var(--amber)}.step-num.shared .slabel{color:#C47F00}
+.step-body{padding:14px 16px}
+.step-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px}
+.step-file{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:6px}
+.step-summary{font-size:12.5px;color:var(--muted);line-height:1.6}
+.step-right{padding:12px 14px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:7px;min-width:120px}
+.effort{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.e-high{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,123,114,.2)}
+.e-med{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.e-low{background:var(--green-bg);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.expand{font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:color .15s}
+.expand:hover{color:var(--white)}
+.time-badge{font-family:var(--mono);font-size:10px;background:var(--surface3);border:1px solid var(--border);padding:3px 8px;border-radius:3px;color:var(--dim)}
+.step-detail{display:none;border-top:1px solid var(--border);padding:18px}
+.step-detail.open{display:block}
+.detail-sections{display:flex;flex-direction:column;gap:14px}
+.dsec{background:var(--surface2);border-radius:var(--r-lg);padding:14px 16px;border:1px solid var(--border)}
+.dsec-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.dsec.you-sec{border-left:2px solid var(--you)}.dsec.you-sec .dsec-title{color:var(--teal)}
+.dsec.ai-sec{border-left:2px solid var(--ai)}.dsec.ai-sec .dsec-title{color:var(--ai)}
+.dsec.warn-sec{border-left:2px solid var(--amber)}.dsec.warn-sec .dsec-title{color:var(--amber)}
+.dsec.verify-sec{border-left:2px solid var(--green)}.dsec.verify-sec .dsec-title{color:var(--green)}
+.dsec.prompt-sec{border-left:2px solid #D2A8FF}.dsec.prompt-sec .dsec-title{color:#D2A8FF}
+.dsec.think-sec{border-left:2px solid var(--red)}.dsec.think-sec .dsec-title{color:var(--red)}
+.dsec-body{font-size:12.5px;color:var(--muted);line-height:1.7}
+.dsec-body ul{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body ol{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.dsec-body li{color:var(--muted)}
+.dsec-body strong{color:var(--white);font-weight:500}
+pre.cmd{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;color:#79C0FF;overflow-x:auto;line-height:1.7;margin-top:6px;white-space:pre-wrap}
+pre.cmd .c{color:var(--dim)}
+pre.cmd .s{color:#A5D6FF}
+pre.cmd .k{color:var(--teal)}
+.verify-list{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+.vitem{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--muted)}
+.vcheck{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;margin-top:1px;background:var(--surface3)}
+.prompt-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-top:6px;font-size:11.5px;color:#A5D6FF;font-family:var(--mono);line-height:1.7;white-space:pre-wrap}
+.table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+.table th{background:var(--bg);color:var(--dim);font-weight:600;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;line-height:1.5}
+.table tr:last-child td{border-bottom:none}
+.table td:first-child{color:var(--white);font-weight:500;font-family:var(--mono);font-size:11px}
+.interview-box{background:rgba(240,165,0,.06);border:1px solid rgba(240,165,0,.2);border-radius:var(--r);padding:12px 14px;margin-top:10px}
+.interview-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--amber);text-transform:uppercase;margin-bottom:5px}
+.interview-q{font-size:12.5px;color:rgba(240,165,0,.7);font-style:italic;line-height:1.6}
+.done-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:22px 24px;margin-top:32px}
+.metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.metric-cell{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;text-align:center}
+.metric-n{font-family:var(--mono);font-size:16px;font-weight:600;margin-bottom:3px}
+.metric-l{font-size:10px;color:var(--dim)}
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr}.sidebar{display:none}
+  .main{padding:20px 16px 40px}.header{padding:24px 16px}
+  .overview-grid{grid-template-columns:1fr}.deliv-list{grid-template-columns:1fr}
+  .model-banner{grid-template-columns:1fr}.metric-row{grid-template-columns:1fr 1fr}
+  .step-header{grid-template-columns:60px 1fr}.step-right{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="eyebrow">MediAssist AI · Module 4 of 6</div>
+      <h1>Data Science Models</h1>
+      <p class="header-sub">Trains three ML models from scratch — an XGBoost symptom-to-disease classifier, a ResNet-50 X-ray CNN fine-tuned on NIH ChestX-ray14, and a LightGBM urgency severity scorer. All models are then exported to ONNX and integrated into the analyze pipeline replacing Module 3's stubs.</p>
+    </div>
+    <div>
+      <div class="header-stats">
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">2</div><div class="hstat-l">weeks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--teal)">13</div><div class="hstat-l">steps</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--ai)">5</div><div class="hstat-l">AI tasks</div></div>
+        <div class="hstat"><div class="hstat-n" style="color:var(--you)">8</div><div class="hstat-l">your tasks</div></div>
+      </div>
+      <div class="legend" style="margin-top:12px;justify-content:flex-end">
+        <div class="leg"><div class="leg-dot" style="background:var(--teal)"></div>You do it</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--ai)"></div>Gemini does it</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <a href="#overview" class="active">Overview</a>
+  <a href="#week7">Week 7 — EDA + Training</a>
+  <a href="#week8">Week 8 — Eval + Integration</a>
+  <a href="#done">Definition of done</a>
+</div>
+
+<div class="layout">
+<div class="sidebar">
+  <div class="sbar-section">Week 7 — EDA + Training</div>
+  <a class="sbar-link active" href="#s1"><div class="sbar-dot" style="background:var(--you)"></div>S1 · EDA symptoms dataset</a>
+  <a class="sbar-link" href="#s2"><div class="sbar-dot" style="background:var(--you)"></div>S2 · Feature engineering design</a>
+  <a class="sbar-link" href="#s3"><div class="sbar-dot" style="background:var(--ai)"></div>S3 · XGBoost training code</a>
+  <a class="sbar-link" href="#s4"><div class="sbar-dot" style="background:var(--you)"></div>S4 · XGBoost hyperparam strategy</a>
+  <a class="sbar-link" href="#s5"><div class="sbar-dot" style="background:var(--you)"></div>S5 · CNN fine-tune strategy</a>
+  <a class="sbar-link" href="#s6"><div class="sbar-dot" style="background:var(--ai)"></div>S6 · ResNet-50 training (SageMaker)</a>
+  <a class="sbar-link" href="#s7"><div class="sbar-dot" style="background:var(--you)"></div>S7 · Urgency class boundaries</a>
+  <a class="sbar-link" href="#s8"><div class="sbar-dot" style="background:var(--ai)"></div>S8 · LightGBM severity training</a>
+  <div class="sbar-section">Week 8 — Eval + Deploy</div>
+  <a class="sbar-link" href="#s9"><div class="sbar-dot" style="background:var(--you)"></div>S9 · Evaluate all 3 models</a>
+  <a class="sbar-link" href="#s10"><div class="sbar-dot" style="background:var(--you)"></div>S10 · MLflow experiment analysis</a>
+  <a class="sbar-link" href="#s11"><div class="sbar-dot" style="background:var(--ai)"></div>S11 · ONNX export + Lambda</a>
+  <a class="sbar-link" href="#s12"><div class="sbar-dot" style="background:var(--ai)"></div>S12 · Wire into analyze.py</a>
+  <a class="sbar-link" href="#s13"><div class="sbar-dot" style="background:var(--you)"></div>S13 · End-to-end validation</a>
+</div>
+
+<main class="main">
+
+<div id="overview">
+  <div class="model-banner">
+    <div class="mbanner" style="border-top-color:var(--teal)">
+      <div class="mbanner-icon">🌳</div>
+      <div class="mbanner-title">XGBoost Classifier</div>
+      <div class="mbanner-sub">Symptom text + patient profile → top-3 disease predictions with probability. Trained on Kaggle disease-symptom dataset.</div>
+      <span class="mbanner-metric" style="background:var(--teal-dim);color:var(--teal)">Target: macro-F1 ≥ 0.72</span>
+    </div>
+    <div class="mbanner" style="border-top-color:var(--ai)">
+      <div class="mbanner-icon">🫁</div>
+      <div class="mbanner-title">ResNet-50 CNN</div>
+      <div class="mbanner-sub">X-ray image → 14-class chest condition prediction. Fine-tuned on NIH ChestX-ray14. Trained on SageMaker T4.</div>
+      <span class="mbanner-metric" style="background:var(--ai-bg);color:var(--ai)">Target: AUC-ROC ≥ 0.80</span>
+    </div>
+    <div class="mbanner" style="border-top-color:var(--amber)">
+      <div class="mbanner-icon">⚡</div>
+      <div class="mbanner-title">LightGBM Urgency</div>
+      <div class="mbanner-sub">Combined signals → Low / Moderate / Urgent / Emergency. Risk multiplier features. Emergency recall ≥ 0.95.</div>
+      <span class="mbanner-metric" style="background:var(--amber-bg);color:var(--amber)">Emergency recall ≥ 0.95</span>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-title">How all 3 models connect to the pipeline</div>
+    <div class="flow-row">
+      <div class="flow-box fb-output">PatientContext</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">symptom features</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">XGBoost</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-key">top-3 diseases + proba</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box fb-output">X-ray bytes (S3)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-ai">preprocess_xray()</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">ResNet-50 ONNX</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-key">14 class scores</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box fb-output">PatientContext + XGB + CNN</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-you">risk features</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">LightGBM</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-key">urgency level</div>
+    </div>
+    <div class="flow-divider"></div>
+    <div class="flow-row">
+      <div class="flow-box fb-key">XGB + CNN + LightGBM outputs</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-output">merge with RAG DiagnosisResult</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-key">final AnalyzeResponse</div>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="ocard">
+      <div class="ocard-icon">🎯</div>
+      <div class="ocard-title">Goal of this module</div>
+      <div class="ocard-body">Three trained, evaluated, exported ML models integrated into the pipeline. analyze.py now returns ML-backed disease predictions and an ML-scored urgency level — not RAG guesses.</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">⚠️</div>
+      <div class="ocard-title">Your heaviest tasks</div>
+      <div class="ocard-body">S1 (EDA interpretation), S2 (feature engineering), S4 (hyperparam strategy), S5 (CNN fine-tune strategy), S7 (urgency class boundary design), S9 (model evaluation judgment), S10 (MLflow analysis + model selection).</div>
+    </div>
+    <div class="ocard">
+      <div class="ocard-icon">☁️</div>
+      <div class="ocard-title">Where to train</div>
+      <div class="ocard-body">XGBoost + LightGBM → Kaggle free T4 (fast enough). ResNet-50 → AWS SageMaker spot instance ml.g4dn.2xlarge (~$1.40 total on spot pricing).</div>
+    </div>
+  </div>
+
+  <div class="deliverables">
+    <div class="deliv-title">Deliverables at end of Module 4</div>
+    <div class="deliv-list">
+      <div class="deliv-item"><span class="deliv-icon">📊</span>EDA notebook with interpreted findings</div>
+      <div class="deliv-item"><span class="deliv-icon">🧬</span>Feature engineering notebook with all engineered features</div>
+      <div class="deliv-item"><span class="deliv-icon">🌳</span>XGBoost model (pkl) — macro-F1 ≥ 0.72</div>
+      <div class="deliv-item"><span class="deliv-icon">🫁</span>ResNet-50 weights (pt) — AUC-ROC ≥ 0.80</div>
+      <div class="deliv-item"><span class="deliv-icon">⚡</span>LightGBM urgency model (pkl) — Emergency recall ≥ 0.95</div>
+      <div class="deliv-item"><span class="deliv-icon">📦</span>All 3 models exported to ONNX format</div>
+      <div class="deliv-item"><span class="deliv-icon">☁️</span>Models uploaded to S3 ml_models/</div>
+      <div class="deliv-item"><span class="deliv-icon">🔗</span>symptom_classifier.py + severity_scorer.py + xray_classifier.py wired live</div>
+      <div class="deliv-item"><span class="deliv-icon">📈</span>MLflow experiment dashboard with all runs</div>
+      <div class="deliv-item"><span class="deliv-icon">🧪</span>Full analyze call returns ML-backed urgency level</div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 7 -->
+<div id="week7">
+  <div class="section-hdr">
+    <h2>Week 7 — EDA, feature engineering, and training</h2>
+    <span class="pill" style="background:var(--you-bg);color:var(--teal);border:1px solid var(--you-border)">Days 1–5</span>
+  </div>
+
+  <!-- S1 -->
+  <div class="step" id="s1">
+    <div class="step-header" onclick="toggle('s1')">
+      <div class="step-num you"><div class="num">S1</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">EDA on disease-symptom dataset — interpret results</div>
+        <div class="step-file">notebooks/01_eda_symptoms.ipynb</div>
+        <div class="step-summary">Gemini generates the EDA plots. You read every chart and write down what it means for your training strategy. This is the most important analytical task in the project — wrong EDA interpretation leads to a model that looks good on paper but fails in production.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~5 hrs</span>
+        <button class="expand" id="btn-s1">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s1">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini — generate EDA notebook first</div>
+          <div class="prompt-box">Write notebooks/01_eda_symptoms.ipynb for MediAssist AI.
+
+Dataset: Kaggle disease-symptom dataset
+Download with: kaggle datasets download -d itachi9604/disease-symptom-description-dataset
+
+Generate these plots and analyses:
+1. Disease class distribution — bar chart of sample count per disease (sorted)
+2. Class imbalance ratio — ratio of most common to least common class
+3. Symptom frequency — top 30 most common symptoms across all diseases
+4. Symptom co-occurrence heatmap — which symptoms appear together most often
+5. Unique symptoms per disease — how many unique symptoms each disease has
+6. Missing value analysis — any NaN or empty symptom fields
+7. Severity column distribution if present
+8. Dataset shape, dtypes, sample rows
+
+After each plot, add a markdown cell: "## Interpretation" with space for me to write my findings.
+
+Also load and profile the NIH ChestX-ray14 metadata CSV:
+- Class distribution across 14 conditions
+- Patient age/gender distribution
+- Multi-label co-occurrence (which conditions appear together)
+- Image count per split (train/val/test)</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What YOU must do — fill every Interpretation cell</div>
+          <div class="dsec-body">
+            For each plot, write your interpretation in the markdown cells. These are the decisions you must make:
+            <ol style="margin-top:10px">
+              <li style="margin-bottom:10px">
+                <strong>Class imbalance:</strong> Count how many diseases have fewer than 50 samples. These are your minority classes. Decide: use SMOTE with what ratio? Or collect more data? Or weight them in XGBoost's scale_pos_weight?<br>
+                <em>Write: "Diseases with &lt;50 samples: [list]. Strategy: SMOTE oversampling to ratio 0.3 for these classes."</em>
+              </li>
+              <li style="margin-bottom:10px">
+                <strong>Symptom co-occurrence:</strong> Find 3–5 symptom pairs that always appear together. These are candidates for interaction features.<br>
+                <em>Write: "chest pain + shortness of breath co-occur in X% of cardiac cases → create cardiac_cluster feature."</em>
+              </li>
+              <li style="margin-bottom:10px">
+                <strong>ChestX-ray14 imbalance:</strong> "No Finding" is the most common class by far. This will dominate training. Decide your class weighting strategy.<br>
+                <em>Write: "No Finding is 60% of data. Use class_weight in loss function. Do NOT oversample — creates fake X-rays."</em>
+              </li>
+              <li>
+                <strong>Metric choice:</strong> Based on imbalance, confirm: you will NOT use accuracy. You will use macro-averaged F1 for XGBoost and AUC-ROC per class for ResNet-50.<br>
+                <em>Write: "Accuracy is misleading. A model predicting 'No Finding' always gets 60% accuracy on ChestX-ray14. Use macro-F1."</em>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"Walk me through what your EDA revealed. What class imbalance did you find? Why did you choose macro-F1 over accuracy? How did the co-occurrence analysis influence your feature engineering?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="step" id="s2">
+    <div class="step-header" onclick="toggle('s2')">
+      <div class="step-num you"><div class="num">S2</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Design all feature engineering — on paper before any code</div>
+        <div class="step-file">notebooks/05_symptom_classifier.ipynb</div>
+        <div class="step-summary">The risk_multiplier features are your most important DS contribution. No AI can derive these from data alone — they require medical reasoning. You design every feature, write the medical justification, then give it to Gemini to implement.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s2">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s2">
+      <div class="detail-sections">
+        <div class="dsec think-sec">
+          <div class="dsec-title">Design your full feature set — write this on paper first</div>
+          <div class="dsec-body">
+            Group your features into 5 categories and justify each:
+<pre class="cmd"><span class="c">## Category 1: Direct symptom features (from dataset)</span>
+- One-hot encode all 132 binary symptom columns
+- No transformation needed — already binary
+
+<span class="c">## Category 2: Patient demographic features (from PatientProfile)</span>
+- age_bin: [0-17, 18-34, 35-49, 50-64, 65+]  <span class="c"># binned not raw</span>
+- gender_encoded: 0/1/2
+- bmi_category: underweight/normal/overweight/obese
+- blood_group_encoded: one-hot
+
+<span class="c">## Category 3: Medical history features</span>
+- has_diabetes: bool (from conditions list)
+- has_hypertension: bool
+- has_respiratory_condition: bool
+- allergy_count: int
+- medication_count: int (proxy for chronic illness severity)
+
+<span class="c">## Category 4: Lifestyle risk features</span>
+- smoking_encoded: 0=never, 1=former, 2=current
+- pack_years_binned: [0, 1-10, 10-20, 20+]
+- alcohol_risk: bool (>14 units/week)
+- activity_score: 0-3
+- sleep_deficit: bool (sleep_hours < 6)
+
+<span class="c">## Category 5: ENGINEERED RISK MULTIPLIERS (your key contribution)</span>
+- cardiac_risk_score: age_over_50 × smoker × (hypertension OR diabetes)
+  <span class="c"># Justification: these 3 together are the classic Framingham risk factors</span>
+
+- respiratory_risk_score: smoker × (chest_pain OR cough OR dyspnea)
+  <span class="c"># Justification: smoking is the dominant respiratory risk factor</span>
+
+- acute_abdomen_flag: abdominal_pain × fever × (nausea OR vomiting)
+  <span class="c"># Justification: this triad suggests surgical abdomen (appendicitis, etc.)</span>
+
+- neurological_flag: (headache × sudden_onset) OR (dizziness × vision_changes)
+  <span class="c"># Justification: sudden severe headache is a red flag for SAH</span>
+
+- infection_cluster: fever × (fatigue OR body_aches) × duration_acute
+  <span class="c"># Justification: fever + systemic symptoms + acute onset = infection</span></pre>
+            Write the medical justification for each multiplier. This is what you say in interviews.
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">What NOT to do</div>
+          <div class="dsec-body">
+            Do not create interaction features blindly (e.g. "all pairs of symptoms"). With 132 symptoms that's 8,646 pairs — XGBoost will overfit. Only create interaction features you can medically justify. Quality over quantity.
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Top interview question — your single most defensible DS contribution</div>
+          <div class="interview-q">"Explain your cardiac_risk_score feature. Why age × smoking × hypertension specifically? What medical evidence supports this combination? How much did it improve your model's F1 score compared to using those features separately?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="step" id="s3">
+    <div class="step-header" onclick="toggle('s3')">
+      <div class="step-num ai"><div class="num">S3</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement feature engineering + XGBoost training pipeline</div>
+        <div class="step-file">notebooks/05_symptom_classifier.ipynb</div>
+        <div class="step-summary">Gemini implements all features you designed in S2, builds the preprocessing pipeline, applies SMOTE, and writes the full XGBoost training loop with MLflow logging. You give it your feature spec from S2 as the prompt.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s3">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s3">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Write notebooks/05_symptom_classifier.ipynb for MediAssist AI.
+
+Dataset: Kaggle disease-symptom dataset (already downloaded)
+
+Section 1 — Feature engineering (implement my exact feature spec):
+[paste your full feature list from S2 here — all 5 categories with justifications]
+
+Section 2 — Preprocessing pipeline:
+- ColumnTransformer: one-hot encode categoricals, scale numerics with StandardScaler
+- Train/val/test split: 70/15/15, stratified by disease label
+- Apply SMOTE to training set only (never to val/test):
+  from imblearn.over_sampling import SMOTE
+  Strategy: oversample minority classes to 0.3 ratio relative to majority
+  Use random_state=42
+
+Section 3 — XGBoost training:
+- Multi-class classification (41 diseases)
+- Evaluation metric: macro-F1 (NOT accuracy)
+- MLflow logging: log all hyperparams, train/val macro-F1 per round, feature importances
+- Early stopping: stop if val macro-F1 doesn't improve for 20 rounds
+
+Section 4 — Feature importance:
+- Plot top 20 features by importance
+- Highlight which of my engineered features appear (cardiac_risk_score, etc.)
+
+Section 5 — Save outputs:
+- Save model: joblib.dump(model, "../ml_models/xgboost_symptom.pkl")
+- Save feature names list: json.dump(feature_names, open("feature_names.json","w"))
+- Save label encoder: joblib.dump(le, "../ml_models/label_encoder.pkl")</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you verify after notebook runs on Kaggle</div>
+          <div class="dsec-body">
+            Run the notebook on Kaggle free T4. After it completes:
+            <ul style="margin-top:8px">
+              <li>Check val macro-F1 after SMOTE vs before SMOTE — should improve for rare classes</li>
+              <li>Check if your engineered features (cardiac_risk_score) appear in top-20 importance — if not, the multiplication might not be discriminative enough</li>
+              <li>Check the confusion matrix for your worst-performing disease — is it always predicted as something else? Why?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="step" id="s4">
+    <div class="step-header" onclick="toggle('s4')">
+      <div class="step-num you"><div class="num">S4</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Decide XGBoost hyperparameter search space</div>
+        <div class="step-file">notebooks/05_symptom_classifier.ipynb</div>
+        <div class="step-summary">You define the Optuna search space — which parameters to tune, what ranges make sense for your dataset size, and what the optimization objective is. Gemini runs the search. You pick the winning trial.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s4">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s4">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Define your search space — write this yourself</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Your search space decisions — justify each range</span>
+search_space = {
+    <span class="c"># n_estimators: 100-500</span>
+    <span class="c"># Justification: 100 is too few for 41 classes, 500+ overfits on this dataset size</span>
+    <span class="k">"n_estimators"</span>: (100, 500),
+
+    <span class="c"># max_depth: 3-8</span>
+    <span class="c"># Justification: medical symptoms have moderate complexity, >8 overfits</span>
+    <span class="k">"max_depth"</span>: (3, 8),
+
+    <span class="c"># learning_rate: 0.01-0.3 (log scale)</span>
+    <span class="c"># Justification: standard range, smaller values need more trees</span>
+    <span class="k">"learning_rate"</span>: (0.01, 0.3),
+
+    <span class="c"># subsample: 0.6-1.0</span>
+    <span class="c"># Justification: row subsampling helps prevent overfitting</span>
+    <span class="k">"subsample"</span>: (0.6, 1.0),
+
+    <span class="c"># colsample_bytree: 0.5-1.0</span>
+    <span class="c"># Justification: feature subsampling especially important with 132+ features</span>
+    <span class="k">"colsample_bytree"</span>: (0.5, 1.0),
+
+    <span class="c"># min_child_weight: 1-10</span>
+    <span class="c"># Justification: helps with class imbalance — higher value = more conservative</span>
+    <span class="k">"min_child_weight"</span>: (1, 10),
+}
+
+<span class="c"># Optimization objective</span>
+<span class="k">objective</span> = <span class="s">"macro-F1 on validation set"</span>
+<span class="c"># NOT accuracy — accuracy is misleading with class imbalance</span>
+
+<span class="c"># Budget</span>
+<span class="k">n_trials</span> = 50  <span class="c"># 50 Optuna trials is enough for this dataset size</span>
+<span class="k">early_stopping</span> = 20  <span class="c"># stop if val F1 doesn't improve for 20 rounds</span></pre>
+            After Optuna finishes, you review the top-5 trials:
+            <ul style="margin-top:8px">
+              <li>Are the best hyperparameters at the boundary of your search space? → Expand that parameter's range and re-run</li>
+              <li>Is max_depth consistently at 8 in best trials? → Your data might support deeper trees — expand to 12</li>
+              <li>Do the top-5 trials cluster around similar values? → Good, your search converged</li>
+            </ul>
+          </div>
+        </div>
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Then give Gemini this prompt to run the search</div>
+          <div class="prompt-box">Add Optuna hyperparameter search to notebooks/05_symptom_classifier.ipynb.
+
+Use this exact search space: [paste your search space above]
+Optimization metric: macro-F1 on validation set
+n_trials: 50
+Use MLflow to log each trial: params + val_macro_f1
+
+After search:
+- Print best trial params and val_macro_f1
+- Retrain with best params on train+val combined
+- Evaluate on test set (held out, touched only once)
+- Plot: optimization history, param importances, parallel coordinate plot
+- Save best model to ml_models/xgboost_symptom.pkl</div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"Why did you choose these hyperparameter ranges? What happened when your best trials hit the boundary of the search space? How many Optuna trials did you run and why?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 -->
+  <div class="step" id="s5">
+    <div class="step-header" onclick="toggle('s5')">
+      <div class="step-num you"><div class="num">S5</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Design ResNet-50 fine-tuning strategy</div>
+        <div class="step-file">notebooks/03_xray_cnn_training.ipynb</div>
+        <div class="step-summary">Transfer learning decisions — how many layers to freeze, what learning rates to use for frozen vs unfrozen layers, which augmentations are medically valid for chest X-rays, and what loss function handles multi-label classification. You decide all of this before Gemini writes a line of training code.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s5">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s5">
+      <div class="detail-sections">
+        <div class="dsec think-sec">
+          <div class="dsec-title">Every decision you must make — write each one down with justification</div>
+          <div class="dsec-body">
+            <table class="table">
+              <thead><tr><th>Decision</th><th>Your choice</th><th>Medical/technical justification</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>Layers to freeze</td>
+                  <td>Freeze layer1-layer3 (first 6 blocks). Fine-tune layer4 + FC.</td>
+                  <td>Early ResNet layers learn generic edges/textures — already useful for X-rays. Only the deeper semantic layers need domain adaptation.</td>
+                </tr>
+                <tr>
+                  <td>Learning rates</td>
+                  <td>New FC head: 1e-3. Fine-tuned layer4: 1e-4. Frozen layers: 0.</td>
+                  <td>Differential LR prevents catastrophic forgetting. 10× lower LR for pretrained weights.</td>
+                </tr>
+                <tr>
+                  <td>Loss function</td>
+                  <td>Binary Cross-Entropy (BCE) per class, NOT cross-entropy.</td>
+                  <td>ChestX-ray14 is multi-label — a patient can have both Pneumonia AND Atelectasis. BCE treats each class independently.</td>
+                </tr>
+                <tr>
+                  <td>Class weights in loss</td>
+                  <td>Positive weight per class = neg_count / pos_count for each of 14 classes.</td>
+                  <td>"No Finding" is 60% of data. Without weighting, model predicts "No Finding" always. Weighted BCE fixes this.</td>
+                </tr>
+                <tr>
+                  <td>Augmentations (X-ray valid ones)</td>
+                  <td>Horizontal flip ✅ Random rotation ±10° ✅ Random brightness/contrast ✅</td>
+                  <td>Horizontal flip is valid — left/right lung pathologies appear in both orientations. ±10° mimics patient positioning variance.</td>
+                </tr>
+                <tr>
+                  <td>Augmentations to AVOID</td>
+                  <td>Vertical flip ❌ Random crop ❌ Color jitter (severe) ❌</td>
+                  <td>Vertical flip creates anatomically impossible images (heart on wrong side). Cropping removes lung edges where pathology hides.</td>
+                </tr>
+                <tr>
+                  <td>LR schedule</td>
+                  <td>CosineAnnealingLR over 20 epochs.</td>
+                  <td>Cosine annealing finds better minima than step decay for medical imaging tasks.</td>
+                </tr>
+                <tr>
+                  <td>Evaluation metric</td>
+                  <td>AUC-ROC per class (not accuracy, not F1).</td>
+                  <td>AUC-ROC is threshold-independent and handles class imbalance. Standard metric for CheXNet benchmarks.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"Why can't you use vertical flip as a data augmentation for chest X-rays? Why did you use BCE loss instead of cross-entropy? What is differential learning rate and why did you apply it?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 -->
+  <div class="step" id="s6">
+    <div class="step-header" onclick="toggle('s6')">
+      <div class="step-num ai"><div class="num">S6</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Implement and launch ResNet-50 training on SageMaker</div>
+        <div class="step-file">notebooks/03_xray_cnn_training.ipynb · backend/scripts/train.py</div>
+        <div class="step-summary">Gemini implements the full PyTorch training loop, SageMaker entry point, and Dockerfile using your S5 decisions. You launch the training job and monitor it. Expected training time: 4–6 hours on ml.g4dn.2xlarge spot instance.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~3 hrs setup, 6 hrs training</span>
+        <button class="expand" id="btn-s6">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s6">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Write the complete ResNet-50 training pipeline for MediAssist AI X-ray classification.
+
+FILE 1: notebooks/03_xray_cnn_training.ipynb
+- Load NIH ChestX-ray14 dataset from S3: s3://mediassist-ml/raw/chestxray14/
+- Parse Data_Entry_2017.csv to get image paths and multi-label targets (14 classes)
+- Split: 70/15/15 stratified (use official split file if available)
+
+FILE 2: backend/scripts/train_xray.py (SageMaker entry point)
+Implement my exact strategy:
+- Freeze ResNet-50 layer1, layer2, layer3 (load pretrained from torchvision)
+- Fine-tune layer4 + FC layer (replace FC with nn.Linear(2048, 14))
+- Optimizer: Adam with differential LRs — param groups: {FC: lr=1e-3}, {layer4: lr=1e-4}
+- Loss: BCEWithLogitsLoss with pos_weight tensor (neg/pos ratio per class)
+- Augmentations (albumentations):
+  - HorizontalFlip(p=0.5)
+  - Rotate(limit=10, p=0.3)
+  - RandomBrightnessContrast(p=0.3)
+  - Normalize(mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])
+  - Resize(224, 224)
+  NO vertical flip, NO crop
+- LR schedule: CosineAnnealingLR(T_max=20)
+- Train for 20 epochs, early stop if val mean-AUC doesn't improve for 5 epochs
+- Log to MLflow: loss per epoch, AUC per class, mean-AUC, best epoch
+- Save checkpoint: best val mean-AUC model to /opt/ml/model/resnet50_xray.pt
+
+FILE 3: sagemaker_launch.py
+- Launch SageMaker training job:
+  instance_type='ml.g4dn.2xlarge', use_spot_instances=True, max_wait=28800
+  input: s3://mediassist-ml/raw/chestxray14/
+  output: s3://mediassist-ml/models/</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you do — launch and monitor</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Launch training job</span>
+python backend/scripts/sagemaker_launch.py
+
+<span class="c"># Monitor in SageMaker Console → Training Jobs</span>
+<span class="c"># Or watch CloudWatch logs live</span>
+aws logs tail /aws/sagemaker/TrainingJobs --follow
+
+<span class="c"># While it trains, watch for:</span>
+<span class="c"># - Loss decreasing each epoch</span>
+<span class="c"># - mean-AUC increasing</span>
+<span class="c"># - If mean-AUC plateaus after epoch 5 → LR too high, note for next run</span>
+<span class="c"># - If loss is NaN → LR too high, stop job, reduce to 1e-4</span></pre>
+            After training completes (~6 hrs), download the best model:
+<pre class="cmd">aws s3 cp s3://mediassist-ml/models/resnet50_xray.pt backend/ml_models/</pre>
+          </div>
+        </div>
+        <div class="dsec warn-sec">
+          <div class="dsec-title">Cost control</div>
+          <div class="dsec-body">
+            ml.g4dn.2xlarge spot = $0.28/hr. 6 hours = $1.68. Set a SageMaker billing alert at $5. If the job is interrupted (spot), SageMaker auto-resumes from the last checkpoint — make sure Gemini implements checkpoint saving every epoch.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7 -->
+  <div class="step" id="s7">
+    <div class="step-header" onclick="toggle('s7')">
+      <div class="step-num you"><div class="num">S7</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Define urgency class boundaries and Emergency recall threshold</div>
+        <div class="step-file">notebooks/06_severity_scorer.ipynb</div>
+        <div class="step-summary">The urgency class boundaries are a medical and ethical decision. When exactly does a patient cross from Urgent to Emergency? A missed Emergency is life-threatening. You must define the class criteria and the minimum recall requirement for the Emergency class before any model is trained.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s7">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s7">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">Write your urgency class definitions — these become training labels</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Write these criteria yourself — they define the ground truth labels</span>
+
+<span class="k">URGENCY_CRITERIA</span> = {
+
+  <span class="k">"LOW"</span>: {
+    <span class="c"># Criteria: minor symptoms, no red flags, low-risk profile</span>
+    "examples": ["common cold", "mild headache", "minor skin rash"],
+    "action": "Rest, monitor, OTC medication if needed",
+    "timeframe": "See doctor within 1 week if not improving"
+  },
+
+  <span class="k">"MODERATE"</span>: {
+    <span class="c"># Criteria: significant symptoms but not immediately dangerous</span>
+    "examples": ["fever >38.5°C >2 days", "persistent cough", "mild chest pain in young non-smoker"],
+    "action": "Book doctor appointment within 24-48 hours",
+    "timeframe": "Within 48 hours"
+  },
+
+  <span class="k">"URGENT"</span>: {
+    <span class="c"># Criteria: symptoms that need same-day medical attention</span>
+    "examples": ["high fever with rash", "severe abdominal pain", "difficulty breathing"],
+    "action": "Visit urgent care or emergency outpatient today",
+    "timeframe": "Within hours"
+  },
+
+  <span class="k">"EMERGENCY"</span>: {
+    <span class="c"># Criteria: immediately life-threatening — call 112 NOW</span>
+    <span class="c"># ANY of these triggers Emergency automatically:</span>
+    "triggers": [
+      "chest pain + shortness of breath + age >45 OR smoker",
+      "sudden severe headache ('worst of my life')",
+      "facial droop + arm weakness + speech difficulty (stroke triad)",
+      "unconsciousness or altered consciousness",
+      "SpO2 < 90% if measured",
+      "severe allergic reaction (throat swelling)",
+      "suspected poisoning or overdose"
+    ],
+    "action": "CALL 112 IMMEDIATELY",
+    "timeframe": "NOW"
+  }
+}
+
+<span class="c"># Minimum recall requirement — write this down and justify it</span>
+<span class="k">EMERGENCY_MIN_RECALL</span> = 0.95
+<span class="c"># Justification: a false negative on Emergency (calling it Moderate)</span>
+<span class="c"># can result in patient death. 95% recall means we miss 1 in 20.</span>
+<span class="c"># We accept lower precision (false alarms) to achieve this.</span></pre>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"How did you define the boundary between Urgent and Emergency? What recall did you achieve on the Emergency class? Why did you set the threshold at 0.95 specifically? What's the real-world consequence of a false negative here?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 -->
+  <div class="step" id="s8">
+    <div class="step-header" onclick="toggle('s8')">
+      <div class="step-num ai"><div class="num">S8</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Train LightGBM urgency severity scorer</div>
+        <div class="step-file">notebooks/06_severity_scorer.ipynb</div>
+        <div class="step-summary">Gemini implements training using your urgency class definitions and risk multiplier features. The training uses threshold tuning to hit your 0.95 Emergency recall requirement. Run on Kaggle.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s8">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s8">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Write notebooks/06_severity_scorer.ipynb for MediAssist AI urgency classification.
+
+This is a 4-class classification: LOW=0, MODERATE=1, URGENT=2, EMERGENCY=3
+
+Feature set (combine PatientContext fields):
+- All symptom features (one-hot encoded) — same as XGBoost notebook
+- Patient demographic features — same as XGBoost
+- My engineered risk multipliers from S2: cardiac_risk_score, respiratory_risk_score, etc.
+- CNN output (if available): xray_top_condition_encoded, xray_confidence
+- Add: symptom_count (total confirmed symptoms), symptom_severity_max
+
+Dataset: Since we don't have labeled urgency data, create synthetic labels using my URGENCY_CRITERIA:
+- Apply rule-based labeling: if any EMERGENCY trigger condition is met → label=3
+- Else if fever>2days OR severe symptoms → label=2
+- Else if significant symptoms → label=1
+- Else label=0
+This gives us training labels from the symptom dataset.
+
+Training:
+- LightGBM multiclass classifier
+- class_weight: {0:1, 1:2, 2:3, 3:10}  <-- heavily weight Emergency
+- Metric: macro-F1 + per-class recall
+- Threshold tuning AFTER training:
+  For Emergency class: find prediction threshold that achieves recall >= 0.95
+  Report precision at that threshold
+- MLflow: log all metrics + confusion matrix
+- Save: joblib.dump(model, "../ml_models/severity_scorer.pkl")
+         json.dump({"emergency_threshold": t}, open("severity_thresholds.json","w"))</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">What you verify</div>
+          <div class="dsec-body">
+            <ul>
+              <li>Emergency class recall ≥ 0.95 on test set at tuned threshold</li>
+              <li>Check precision at that threshold — if Emergency precision &lt; 0.30, your triggers are too broad</li>
+              <li>Verify cardiac_risk_score is in top-10 feature importances</li>
+              <li>Run confusion matrix — confirm LOW is never misclassified as EMERGENCY (that's the worst error in the other direction)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 8 -->
+<div id="week8">
+  <div class="section-hdr">
+    <h2>Week 8 — Evaluation, ONNX export, and integration</h2>
+    <span class="pill" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">Days 6–14</span>
+  </div>
+
+  <!-- S9 -->
+  <div class="step" id="s9">
+    <div class="step-header" onclick="toggle('s9')">
+      <div class="step-num you"><div class="num">S9</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">Evaluate all 3 models — interpret results and decide if acceptable</div>
+        <div class="step-file">notebooks/ (all 3)</div>
+        <div class="step-summary">Gemini generates evaluation plots. You read every metric, identify failures, decide if each model meets the bar or needs another training run. This is the most judgment-intensive DS task — Gemini can produce numbers but cannot tell you if they're good enough.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~5 hrs</span>
+        <button class="expand" id="btn-s9">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s9">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">For each model — what to look for and what to do if it fails</div>
+          <div class="dsec-body">
+            <table class="table">
+              <thead><tr><th>Model</th><th>Target metric</th><th>If below target</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>XGBoost</td>
+                  <td>Macro-F1 ≥ 0.72 on test set</td>
+                  <td>Check which classes are dragging it down. Add more SMOTE for those classes. Try max_depth 10-12. Check if your interaction features actually help — ablation test with/without them.</td>
+                </tr>
+                <tr>
+                  <td>ResNet-50</td>
+                  <td>Mean AUC-ROC ≥ 0.80 across 14 classes</td>
+                  <td>If stuck at 0.72-0.75: unfreeze layer3 as well and retrain with even lower LR (1e-5). Check if CLAHE preprocessing improved results vs standard normalization.</td>
+                </tr>
+                <tr>
+                  <td>LightGBM</td>
+                  <td>Emergency recall ≥ 0.95 at tuned threshold</td>
+                  <td>If below 0.95: lower the classification threshold for Emergency further (accept more false alarms). Recheck if rule-based labeling created correct labels — verify 20 random Emergency samples manually.</td>
+                </tr>
+              </tbody>
+            </table>
+            <br>
+            For each failing class in XGBoost, ask yourself: is there enough training data? Is the feature representation sufficient? Could this disease be better characterized by a different feature?
+          </div>
+        </div>
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini — generate evaluation plots</div>
+          <div class="prompt-box">Add evaluation sections to all 3 training notebooks for MediAssist AI.
+
+For XGBoost (notebooks/05):
+- Confusion matrix (normalized) — 41×41 heatmap
+- Per-class F1 score bar chart (sorted ascending — worst first)
+- Macro-F1, micro-F1, weighted-F1 on test set
+- Feature importance: top 20 features with bar chart
+- Ablation: macro-F1 with vs without my engineered features
+
+For ResNet-50 (notebooks/03):
+- ROC curves for all 14 classes on one plot
+- AUC per class table (sorted ascending)
+- Confusion matrix at threshold 0.5
+- Grad-CAM visualization on 5 test images (show where model looks)
+- Precision-Recall curves per class
+
+For LightGBM (notebooks/06):
+- Confusion matrix (4×4: LOW/MOD/URGENT/EMERGENCY)
+- Per-class recall and precision
+- Emergency recall vs precision tradeoff curve (vary threshold)
+- Feature importances top 20
+- Show: how many real Emergency cases were misclassified as LOW/MOD (this is the dangerous error)</div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"Which disease did your XGBoost model perform worst on and why? What did the Grad-CAM visualizations show about where your CNN was looking? Did the CNN look at the right parts of the X-ray?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S10 -->
+  <div class="step" id="s10">
+    <div class="step-header" onclick="toggle('s10')">
+      <div class="step-num you"><div class="num">S10</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">MLflow experiment analysis — select final models</div>
+        <div class="step-file">MLflow UI (localhost:5000)</div>
+        <div class="step-summary">After 3–5 training runs per model, you open the MLflow dashboard, compare runs side by side, and select the final model checkpoint for each. This is a judgment call — you decide which run's tradeoffs are best for your use case.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~3 hrs</span>
+        <button class="expand" id="btn-s10">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s10">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">How to compare runs in MLflow</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Start MLflow UI</span>
+mlflow ui --port 5000
+<span class="c"># Open http://localhost:5000</span></pre>
+            For each model, select all runs and compare:
+            <ul style="margin-top:8px">
+              <li>Sort by your target metric (macro-F1 for XGBoost, mean-AUC for ResNet-50, Emergency recall for LightGBM)</li>
+              <li>Check: does the top run by metric also have good training stability (no spikes in loss curve)?</li>
+              <li>Check: is the gap between train and val metric &gt;10%? → Overfitting — prefer a run with smaller gap even if lower val metric</li>
+              <li>For ResNet-50: compare runs with vs without CLAHE preprocessing — pick whichever gave higher AUC</li>
+            </ul>
+            Write your final selection justification:
+<pre class="cmd"><span class="c"># Document this in docs/model_selection.md</span>
+XGBoost: Run #3, val macro-F1=0.74, test macro-F1=0.73
+  Chose over Run #5 (higher val but overfitting, train-val gap 15%)
+
+ResNet-50: Run #2 (with CLAHE), mean-AUC=0.83
+  CLAHE improved mean-AUC by 0.03 vs Run #1 (no CLAHE)
+
+LightGBM: Run #4, Emergency recall=0.96 at threshold=0.35
+  Threshold 0.35 (lower than default 0.5) to hit recall target</pre>
+          </div>
+        </div>
+        <div class="interview-box">
+          <div class="interview-label">Interview question you must own</div>
+          <div class="interview-q">"How many training runs did you do per model? How did you decide which run to use? What trade-offs did you make between train and validation metrics? Did CLAHE preprocessing help the X-ray model?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S11 -->
+  <div class="step" id="s11">
+    <div class="step-header" onclick="toggle('s11')">
+      <div class="step-num ai"><div class="num">S11</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Export all models to ONNX and upload to S3</div>
+        <div class="step-file">backend/scripts/export_models.py · backend/ml_models/</div>
+        <div class="step-summary">Pure implementation — export XGBoost, ResNet-50, and LightGBM to ONNX format for Lambda inference, upload to S3, and write Lambda loader functions. No decisions needed.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s11">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s11">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Write backend/scripts/export_models.py for MediAssist AI.
+
+Export 3 models to ONNX and upload to S3:
+
+1. XGBoost → ONNX:
+   from skl2onnx import convert_sklearn, update_registered_converter
+   from skl2onnx.common.shape_calculator import calculate_linear_classifier_output_shapes
+   Export with opset=17. Input name: "features", shape: [None, N_FEATURES]
+   Output: "label" (class index), "probabilities" (softmax per class)
+   Save as: ml_models/xgboost_symptom.onnx
+
+2. ResNet-50 → TorchScript (better than ONNX for PyTorch):
+   model.eval()
+   scripted = torch.jit.script(model)
+   scripted.save("ml_models/resnet50_xray.pt")
+   (Keep as .pt — ONNX for PyTorch CNNs can be fragile)
+
+3. LightGBM → ONNX:
+   from skl2onnx.common.data_types import FloatTensorType
+   Export with opset=17. Also save severity_thresholds.json alongside.
+   Save as: ml_models/severity_scorer.onnx
+
+4. Upload all to S3:
+   aws s3 cp ml_models/ s3://mediassist-ml/models/ --recursive
+
+5. Write loader functions in:
+   backend/app/modules/ml/symptom_classifier.py — load xgboost_symptom.onnx at cold start
+   backend/app/modules/ml/severity_scorer.py — load severity_scorer.onnx at cold start
+   backend/app/modules/image/xray_classifier.py — load resnet50_xray.pt at cold start
+   All loaders: download from S3 to /tmp/ on first call, cache in memory after.
+   Lambda /tmp/ is 512MB — enough for all 3 models combined (~120MB)</div>
+        </div>
+        <div class="dsec you-sec">
+          <div class="dsec-title">Verify ONNX outputs match original model outputs</div>
+          <div class="dsec-body">
+<pre class="cmd"><span class="c"># Critical check — ONNX output must match original</span>
+import onnxruntime as ort
+import numpy as np
+
+session = ort.InferenceSession("ml_models/xgboost_symptom.onnx")
+test_input = np.random.rand(1, N_FEATURES).astype(np.float32)
+
+<span class="c"># Original XGBoost prediction</span>
+original_pred = xgb_model.predict_proba(test_input)
+
+<span class="c"># ONNX prediction</span>
+onnx_pred = session.run(["probabilities"], {"features": test_input})[0]
+
+<span class="c"># Must be very close (within 1e-5)</span>
+np.testing.assert_allclose(original_pred, onnx_pred, rtol=1e-4)
+print("ONNX export verified ✓")</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S12 -->
+  <div class="step" id="s12">
+    <div class="step-header" onclick="toggle('s12')">
+      <div class="step-num ai"><div class="num">S12</div><div class="slabel">Gemini does</div></div>
+      <div class="step-body">
+        <div class="step-title">Wire all 3 models into analyze.py — replace stubs</div>
+        <div class="step-file">backend/app/api/routes/analyze.py · backend/app/modules/ml/</div>
+        <div class="step-summary">Gemini updates the module files and analyze.py to use real model inference instead of stubs. The pipeline now runs: PatientContext → XGBoost + ResNet-50 → LightGBM → RAG chain → response assembler.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-med">Medium</span>
+        <span class="time-badge">~2 hrs</span>
+        <button class="expand" id="btn-s12">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s12">
+      <div class="detail-sections">
+        <div class="dsec prompt-sec">
+          <div class="dsec-title">Prompt to give Gemini</div>
+          <div class="prompt-box">Update the ML modules in MediAssist AI to use real ONNX models:
+
+1. backend/app/modules/ml/symptom_classifier.py:
+   Function: classify_symptoms(context: PatientContext) -> list[dict]
+   - Build feature vector from context using same feature engineering as training
+   - Run ONNX inference on xgboost_symptom.onnx
+   - Return top-3 predictions: [{"disease": name, "probability": float}]
+
+2. backend/app/modules/ml/severity_scorer.py:
+   Function: score_urgency(context: PatientContext, xgb_predictions: list) -> dict
+   - Build feature vector including xgb_predictions and context
+   - Run ONNX inference on severity_scorer.onnx
+   - Apply emergency_threshold from severity_thresholds.json
+   - Return: {"level": "LOW|MODERATE|URGENT|EMERGENCY", "score": float, "call_emergency": bool}
+
+3. backend/app/modules/image/xray_classifier.py:
+   Function: classify_xray(image_bytes: bytes) -> dict
+   - Preprocess with image_preprocessor.preprocess_xray()
+   - Run TorchScript inference (torch.jit.load)
+   - Apply sigmoid (BCE model, not softmax)
+   - Return: {"conditions": [{"name": class_name, "score": float}], "top_condition": str}
+
+4. Update backend/app/api/routes/analyze.py:
+   After build_patient_context():
+   - Run symptom_classifier.classify_symptoms(context) and xray_classifier concurrently
+   - Feed both into severity_scorer.score_urgency()
+   - Then run RAG chain (which now uses ML predictions in its context)
+   - Merge all into final response</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S13 -->
+  <div class="step" id="s13">
+    <div class="step-header" onclick="toggle('s13')">
+      <div class="step-num you"><div class="num">S13</div><div class="slabel">You do it</div></div>
+      <div class="step-body">
+        <div class="step-title">End-to-end validation on 20 real patient scenarios</div>
+        <div class="step-file">(manual testing — qualitative review)</div>
+        <div class="step-summary">You create 20 realistic patient test cases covering different age/gender/lifestyle/symptom combinations and manually judge whether the ML output is medically reasonable. Only you can do this — it requires clinical judgment to evaluate output quality.</div>
+      </div>
+      <div class="step-right">
+        <span class="effort e-high">High effort</span>
+        <span class="time-badge">~4 hrs</span>
+        <button class="expand" id="btn-s13">Details ▾</button>
+      </div>
+    </div>
+    <div class="step-detail" id="detail-s13">
+      <div class="detail-sections">
+        <div class="dsec you-sec">
+          <div class="dsec-title">20 test cases to run through the full pipeline</div>
+          <div class="dsec-body">
+            <table class="table">
+              <thead><tr><th>Case</th><th>Profile</th><th>Symptoms</th><th>Expected urgency</th><th>Expected top disease</th></tr></thead>
+              <tbody>
+                <tr><td>TC-01</td><td>55M, smoker, HTN</td><td>Chest pain, left arm pain, sweating</td><td>EMERGENCY</td><td>ACS / Cardiac</td></tr>
+                <tr><td>TC-02</td><td>25F, healthy</td><td>Mild cough, runny nose, 2 days</td><td>LOW</td><td>Common cold / URTI</td></tr>
+                <tr><td>TC-03</td><td>35M, Jaipur, monsoon</td><td>High fever, rash, joint pain, 4 days</td><td>URGENT</td><td>Dengue fever</td></tr>
+                <tr><td>TC-04</td><td>60F, diabetic</td><td>Frequent urination, fatigue, blurred vision</td><td>MODERATE</td><td>Hyperglycemia</td></tr>
+                <tr><td>TC-05</td><td>40M</td><td>Sudden worst headache of life</td><td>EMERGENCY</td><td>SAH / Stroke</td></tr>
+                <tr><td>TC-06</td><td>28F, pregnant</td><td>High BP, protein urine, swelling</td><td>EMERGENCY</td><td>Preeclampsia</td></tr>
+                <tr><td>TC-07</td><td>45M, obese</td><td>Right upper abdominal pain after fatty food</td><td>MODERATE</td><td>Gallstones</td></tr>
+                <tr><td>TC-08</td><td>70M</td><td>Fall, hip pain, cannot bear weight</td><td>URGENT</td><td>Hip fracture</td></tr>
+                <tr><td>TC-09</td><td>22F</td><td>Burning urination, frequency, no fever</td><td>MODERATE</td><td>UTI</td></tr>
+                <tr><td>TC-10</td><td>50M, smoker</td><td>Chronic cough 3 months, weight loss</td><td>URGENT</td><td>TB / Lung CA</td></tr>
+              </tbody>
+            </table>
+            <br>Add 10 more of your own. For each case: does the urgency match expected? Does the top disease make sense? Is the action plan appropriate for the profile?<br><br>
+            <strong>Document every failure.</strong> If TC-03 (dengue) gets MODERATE instead of URGENT, that's a bug to fix — either in your urgency criteria or in your dengue training data coverage.
+          </div>
+        </div>
+        <div class="dsec verify-sec">
+          <div class="dsec-title">Module 4 complete when all of these pass</div>
+          <div class="verify-list">
+            <div class="vitem"><div class="vcheck"></div>XGBoost test macro-F1 ≥ 0.72</div>
+            <div class="vitem"><div class="vcheck"></div>ResNet-50 mean AUC-ROC ≥ 0.80 (at least 12 of 14 classes ≥ 0.75)</div>
+            <div class="vitem"><div class="vcheck"></div>LightGBM Emergency class recall ≥ 0.95 at tuned threshold</div>
+            <div class="vitem"><div class="vcheck"></div>ONNX outputs match original model outputs within 1e-4</div>
+            <div class="vitem"><div class="vcheck"></div>All 3 models load from S3 in Lambda cold start under 8 seconds</div>
+            <div class="vitem"><div class="vcheck"></div>TC-01 (cardiac emergency) returns EMERGENCY urgency</div>
+            <div class="vitem"><div class="vcheck"></div>TC-02 (common cold) returns LOW urgency</div>
+            <div class="vitem"><div class="vcheck"></div>Full analyze call with all 3 models still under 28 seconds</div>
+            <div class="vitem"><div class="vcheck"></div>MLflow experiment dashboard showing all runs committed</div>
+            <div class="vitem"><div class="vcheck"></div>docs/model_selection.md written with your final model choices and justifications</div>
+            <div class="vitem"><div class="vcheck"></div>You can explain every feature engineering decision verbally</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="done" class="done-box">
+  <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:12px">Module 4 — Definition of done</div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.8">
+    Module 4 is complete when three trained, evaluated, and deployed ML models are running live in Lambda — XGBoost (macro-F1 ≥ 0.72), ResNet-50 (mean AUC-ROC ≥ 0.80), LightGBM (Emergency recall ≥ 0.95). The <code style="font-family:var(--mono);font-size:11px">POST /api/v1/analyze</code> endpoint now returns ML-backed disease predictions, an ML-scored urgency level, and a RAG-grounded diagnosis in a single response. Your <code style="font-family:var(--mono);font-size:11px">docs/model_selection.md</code> documents every training decision with justification. TC-01 (cardiac emergency) returns EMERGENCY urgency.
+    <br><br>
+    Module 5 (Doctor Finder + Output Layer) can now begin — it uses the specialty predicted by the ML + RAG pipeline to find the right doctor.
+  </div>
+  <div class="metric-row">
+    <div class="metric-cell"><div class="metric-n" style="color:var(--teal)">≥0.72</div><div class="metric-l">XGBoost macro-F1</div></div>
+    <div class="metric-cell"><div class="metric-n" style="color:var(--ai)">≥0.80</div><div class="metric-l">ResNet mean AUC</div></div>
+    <div class="metric-cell"><div class="metric-n" style="color:var(--amber)">≥0.95</div><div class="metric-l">Emergency recall</div></div>
+    <div class="metric-cell"><div class="metric-n" style="color:var(--green)">28s</div><div class="metric-l">Max Lambda time</div></div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function toggle(id){
+  const d=document.getElementById('detail-'+id);
+  const b=document.getElementById('btn-'+id);
+  if(!d)return;
+  const open=d.classList.toggle('open');
+  if(b)b.textContent=open?'Close ▴':'Details ▾';
+}
+const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{
+  const sections=['overview','week7','week8','done'];
+  let current='overview';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&window.scrollY>=el.offsetTop-80)current=id;
+  });
+  navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+current));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediAssist AI — Project Directory</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D1117;--bg2:#161B22;--bg3:#1C2128;--bg4:#21262D;
+  --border:#30363D;--border2:#3D444D;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.12);--teal-mid:#00A98E;
+  --amber:#F0A500;--amber-dim:rgba(240,165,0,.1);
+  --blue:#58A6FF;--blue-dim:rgba(88,166,255,.1);
+  --coral:#FF7B72;--coral-dim:rgba(255,123,114,.1);
+  --purple:#D2A8FF;--purple-dim:rgba(210,168,255,.1);
+  --green:#3FB950;--green-dim:rgba(63,185,80,.1);
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+  --r:6px;--r-lg:10px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--bg);color:var(--white);font-size:13px;display:flex;flex-direction:column}
+
+/* ── TOP BAR ── */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;height:44px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar-logo{display:flex;align-items:center;gap:8px;margin-right:8px}
+.logo-icon{width:22px;height:22px;background:var(--teal);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;font-family:var(--mono)}
+.topbar-title{font-size:13px;font-weight:600;color:var(--white)}
+.topbar-sep{color:var(--border2);font-size:16px}
+.breadcrumb{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.breadcrumb .seg{color:var(--muted);transition:color .15s}
+.breadcrumb .seg.file{color:var(--white)}
+.breadcrumb .slash{color:var(--dim)}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.badge-stack{font-family:var(--mono);font-size:10px;font-weight:500;padding:3px 8px;border-radius:3px}
+.badge-py{background:var(--blue-dim);color:var(--blue)}
+.badge-ts{background:var(--teal-dim);color:var(--teal)}
+.badge-nb{background:var(--amber-dim);color:var(--amber)}
+
+/* ── MAIN LAYOUT ── */
+.layout{display:flex;height:calc(100vh - 44px);overflow:hidden}
+
+/* ── SIDEBAR (file tree) ── */
+.sidebar{width:300px;min-width:220px;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:8px 0}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.tree-root{padding:0}
+.tree-section-label{font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;padding:10px 16px 4px;margin-top:4px}
+
+/* folder / file rows */
+.t-row{display:flex;align-items:center;gap:0;padding:3px 0;cursor:pointer;user-select:none;position:relative;transition:background .1s}
+.t-row:hover{background:var(--bg3)}
+.t-row.selected{background:rgba(0,201,167,.08)}
+.t-row.selected::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--teal)}
+.t-indent{display:inline-block;flex-shrink:0}
+.t-arrow{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:var(--dim);font-size:9px;flex-shrink:0;transition:transform .15s}
+.t-arrow.open{transform:rotate(90deg)}
+.t-icon{width:16px;margin-right:5px;font-size:13px;flex-shrink:0;text-align:center}
+.t-name{font-family:var(--mono);font-size:12px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-row.folder > .t-name{color:var(--white);font-weight:500}
+.t-row.selected .t-name{color:var(--white)}
+.t-ext{font-family:var(--mono);font-size:10px;color:var(--dim);margin-right:10px;flex-shrink:0}
+.t-badge{font-size:9px;font-weight:600;padding:1px 5px;border-radius:2px;margin-right:8px;flex-shrink:0;font-family:var(--mono)}
+.t-badge-new{background:var(--teal-dim);color:var(--teal)}
+.t-badge-key{background:var(--amber-dim);color:var(--amber)}
+
+.t-children{display:none}
+.t-children.open{display:block}
+
+/* ── DETAIL PANEL ── */
+.detail{flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column}
+.detail::-webkit-scrollbar{width:5px}
+.detail::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--dim);gap:10px}
+.detail-empty .hint{font-size:22px}
+.detail-empty p{font-size:13px;font-family:var(--mono)}
+
+.detail-content{padding:28px 32px;max-width:720px}
+.detail-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.detail-file-icon{width:44px;height:44px;border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.detail-title{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--white);margin-bottom:3px}
+.detail-path{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.detail-lang{font-size:10px;font-weight:600;font-family:var(--mono);padding:3px 9px;border-radius:3px;margin-top:5px;display:inline-block}
+
+.detail-desc{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:24px}
+
+.detail-section{margin-bottom:20px}
+.detail-section-title{font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+
+/* connections */
+.connections{display:flex;flex-direction:column;gap:7px}
+.conn-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--r);border:1px solid var(--border)}
+.conn-dir{font-size:9px;font-weight:600;font-family:var(--mono);padding:2px 7px;border-radius:3px;flex-shrink:0;margin-top:1px}
+.conn-dir-calls{background:var(--blue-dim);color:var(--blue)}
+.conn-dir-called{background:var(--purple-dim);color:var(--purple)}
+.conn-dir-uses{background:var(--teal-dim);color:var(--teal)}
+.conn-dir-reads{background:var(--green-dim);color:var(--green)}
+.conn-dir-stores{background:var(--amber-dim);color:var(--amber)}
+.conn-body{}
+.conn-target{font-family:var(--mono);font-size:12px;color:var(--white);font-weight:500}
+.conn-how{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* key files highlight */
+.key-files{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.key-file{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:border-color .15s}
+.key-file:hover{border-color:var(--teal)}
+.key-file-name{font-family:var(--mono);font-size:12px;color:var(--white);font-weight:500;margin-bottom:3px}
+.key-file-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* pills */
+.pill-row{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+
+/* ── BOTTOM BAR ── */
+.bottombar{background:var(--bg2);border-top:1px solid var(--border);padding:0 16px;height:26px;display:flex;align-items:center;gap:16px;flex-shrink:0;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.bb-item{display:flex;align-items:center;gap:5px}
+.bb-dot{width:7px;height:7px;border-radius:50%}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-icon">M+</div>
+    <span class="topbar-title">MediAssist AI</span>
+  </div>
+  <span class="topbar-sep">|</span>
+  <div class="breadcrumb" id="breadcrumb">
+    <span class="seg">mediassist-ai</span>
+  </div>
+  <div class="topbar-right">
+    <span class="badge-stack badge-py">Python / FastAPI</span>
+    <span class="badge-stack badge-ts">React / Lovable</span>
+    <span class="badge-stack badge-nb">Notebooks</span>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- FILE TREE -->
+  <div class="sidebar">
+    <div class="tree-root" id="tree"></div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="detail" id="detail">
+    <div class="detail-empty">
+      <div class="hint">📁</div>
+      <p>Click any file or folder to see details</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottombar">
+  <div class="bb-item"><div class="bb-dot" style="background:var(--teal)"></div>Backend (Python)</div>
+  <div class="bb-item"><div class="bb-dot" style="background:var(--blue)"></div>Frontend (TypeScript)</div>
+  <div class="bb-item"><div class="bb-dot" style="background:var(--amber)"></div>DS Notebooks</div>
+  <div class="bb-item"><div class="bb-dot" style="background:var(--purple)"></div>Config / Infra</div>
+  <div class="bb-item"><div class="bb-dot" style="background:var(--green)"></div>8 DS modules · 5 inputs · 3 outputs</div>
+  <div style="margin-left:auto">Click any file → see what it does &amp; how it connects</div>
+</div>
+
+<script>
+// ── FILE TREE DATA ──
+const TREE = [
+  { id:'root', name:'mediassist-ai', type:'folder', children:[
+
+    { id:'backend', name:'backend', type:'folder', icon:'🐍', children:[
+
+      { id:'app', name:'app', type:'folder', children:[
+
+        { id:'main', name:'main.py', type:'file', lang:'Python', color:'teal', icon:'🚀', badge:'key',
+          desc:'FastAPI application entry point. Creates the app instance, registers all routers (analyze, doctors, history, health), configures CORS so the Lovable frontend can call the API, and wires up Mangum for AWS Lambda deployment.',
+          uses:['uvicorn (local dev)','mangum (Lambda)','CORS middleware'],
+          connections:[
+            {dir:'calls',target:'app/api/routes/analyze.py',how:'Registers the /api/v1/analyze router'},
+            {dir:'calls',target:'app/api/routes/doctors.py',how:'Registers the /api/v1/doctors/search router'},
+            {dir:'calls',target:'app/api/routes/health.py',how:'Registers the /api/v1/health router'},
+            {dir:'called',target:'frontend/src/api/mediassist.ts',how:'All API calls from Lovable hit this app via API Gateway URL'},
+          ]
+        },
+
+        { id:'config', name:'config.py', type:'file', lang:'Python', color:'purple', icon:'⚙️',
+          desc:'Loads all environment variables using Pydantic BaseSettings. Exports a single `settings` object used everywhere — AWS credentials, Pinecone API key, Bedrock model IDs, Google Places key, DynamoDB table names.',
+          uses:['pydantic-settings','python-dotenv'],
+          connections:[
+            {dir:'reads',target:'.env / AWS SSM',how:'Reads AWS_ACCESS_KEY, PINECONE_API_KEY, BEDROCK_MODEL_ID, GOOGLE_PLACES_KEY, etc.'},
+            {dir:'called',target:'All modules in app/',how:'Every service and module imports settings from here'},
+          ]
+        },
+
+        { id:'routes', name:'routes', type:'folder', icon:'🛣️', children:[
+
+          { id:'analyze_route', name:'analyze.py', type:'file', lang:'Python', color:'teal', icon:'🩺', badge:'key',
+            desc:'The main POST /api/v1/analyze route. Receives multipart form data (symptoms text, images, prescription file, patient profile JSON). Orchestrates all modules in order: NLP → image classifier → OCR → patient context builder → RAG chain → response assembler. Saves session to DynamoDB and returns the final JSON.',
+            uses:['FastAPI APIRouter','asyncio','uuid'],
+            connections:[
+              {dir:'called',target:'frontend/src/api/mediassist.ts',how:'Lovable calls POST /api/v1/analyze with FormData'},
+              {dir:'calls',target:'modules/nlp/preprocessor.py',how:'Extracts symptoms entities from text'},
+              {dir:'calls',target:'modules/image/xray_classifier.py',how:'Runs ResNet-50 on X-ray if uploaded'},
+              {dir:'calls',target:'modules/ocr/textract_handler.py',how:'Runs Textract OCR on prescription if uploaded'},
+              {dir:'calls',target:'core/patient_context.py',how:'Merges all outputs into unified patient context'},
+              {dir:'calls',target:'modules/rag/chain.py',how:'Runs RAG diagnosis chain on context'},
+              {dir:'calls',target:'modules/ml/symptom_classifier.py',how:'Gets XGBoost disease prediction'},
+              {dir:'calls',target:'modules/ml/severity_scorer.py',how:'Gets urgency level'},
+              {dir:'calls',target:'modules/doctors/finder.py',how:'Finds nearby specialists'},
+              {dir:'calls',target:'core/response_builder.py',how:'Assembles all outputs into final JSON'},
+              {dir:'stores',target:'services/dynamodb_service.py',how:'Saves session to DynamoDB'},
+            ]
+          },
+
+          { id:'doctors_route', name:'doctors.py', type:'file', lang:'Python', color:'green', icon:'🏥',
+            desc:'POST /api/v1/doctors/search route. Accepts specialty + lat/lng + radius. Can be called standalone from the frontend (e.g., when user just wants to search for a doctor without a full analysis).',
+            connections:[
+              {dir:'called',target:'frontend/src/api/mediassist.ts',how:'Lovable calls POST /api/v1/doctors/search'},
+              {dir:'calls',target:'modules/doctors/finder.py',how:'Delegates search to Google Places wrapper'},
+            ]
+          },
+
+          { id:'history_route', name:'history.py', type:'file', lang:'Python', color:'blue', icon:'📋',
+            desc:'GET /api/v1/history/{session_id} route. Retrieves a past analysis session from DynamoDB by session ID. Returns full stored diagnosis report.',
+            connections:[
+              {dir:'called',target:'frontend/src/api/mediassist.ts',how:'Lovable calls GET /api/v1/history/:id'},
+              {dir:'reads',target:'services/dynamodb_service.py',how:'Fetches session record from DynamoDB'},
+            ]
+          },
+
+          { id:'feedback_route', name:'feedback.py', type:'file', lang:'Python', color:'green', icon:'💬',
+            desc:'POST /api/v1/feedback — lets users rate the diagnosis output (thumbs up/down + optional comment). Stores feedback linked to session_id in DynamoDB. Critical for building a training feedback loop — negative feedback flags sessions for human review and future model fine-tuning.',
+            connections:[
+              {dir:'called',target:'frontend/src/api/mediassist.ts',how:'Lovable calls POST /api/v1/feedback after user rates the result'},
+              {dir:'stores',target:'services/dynamodb_service.py',how:'Saves rating + comment against session_id in DynamoDB'},
+            ]
+          },
+
+          { id:'health_route', name:'health.py', type:'file', lang:'Python', color:'muted', icon:'💚',
+            desc:'GET /api/v1/health — returns service status, Pinecone connection state, and model load state. Useful for frontend to check if backend is up before letting user submit.',
+            connections:[
+              {dir:'called',target:'frontend/src/api/mediassist.ts',how:'Lovable pings this on app load to check backend health'},
+            ]
+          },
+
+        ]},
+
+        { id:'core', name:'core', type:'folder', icon:'🧩', children:[
+
+          { id:'patient_context', name:'patient_context.py', type:'file', lang:'Python', color:'teal', icon:'👤', badge:'key',
+            desc:'The central merge point. Takes outputs from NLP, image classifier, OCR, and the patient personal profile form — and builds a single structured PatientContext object (a Pydantic model). This object is what gets passed to the RAG chain and the LLM prompt. Everything upstream feeds into this; everything downstream reads from it.',
+            connections:[
+              {dir:'called',target:'api/routes/analyze.py',how:'Called after all individual modules finish'},
+              {dir:'reads',target:'modules/nlp/preprocessor.py',how:'Takes extracted symptom entities'},
+              {dir:'reads',target:'modules/image/xray_classifier.py',how:'Takes predicted condition + confidence'},
+              {dir:'reads',target:'modules/ocr/textract_handler.py',how:'Takes extracted prescription text'},
+              {dir:'reads',target:'models/request_models.py',how:'Takes patient profile (age, gender, habits, etc.)'},
+              {dir:'calls',target:'modules/rag/query_builder.py',how:'Passes context to build RAG query string'},
+            ]
+          },
+
+          { id:'response_builder', name:'response_builder.py', type:'file', lang:'Python', color:'teal', icon:'📦',
+            desc:'Assembles the final API response JSON. Takes the RAG diagnosis, ML classifier output, urgency score, doctor list, and session ID — and builds the clean response schema the frontend expects. Adds medical disclaimer, formats confidence scores, and handles missing data gracefully.',
+            connections:[
+              {dir:'called',target:'api/routes/analyze.py',how:'Last step before returning response'},
+              {dir:'reads',target:'modules/rag/chain.py',how:'Takes RAG diagnosis output'},
+              {dir:'reads',target:'modules/ml/symptom_classifier.py',how:'Takes XGBoost predictions'},
+              {dir:'reads',target:'modules/ml/severity_scorer.py',how:'Takes urgency level'},
+              {dir:'reads',target:'modules/doctors/finder.py',how:'Takes doctor list'},
+              {dir:'calls',target:'models/response_models.py',how:'Validates output against Pydantic schema'},
+            ]
+          },
+
+        ]},
+
+        { id:'modules', name:'modules', type:'folder', icon:'🔧', children:[
+
+          { id:'nlp_dir', name:'nlp', type:'folder', children:[
+            { id:'preprocessor', name:'preprocessor.py', type:'file', lang:'Python', color:'blue', icon:'💬',
+              desc:'NLP pipeline for symptom text. Uses spaCy + scispaCy en_core_sci_sm model to perform tokenization, lemmatization, and medical named entity recognition (NER). Extracts symptom names, body parts, duration, and severity qualifiers from free text.',
+              uses:['spaCy','scispaCy','NLTK'],
+              connections:[
+                {dir:'called',target:'api/routes/analyze.py',how:'Called with raw symptoms_text string'},
+                {dir:'calls',target:'nlp/symptom_normalizer.py',how:'Passes extracted entities for SNOMED mapping'},
+              ]
+            },
+            { id:'normalizer', name:'symptom_normalizer.py', type:'file', lang:'Python', color:'blue', icon:'🔤',
+              desc:'Maps raw symptom text ("chest ache", "pain in chest") to canonical SNOMED CT concepts using a local lookup table + fuzzy matching. Ensures "chest pain" and "chest ache" both map to the same concept before vector search.',
+              connections:[
+                {dir:'called',target:'nlp/preprocessor.py',how:'Called after entity extraction'},
+                {dir:'calls',target:'modules/rag/query_builder.py',how:'Normalized symptoms feed into RAG query'},
+              ]
+            },
+          ]},
+
+          { id:'image_dir', name:'image', type:'folder', children:[
+            { id:'xray_classifier', name:'xray_classifier.py', type:'file', lang:'Python', color:'blue', icon:'🫁', badge:'key',
+              desc:'Loads the fine-tuned ResNet-50 model (from ml_models/resnet50_xray.pt) and runs inference on uploaded X-ray images. Applies the same preprocessing transforms used during training (resize 224×224, normalize with ImageNet stats). Returns top-3 predicted conditions with confidence scores.',
+              uses:['PyTorch','torchvision','PIL'],
+              connections:[
+                {dir:'called',target:'api/routes/analyze.py',how:'Called when xray_image is uploaded'},
+                {dir:'reads',target:'ml_models/resnet50_xray.pt',how:'Loads trained model weights from file'},
+                {dir:'calls',target:'services/s3_service.py',how:'Downloads image from S3 for inference'},
+                {dir:'calls',target:'image/image_preprocessor.py',how:'Preprocesses image before model input'},
+              ]
+            },
+            { id:'img_preprocessor', name:'image_preprocessor.py', type:'file', lang:'Python', color:'blue', icon:'🖼️',
+              desc:'OpenCV-based image preprocessing — resize, normalize, convert to tensor, apply CLAHE for X-ray contrast enhancement. Used by both xray_classifier and passed to Bedrock for body photo analysis.',
+              uses:['OpenCV','PIL','numpy'],
+              connections:[
+                {dir:'called',target:'image/xray_classifier.py',how:'Prepares X-ray for ResNet-50'},
+                {dir:'called',target:'services/bedrock_service.py',how:'Prepares body photo for Bedrock vision'},
+              ]
+            },
+          ]},
+
+          { id:'ocr_dir', name:'ocr', type:'folder', children:[
+            { id:'textract', name:'textract_handler.py', type:'file', lang:'Python', color:'amber', icon:'📄',
+              desc:'Uploads prescription image to S3, calls AWS Textract AnalyzeDocument API, and parses the response to extract medicine names, dosages, doctor instructions, and any diagnosis codes. Returns structured prescription data that feeds into the RAG query.',
+              uses:['boto3 (Textract)','re (regex)'],
+              connections:[
+                {dir:'called',target:'api/routes/analyze.py',how:'Called when prescription file is uploaded'},
+                {dir:'calls',target:'services/s3_service.py',how:'Uploads file to S3 before calling Textract'},
+              ]
+            },
+          ]},
+
+          { id:'rag_dir', name:'rag', type:'folder', children:[
+            { id:'query_builder', name:'query_builder.py', type:'file', lang:'Python', color:'teal', icon:'🔍',
+              desc:'Takes the PatientContext object and constructs a rich, structured query string for vector search. Example output: "55-year-old male smoker with hypertension presents with chest pain and shortness of breath for 3 days. X-ray shows possible infiltrate. On metformin." This context-rich query improves retrieval accuracy significantly.',
+              connections:[
+                {dir:'called',target:'core/patient_context.py',how:'Called with the merged patient context'},
+                {dir:'calls',target:'modules/rag/retriever.py',how:'Passes query string for vector search'},
+              ]
+            },
+            { id:'retriever', name:'retriever.py', type:'file', lang:'Python', color:'teal', icon:'🗂️',
+              desc:'Generates BioSentBERT embedding of the query, then runs cosine similarity search across three Pinecone namespaces (medical-kb, drug-db, hospital-db). Returns top-5 chunks per namespace with metadata. Falls back to BM25 keyword search for rare conditions.',
+              uses:['sentence-transformers','Pinecone SDK'],
+              connections:[
+                {dir:'called',target:'modules/rag/query_builder.py',how:'Receives query string'},
+                {dir:'calls',target:'Pinecone (cloud)',how:'Similarity search over indexed medical knowledge'},
+                {dir:'calls',target:'modules/rag/chain.py',how:'Passes retrieved chunks to LangChain chain'},
+              ]
+            },
+            { id:'chain', name:'chain.py', type:'file', lang:'Python', color:'teal', icon:'⛓️', badge:'key',
+              desc:'LangChain RetrievalQAChain that connects the retriever to AWS Bedrock. Constructs the system prompt (including full patient profile context), passes retrieved medical knowledge chunks, and calls Bedrock Nova Pro / Claude 3.5. Streams the structured diagnosis JSON response.',
+              uses:['LangChain','LlamaIndex','boto3 (Bedrock)'],
+              connections:[
+                {dir:'called',target:'modules/rag/retriever.py',how:'Receives retrieved chunks'},
+                {dir:'calls',target:'services/bedrock_service.py',how:'Calls Bedrock with prompt + context'},
+                {dir:'calls',target:'core/response_builder.py',how:'Passes diagnosis output'},
+              ]
+            },
+          ]},
+
+          { id:'ml_dir', name:'ml', type:'folder', children:[
+            { id:'symptom_clf', name:'symptom_classifier.py', type:'file', lang:'Python', color:'amber', icon:'🌳', badge:'key',
+              desc:'Loads the trained XGBoost model (xgboost_symptom.pkl) and runs inference. Features include: normalized symptoms (one-hot encoded), patient age, gender, BMI, smoking status, and existing conditions. Returns top-3 predicted diseases with probability scores. Trained on Kaggle disease-symptom dataset.',
+              uses:['XGBoost','scikit-learn','numpy'],
+              connections:[
+                {dir:'called',target:'api/routes/analyze.py',how:'Runs in parallel with RAG chain'},
+                {dir:'reads',target:'ml_models/xgboost_symptom.pkl',how:'Loads serialized XGBoost model'},
+                {dir:'calls',target:'core/response_builder.py',how:'Classifier output merged into response'},
+              ]
+            },
+            { id:'severity', name:'severity_scorer.py', type:'file', lang:'Python', color:'coral', icon:'⚡', badge:'key',
+              desc:'Urgency classification model (Low / Moderate / Urgent / Emergency). Uses a LightGBM ensemble trained on symptom-outcome data. Key feature engineering: risk_multiplier = smoker × age_over_50 × cardiac_symptom flags. A single patient with all three triggers an automatic "Emergency" regardless of other scores.',
+              uses:['LightGBM','scikit-learn','feature-engine'],
+              connections:[
+                {dir:'called',target:'api/routes/analyze.py',how:'Runs in parallel with RAG and classifier'},
+                {dir:'reads',target:'ml_models/severity_scorer.pkl',how:'Loads serialized LightGBM model'},
+                {dir:'calls',target:'core/response_builder.py',how:'Urgency level included in final response'},
+              ]
+            },
+          ]},
+
+          { id:'doctors_dir', name:'doctors', type:'folder', children:[
+            { id:'finder', name:'finder.py', type:'file', lang:'Python', color:'green', icon:'📍',
+              desc:'Calls Google Places Nearby Search API with the required specialty and user lat/lng. Filters, ranks, and returns top-5 specialists with name, hospital, rating, distance, address, and phone number. Falls back to NMC registry static data if Places API quota is exceeded.',
+              uses:['requests','Google Places API','geopy'],
+              connections:[
+                {dir:'called',target:'api/routes/analyze.py',how:'Called with specialty from diagnosis + user location'},
+                {dir:'called',target:'api/routes/doctors.py',how:'Also called from standalone doctor search endpoint'},
+                {dir:'calls',target:'doctors/specialty_mapper.py',how:'Converts condition name to search query term'},
+              ]
+            },
+            { id:'specialty_map', name:'specialty_mapper.py', type:'file', lang:'Python', color:'green', icon:'🗺️',
+              desc:'A lookup dictionary mapping condition names / disease categories to doctor specialties. E.g., "Acute Coronary Syndrome" → "Cardiologist", "Pneumonia" → "Pulmonologist", "Fracture" → "Orthopedic Surgeon". Updated manually as new conditions are added.',
+              connections:[
+                {dir:'called',target:'doctors/finder.py',how:'Maps diagnosed condition to specialty search term'},
+              ]
+            },
+          ]},
+
+        ]},
+
+        { id:'services', name:'services', type:'folder', icon:'☁️', children:[
+          { id:'s3_service', name:'s3_service.py', type:'file', lang:'Python', color:'amber', icon:'🪣',
+            desc:'Wrapper around boto3 S3 client. Handles presigned URL generation (for direct frontend uploads), image download for model inference, and file deletion via lifecycle rules. All uploaded files stored in mediassist-uploads/ bucket.',
+            connections:[
+              {dir:'called',target:'modules/image/xray_classifier.py',how:'Downloads X-ray for inference'},
+              {dir:'called',target:'modules/ocr/textract_handler.py',how:'Uploads prescription for Textract'},
+              {dir:'called',target:'frontend/src/api/mediassist.ts',how:'Frontend uploads directly to S3 via presigned URL'},
+            ]
+          },
+          { id:'dynamodb_service', name:'dynamodb_service.py', type:'file', lang:'Python', color:'amber', icon:'🗄️',
+            desc:'CRUD operations on DynamoDB for session storage. save_session() stores full analysis result with session_id (UUID), timestamp, and 90-day TTL. get_session() retrieves by session_id. Also stores patient profiles (encrypted at rest).',
+            connections:[
+              {dir:'called',target:'api/routes/analyze.py',how:'Saves session after every analysis'},
+              {dir:'called',target:'api/routes/history.py',how:'Retrieves session by ID'},
+            ]
+          },
+          { id:'bedrock_service', name:'bedrock_service.py', type:'file', lang:'Python', color:'purple', icon:'🤖', badge:'key',
+            desc:'Wrapper around AWS Bedrock boto3 client. Two modes: (1) multimodal call with base64 image + text for body photo analysis, (2) text-only call for RAG diagnosis generation. Handles retries, rate limits, and streaming response parsing. Model: nova-pro-v1 or claude-3-5-sonnet.',
+            uses:['boto3 (bedrock-runtime)','json','base64'],
+            connections:[
+              {dir:'called',target:'modules/rag/chain.py',how:'Called for RAG diagnosis generation'},
+              {dir:'called',target:'services/s3_service.py',how:'Gets body photo as base64 for multimodal call'},
+            ]
+          },
+        ]},
+
+        { id:'models_dir', name:'models', type:'folder', icon:'📐', children:[
+          { id:'request_models', name:'request_models.py', type:'file', lang:'Python', color:'blue', icon:'📥', badge:'key',
+            desc:'Pydantic models for all API request schemas. Includes: AnalyzeRequest (symptoms, location, patient profile), PatientProfile (name, age, gender, height, weight, blood_group, conditions, allergies, medications, smoking, alcohol, activity, diet, family_history), DoctorSearchRequest. These are the schemas Lovable must match exactly when calling the API.',
+            connections:[
+              {dir:'called',target:'frontend/src/types/api.types.ts',how:'TypeScript types in Lovable MUST mirror these Pydantic models exactly'},
+              {dir:'called',target:'api/routes/analyze.py',how:'Request body validated against this on every call'},
+            ]
+          },
+          { id:'response_models', name:'response_models.py', type:'file', lang:'Python', color:'blue', icon:'📤', badge:'key',
+            desc:'Pydantic models for all API response schemas. Includes: AnalyzeResponse (diagnosis, urgency, recommendations, disclaimer, session_id), DiagnosisResult, UrgencyResult, DoctorResult. The frontend TypeScript types MUST match these exactly.',
+            connections:[
+              {dir:'called',target:'frontend/src/types/api.types.ts',how:'TypeScript interfaces mirror these response schemas'},
+              {dir:'called',target:'core/response_builder.py',how:'Response validated against this before returning'},
+            ]
+          },
+        ]},
+
+      ]}, // end app/
+
+      { id:'ml_models', name:'ml_models', type:'folder', icon:'🧠', children:[
+        { id:'xgb_model', name:'xgboost_symptom.pkl', type:'file', lang:'Binary', color:'amber', icon:'📦',
+          desc:'Serialized XGBoost multi-label classifier trained on the Kaggle disease-symptom dataset. Generated by notebooks/05_symptom_classifier.ipynb. Loaded at Lambda cold start by symptom_classifier.py. File size: ~2MB.',
+          connections:[{dir:'reads',target:'modules/ml/symptom_classifier.py',how:'Loaded with joblib.load() at startup'}]
+        },
+        { id:'severity_model', name:'severity_scorer.pkl', type:'file', lang:'Binary', color:'coral', icon:'📦',
+          desc:'Serialized LightGBM urgency classification model. Generated by notebooks/06_severity_scorer.ipynb. Loaded at Lambda cold start by severity_scorer.py. File size: ~1.5MB.',
+          connections:[{dir:'reads',target:'modules/ml/severity_scorer.py',how:'Loaded with joblib.load() at startup'}]
+        },
+        { id:'resnet_model', name:'resnet50_xray.pt', type:'file', lang:'Binary', color:'blue', icon:'🧊',
+          desc:'PyTorch ResNet-50 weights fine-tuned on NIH ChestX-ray14 dataset. Generated by notebooks/03_xray_cnn_training.ipynb. File size: ~95MB. Too large for Lambda — stored in S3 and loaded on demand, OR converted to TorchScript for optimization.',
+          connections:[{dir:'reads',target:'modules/image/xray_classifier.py',how:'torch.load() from S3 on first request'}]
+        },
+      ]},
+
+      { id:'notebooks', name:'notebooks', type:'folder', icon:'📓', children:[
+        { id:'nb01', name:'01_eda_symptoms.ipynb', type:'file', lang:'Notebook', color:'amber', icon:'📊',
+          desc:'EDA on the Kaggle disease-symptom dataset and PubMed abstracts. Analyzes symptom frequency, disease distribution, class imbalance, missing values. Produces charts showing which diseases are underrepresented — informs SMOTE oversampling strategy.',
+          connections:[{dir:'calls',target:'ml_models/xgboost_symptom.pkl',how:'EDA informs feature selection for model training in nb05'}]
+        },
+        { id:'nb02', name:'02_nlp_preprocessing.ipynb', type:'file', lang:'Notebook', color:'amber', icon:'💬',
+          desc:'Tests and tunes the spaCy + scispaCy NLP pipeline. Evaluates NER accuracy on sample medical texts. Builds and validates the symptom normalization dictionary used in symptom_normalizer.py.',
+        },
+        { id:'nb03', name:'03_xray_cnn_training.ipynb', type:'file', lang:'Notebook', color:'amber', icon:'🫁',
+          desc:'Downloads NIH ChestX-ray14, trains ResNet-50 with transfer learning (frozen early layers, fine-tuned last 3 blocks + classifier head). Tracks AUC per class with MLflow. Exports best checkpoint to ml_models/resnet50_xray.pt.',
+        },
+        { id:'nb04', name:'04_embeddings_indexing.ipynb', type:'file', lang:'Notebook', color:'amber', icon:'📐',
+          desc:'Chunks PubMed abstracts + MedMCQA into 512-token segments, generates BioSentBERT embeddings, and indexes into Pinecone (medical-kb namespace). Also indexes OpenFDA data into drug-db namespace. Run once — then incremental updates via scripts/index_knowledge_base.py.',
+        },
+        { id:'nb05', name:'05_symptom_classifier.ipynb', type:'file', lang:'Notebook', color:'amber', icon:'🌳',
+          desc:'Trains XGBoost multi-label classifier. Feature engineering: symptom one-hot encoding + patient demographics (age, gender, BMI, smoking status). Handles class imbalance with SMOTE. Evaluates with macro-F1, AUC-ROC, confusion matrix. Saves to ml_models/xgboost_symptom.pkl.',
+        },
+        { id:'nb06', name:'06_severity_scorer.ipynb', type:'file', lang:'Notebook', color:'amber', icon:'⚡',
+          desc:'Trains LightGBM urgency classification model. Engineers risk_multiplier features (smoker × age_50+ × cardiac). Evaluates on holdout set. Saves to ml_models/severity_scorer.pkl.',
+        },
+      ]},
+
+      { id:'scripts', name:'scripts', type:'folder', icon:'⚙️', children:[
+        { id:'index_kb', name:'index_knowledge_base.py', type:'file', lang:'Python', color:'teal', icon:'🔄',
+          desc:'ETL pipeline that runs weekly via AWS EventBridge cron. Fetches new PubMed abstracts and OpenFDA updates, cleans and chunks them, generates BioSentBERT embeddings, and upserts into Pinecone. Keeps the RAG knowledge base fresh without manual work.',
+          connections:[
+            {dir:'calls',target:'Pinecone (cloud)',how:'Upserts new embeddings'},
+            {dir:'calls',target:'PubMed E-utilities API',how:'Fetches new abstracts'},
+          ]
+        },
+        { id:'seed_hospitals', name:'seed_hospital_db.py', type:'file', lang:'Python', color:'green', icon:'🏥',
+          desc:'One-time script to load NMC (National Medical Commission) doctor/hospital registry data into DynamoDB as a fallback dataset when Google Places API quota is exceeded.',
+        },
+      ]},
+
+      { id:'tests', name:'tests', type:'folder', icon:'🧪', children:[
+        { id:'test_analyze', name:'test_analyze.py', type:'file', lang:'Python', color:'green', icon:'✅',
+          desc:'Integration tests for the /api/v1/analyze endpoint. Tests all 4 input combinations (text-only, with X-ray, with body photo, with prescription). Mocks AWS services (S3, Bedrock, Textract) using moto and pytest-mock.',
+        },
+        { id:'test_rag', name:'test_rag.py', type:'file', lang:'Python', color:'green', icon:'✅',
+          desc:'Unit tests for the RAG pipeline — query builder output, Pinecone retrieval quality (precision@k), and LangChain chain output format validation.',
+        },
+        { id:'test_ml', name:'test_ml_models.py', type:'file', lang:'Python', color:'green', icon:'✅',
+          desc:'Unit tests for XGBoost classifier and LightGBM severity scorer. Tests known symptom inputs against expected outputs, and validates that model files load correctly.',
+        },
+      ]},
+
+      { id:'dockerfile', name:'Dockerfile', type:'file', lang:'Docker', color:'blue', icon:'🐳',
+        desc:'Multi-stage Docker build. Stage 1 installs Python deps. Stage 2 copies app + ML models. Final image pushed to AWS ECR and deployed as a Lambda container image. Configured for arm64 (Graviton2) for cost savings.',
+        connections:[
+          {dir:'calls',target:'AWS ECR + Lambda',how:'docker build → push to ECR → Lambda uses image'},
+        ]
+      },
+      { id:'requirements', name:'requirements.txt', type:'file', lang:'Text', color:'muted', icon:'📋',
+        desc:'All Python dependencies pinned to exact versions. Key packages: fastapi, mangum, boto3, langchain, langchain-aws, pinecone-client, sentence-transformers, torch, torchvision, xgboost, lightgbm, scikit-learn, spacy, scispacy, opencv-python-headless, Pillow.',
+      },
+      { id:'env_example', name:'.env.example', type:'file', lang:'Config', color:'purple', icon:'🔑',
+        desc:'Template for all required environment variables. Copy to .env for local dev. Never commit .env to Git. In production, all secrets are stored in AWS SSM Parameter Store and loaded by config.py at runtime.\n\nVariables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, BEDROCK_MODEL_ID, PINECONE_API_KEY, PINECONE_INDEX_NAME, GOOGLE_PLACES_API_KEY, DYNAMODB_TABLE_NAME, S3_BUCKET_NAME.',
+      },
+
+    ]}, // end backend/
+
+    { id:'frontend', name:'frontend (Lovable)', type:'folder', icon:'⚛️', children:[
+
+      { id:'src', name:'src', type:'folder', children:[
+
+        { id:'api_dir', name:'api', type:'folder', children:[
+          { id:'mediassist_ts', name:'mediassist.ts', type:'file', lang:'TypeScript', color:'teal', icon:'🔌', badge:'key',
+            desc:'THE connection point between Lovable frontend and FastAPI backend. This single file contains all API call functions. It reads the VITE_API_BASE_URL environment variable (your API Gateway URL) and exports typed async functions: analyzeSymptoms(), searchDoctors(), getHistory(), checkHealth().',
+            connections:[
+              {dir:'calls',target:'backend/app/api/routes/analyze.py',how:'POST {API_URL}/api/v1/analyze with FormData'},
+              {dir:'calls',target:'backend/app/api/routes/doctors.py',how:'POST {API_URL}/api/v1/doctors/search'},
+              {dir:'calls',target:'backend/app/api/routes/history.py',how:'GET {API_URL}/api/v1/history/{id}'},
+              {dir:'calls',target:'backend/app/api/routes/feedback.py',how:'POST {API_URL}/api/v1/feedback — user rates diagnosis result'},
+              {dir:'reads',target:'src/types/api.types.ts',how:'Uses typed request/response interfaces'},
+            ],
+            code:`// Example — how Lovable calls the backend
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+export async function analyzeSymptoms(data: AnalyzeRequest) {
+  const form = new FormData();
+  form.append('symptoms', data.symptoms);
+  form.append('patient', JSON.stringify(data.patient));
+  if (data.xray_image) form.append('xray_image', data.xray_image);
+  
+  const res = await fetch(\`\${BASE}/api/v1/analyze\`, {
+    method: 'POST', body: form
+  });
+  return res.json() as Promise<AnalyzeResponse>;
+}`
+          },
+        ]},
+
+        { id:'types_dir', name:'types', type:'folder', children:[
+          { id:'api_types', name:'api.types.ts', type:'file', lang:'TypeScript', color:'teal', icon:'📝', badge:'key',
+            desc:'TypeScript interfaces that MUST exactly mirror the Pydantic models in backend/app/models/. If you add a field to request_models.py or response_models.py, update this file too or the frontend will break silently. Includes: AnalyzeRequest, PatientProfile, AnalyzeResponse, DiagnosisResult, UrgencyResult, DoctorResult.',
+            connections:[
+              {dir:'mirrors',target:'backend/app/models/request_models.py',how:'TS interfaces must match Pydantic request schemas exactly'},
+              {dir:'mirrors',target:'backend/app/models/response_models.py',how:'TS interfaces must match Pydantic response schemas exactly'},
+            ]
+          },
+        ]},
+
+        { id:'components_dir', name:'components', type:'folder', children:[
+          { id:'input_form', name:'InputForm/', type:'folder', icon:'📝',
+            desc:'React component for the main symptom input form. Contains: SymptomTextArea (free text), ImageUpload (X-ray, body photo, prescription), PatientProfileForm (personal info — name, age, gender, habits, history). On submit, calls analyzeSymptoms() from api/mediassist.ts.',
+            connections:[
+              {dir:'calls',target:'src/api/mediassist.ts',how:'Calls analyzeSymptoms() on form submit with FormData'},
+            ]
+          },
+          { id:'diagnosis_card', name:'DiagnosisCard/', type:'folder', icon:'🩺',
+            desc:'Renders the diagnosis output — condition name, confidence bar, plain-language explanation, and cited source. Personalized greeting uses patient.name from the profile.',
+          },
+          { id:'urgency_badge', name:'UrgencyBadge/', type:'folder', icon:'⚡',
+            desc:'Color-coded urgency indicator (green/yellow/red/flashing red). Maps urgency.level string from API response to visual style. Renders action_plan text below the badge.',
+          },
+          { id:'doctor_list', name:'DoctorList/', type:'folder', icon:'📍',
+            desc:'Renders list of nearby doctors from recommendations[] in API response. Each card shows name, specialty, hospital, rating (stars), distance, and a clickable phone/map link.',
+          },
+          { id:'feedback_form', name:'FeedbackForm/', type:'folder', icon:'⭐',
+            desc:'Thumbs up / thumbs down + optional text comment shown at the bottom of the Results page. On submit calls POST /api/v1/feedback via mediassist.ts, passing session_id + rating + comment. Feeds the DynamoDB feedback loop used for future model improvement.',
+            connections:[
+              {dir:'calls',target:'src/api/mediassist.ts',how:'Calls submitFeedback() with session_id + rating'},
+            ]
+          },
+        ]},
+
+        { id:'pages_dir', name:'pages', type:'folder', children:[
+          { id:'home_page', name:'Home.tsx', type:'file', lang:'TypeScript', color:'blue', icon:'🏠',
+            desc:'Landing page. Contains the InputForm component. On submit, calls analyzeSymptoms() and navigates to /results with the response stored in React state or URL params.',
+          },
+          { id:'results_page', name:'Results.tsx', type:'file', lang:'TypeScript', color:'blue', icon:'📊',
+            desc:'Results page. Renders DiagnosisCard, UrgencyBadge, and DoctorList using the API response. Also shows a "Save Report" button that generates a PDF summary and a "New Analysis" button to go back.',
+          },
+        ]},
+
+      ]}, // end src/
+
+      { id:'env_local', name:'.env.local', type:'file', lang:'Config', color:'purple', icon:'🔑',
+        desc:'Lovable frontend environment variable. ONE variable:\n\nVITE_API_BASE_URL=https://your-api-id.execute-api.ap-south-1.amazonaws.com/prod\n\nReplace with your actual API Gateway URL after backend deployment. This is how the frontend knows where the backend is.',
+      },
+
+    ]}, // end frontend/
+
+    { id:'github', name:'.github', type:'folder', icon:'🐙', children:[
+      { id:'deploy_yml', name:'deploy.yml', type:'file', lang:'YAML', color:'purple', icon:'🚀',
+        desc:'GitHub Actions CI/CD pipeline. On push to main: (1) runs pytest on backend, (2) builds Docker image, (3) pushes to AWS ECR, (4) updates Lambda function to use new image. Secrets stored as GitHub Actions secrets.',
+        connections:[
+          {dir:'calls',target:'AWS ECR + Lambda',how:'Automated deploy on every push to main'},
+        ]
+      },
+    ]},
+
+    { id:'readme', name:'README.md', type:'file', lang:'Markdown', color:'muted', icon:'📖',
+      desc:'Project README. Contains: architecture diagram, setup instructions, how to run locally (uvicorn), how to deploy to Lambda, how to connect Lovable frontend, environment variable reference, and demo screenshots.',
+    },
+
+  ]}
+];
+
+// ── RENDERER ──
+let selected = null;
+
+function renderTree(nodes, depth=0){
+  return nodes.map(n => {
+    const isFolder = n.type==='folder';
+    const indent = depth*16;
+    const arrowHTML = isFolder ? `<span class="t-arrow" id="arr-${n.id}">▶</span>` : `<span style="width:16px;display:inline-block"></span>`;
+    const badgeHTML = n.badge==='key' ? '<span class="t-badge t-badge-key">KEY</span>' : n.badge==='new' ? '<span class="t-badge t-badge-new">NEW</span>' : '';
+    const icon = n.icon || (isFolder ? '📁' : '📄');
+    const ext = !isFolder ? n.name.split('.').pop() : '';
+    const extHTML = ext && !isFolder ? `<span class="t-ext">.${ext}</span>` : '';
+    const nameNoExt = !isFolder ? n.name.split('.').slice(0,-1).join('.') || n.name : n.name;
+
+    let childrenHTML = '';
+    if(isFolder && n.children){
+      childrenHTML = `<div class="t-children" id="ch-${n.id}">${renderTree(n.children, depth+1)}</div>`;
+    }
+
+    return `
+      <div class="t-row ${isFolder?'folder':''}" id="row-${n.id}" onclick="handleClick('${n.id}')">
+        <span class="t-indent" style="width:${indent+6}px"></span>
+        ${arrowHTML}
+        <span class="t-icon">${icon}</span>
+        <span class="t-name">${isFolder ? n.name : nameNoExt}</span>
+        ${badgeHTML}
+        ${extHTML}
+      </div>
+      ${childrenHTML}
+    `;
+  }).join('');
+}
+
+function findNode(nodes, id){
+  for(const n of nodes){
+    if(n.id===id) return n;
+    if(n.children){ const f=findNode(n.children,id); if(f) return f; }
+  }
+  return null;
+}
+
+function buildPath(nodes, id, path=[]){
+  for(const n of nodes){
+    const p=[...path,n.name];
+    if(n.id===id) return p;
+    if(n.children){ const f=buildPath(n.children,id,p); if(f) return f; }
+  }
+  return null;
+}
+
+function handleClick(id){
+  const node = findNode(TREE, id);
+  if(!node) return;
+
+  // toggle folder open/close
+  if(node.type==='folder'){
+    const ch=document.getElementById('ch-'+id);
+    const arr=document.getElementById('arr-'+id);
+    if(ch){ const open=ch.classList.toggle('open'); if(arr) arr.classList.toggle('open',open); }
+  }
+
+  // select row
+  document.querySelectorAll('.t-row.selected').forEach(r=>r.classList.remove('selected'));
+  const row=document.getElementById('row-'+id);
+  if(row) row.classList.add('selected');
+  selected=id;
+
+  // update breadcrumb
+  const path=buildPath(TREE,id,[]);
+  const bc=document.getElementById('breadcrumb');
+  if(bc && path){
+    bc.innerHTML=path.map((seg,i)=>`<span class="seg${i===path.length-1?' file':''}">${seg}</span>${i<path.length-1?'<span class="slash">/</span>':''}`).join('');
+  }
+
+  // show detail
+  showDetail(node);
+}
+
+const COLOR_MAP={
+  teal:{bg:'#0D3D33',accent:'var(--teal)'},
+  blue:{bg:'#0D2345',accent:'var(--blue)'},
+  amber:{bg:'#3D2A00',accent:'var(--amber)'},
+  coral:{bg:'#3D1A17',accent:'var(--coral)'},
+  purple:{bg:'#2A1A4D',accent:'var(--purple)'},
+  green:{bg:'#0D2D17',accent:'var(--green)'},
+  muted:{bg:'var(--bg3)',accent:'var(--muted)'},
+};
+const LANG_COLORS={Python:'var(--teal)',TypeScript:'var(--blue)',Notebook:'var(--amber)',Docker:'var(--blue)',YAML:'var(--purple)',Config:'var(--purple)',Binary:'var(--coral)',Markdown:'var(--muted)',Text:'var(--muted)'};
+
+function showDetail(node){
+  const detail=document.getElementById('detail');
+  if(!detail) return;
+
+  if(node.type==='folder'){
+    const children=node.children||[];
+    detail.innerHTML=`<div class="detail-content">
+      <div class="detail-header">
+        <div class="detail-file-icon" style="background:#1C2128;font-size:28px">${node.icon||'📁'}</div>
+        <div>
+          <div class="detail-title">${node.name}/</div>
+          <div class="detail-path">Folder · ${children.length} items</div>
+        </div>
+      </div>
+      ${node.desc ? `<p class="detail-desc">${node.desc}</p>` : ''}
+      <div class="detail-section">
+        <div class="detail-section-title">Contents</div>
+        <div class="key-files">
+          ${children.slice(0,8).map(c=>`<div class="key-file" onclick="handleClick('${c.id}')">
+            <div class="key-file-name">${c.icon||''} ${c.name}${c.type==='folder'?'/':''}</div>
+            <div class="key-file-desc">${(c.desc||'').substring(0,80)}${(c.desc||'').length>80?'…':''}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  const col = COLOR_MAP[node.color] || COLOR_MAP.muted;
+  const langColor = LANG_COLORS[node.lang] || 'var(--muted)';
+  const conns = node.connections || [];
+  const uses = node.uses || [];
+
+  const connDirLabel={calls:'CALLS',called:'CALLED BY',uses:'USES',reads:'READS',stores:'STORES IN',mirrors:'MIRRORS'};
+  const connDirClass={calls:'conn-dir-calls',called:'conn-dir-called',uses:'conn-dir-uses',reads:'conn-dir-reads',stores:'conn-dir-stores',mirrors:'conn-dir-calls'};
+
+  detail.innerHTML=`<div class="detail-content">
+    <div class="detail-header">
+      <div class="detail-file-icon" style="background:${col.bg}">${node.icon||'📄'}</div>
+      <div>
+        <div class="detail-title">${node.name}</div>
+        <div class="detail-path">${buildPath(TREE,node.id,[]).join(' / ')}</div>
+        <span class="detail-lang" style="background:${col.bg};color:${col.accent}">${node.lang||'File'}</span>
+      </div>
+    </div>
+
+    <p class="detail-desc">${(node.desc||'No description.').replace(/\n/g,'<br>')}</p>
+
+    ${uses.length ? `<div class="detail-section">
+      <div class="detail-section-title">Libraries / Services used</div>
+      <div class="pill-row">${uses.map(u=>`<span class="pill">${u}</span>`).join('')}</div>
+    </div>` : ''}
+
+    ${conns.length ? `<div class="detail-section">
+      <div class="detail-section-title">Connections — how this file connects to other parts</div>
+      <div class="connections">
+        ${conns.map(c=>`<div class="conn-row">
+          <span class="conn-dir ${connDirClass[c.dir]||'conn-dir-calls'}">${connDirLabel[c.dir]||c.dir.toUpperCase()}</span>
+          <div class="conn-body">
+            <div class="conn-target">${c.target}</div>
+            <div class="conn-how">${c.how}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    ${node.code ? `<div class="detail-section">
+      <div class="detail-section-title">Code example</div>
+      <pre style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;font-family:var(--mono);font-size:11.5px;color:var(--muted);overflow-x:auto;line-height:1.7;white-space:pre-wrap">${node.code}</pre>
+    </div>` : ''}
+  </div>`;
+}
+
+// Init tree
+document.getElementById('tree').innerHTML = renderTree(TREE);
+// Auto-open root
+handleClick('root');
+</script>
+</body>
+</html>

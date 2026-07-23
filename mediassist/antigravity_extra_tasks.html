@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediAssist AI — Additional Antigravity Tasks</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E1117;--surface:#161B22;--surface2:#1C2230;--surface3:#21293A;
+  --border:#253044;--border2:#2E3D55;
+  --teal:#00C9A7;--teal-dim:rgba(0,201,167,.1);
+  --ai:#58A6FF;--ai-bg:rgba(88,166,255,.08);--ai-border:rgba(88,166,255,.3);
+  --amber:#F0A500;--amber-bg:rgba(240,165,0,.08);
+  --red:#FF7B72;--red-bg:rgba(255,123,114,.08);
+  --purple:#D2A8FF;--purple-bg:rgba(210,168,255,.08);
+  --green:#3FB950;--green-bg:rgba(63,185,80,.08);
+  --white:#E6EDF3;--muted:#8B949E;--dim:#6E7681;
+  --mono:'JetBrains Mono',monospace;
+  --r:6px;--r-lg:10px;--r-xl:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);font-size:13.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:32px 48px 28px}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+h1{font-size:24px;font-weight:600;color:var(--white);letter-spacing:-.02em;margin-bottom:8px}
+.header-sub{font-size:13px;color:var(--muted);max-width:600px;line-height:1.7}
+
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 48px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100}
+.nav a{font-size:12px;font-weight:500;color:var(--dim);text-decoration:none;padding:11px 14px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;display:block}
+.nav a:hover{color:var(--white)}
+.nav a.active{color:var(--white);border-bottom-color:var(--teal)}
+
+.main{max-width:920px;margin:0 auto;padding:32px 48px 60px}
+
+/* timeline spine */
+.timeline{position:relative;padding-left:0}
+.timeline::before{content:'';position:absolute;left:140px;top:0;bottom:0;width:1px;background:var(--border);pointer-events:none}
+
+.tl-group{margin-bottom:36px}
+.tl-group-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-left:170px}
+
+.tl-item{display:flex;gap:0;align-items:flex-start;margin-bottom:12px;position:relative}
+
+/* timing badge (left side) */
+.tl-when{width:130px;flex-shrink:0;text-align:right;padding-right:20px;padding-top:12px}
+.tl-when-badge{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;line-height:1.4;text-align:center}
+.when-m1{background:rgba(0,201,167,.12);color:var(--teal)}
+.when-m2{background:rgba(88,166,255,.12);color:var(--ai)}
+.when-m3{background:rgba(210,168,255,.12);color:var(--purple)}
+.when-m4{background:rgba(240,165,0,.12);color:var(--amber)}
+.when-m5{background:rgba(63,185,80,.12);color:var(--green)}
+.when-m6{background:rgba(255,123,114,.12);color:var(--red)}
+
+/* dot on spine */
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--ai);border:2px solid var(--bg);flex-shrink:0;margin-top:16px;position:relative;z-index:1}
+
+/* card */
+.tl-card{flex:1;margin-left:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;transition:border-color .15s;cursor:pointer}
+.tl-card:hover{border-color:var(--border2)}
+.tl-card-header{padding:13px 16px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.tl-card-title{font-size:13.5px;font-weight:600;color:var(--white);margin-bottom:3px}
+.tl-card-file{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.tl-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.tl-tag{font-size:10px;font-weight:600;font-family:var(--mono);padding:2px 8px;border-radius:3px;white-space:nowrap}
+.tag-config{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(210,168,255,.2)}
+.tag-aws{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.tag-data{background:rgba(0,201,167,.08);color:var(--teal);border:1px solid rgba(0,201,167,.2)}
+.tag-api{background:var(--ai-bg);color:var(--ai);border:1px solid var(--ai-border)}
+.tag-fe{background:rgba(63,185,80,.08);color:var(--green);border:1px solid rgba(63,185,80,.2)}
+.tag-nb{background:rgba(255,123,114,.08);color:var(--red);border:1px solid rgba(255,123,114,.2)}
+.time-est{font-family:var(--mono);font-size:10px;color:var(--dim)}
+
+.tl-card-detail{display:none;border-top:1px solid var(--border);padding:14px 16px}
+.tl-card-detail.open{display:block}
+.detail-why{font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:12px}
+.detail-why strong{color:var(--white);font-weight:500}
+
+.prompt-label{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);margin-bottom:6px}
+.prompt-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;color:#A5D6FF;line-height:1.7;white-space:pre-wrap;position:relative}
+.copy-btn{position:absolute;top:8px;right:8px;font-size:10px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);color:var(--dim);padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .15s}
+.copy-btn:hover{color:var(--white);border-color:var(--teal)}
+.copy-btn.copied{color:var(--teal);border-color:var(--teal)}
+
+.deps{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.dep{font-family:var(--mono);font-size:11px;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;color:var(--muted)}
+.dep-label{font-size:10px;color:var(--dim);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-top:10px;margin-bottom:4px}
+
+/* summary strip */
+.summary{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:28px}
+.sum-cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;text-align:center}
+.sum-n{font-size:18px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:4px}
+.sum-l{font-size:10px;color:var(--dim)}
+
+.intro-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px 22px;margin-bottom:28px}
+.intro-box p{font-size:13px;color:var(--muted);line-height:1.7}
+.intro-box strong{color:var(--white)}
+
+@media(max-width:700px){
+  .timeline::before{left:0;display:none}
+  .tl-item{flex-direction:column}
+  .tl-when{width:auto;text-align:left;padding:0 0 8px 0}
+  .tl-dot{display:none}
+  .tl-card{margin-left:0}
+  .main{padding:20px 16px 40px}
+  .header{padding:24px 16px}
+  .summary{grid-template-columns:repeat(3,1fr)}
+  .tl-group-title{padding-left:0}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">MediAssist AI · Extra Tasks</div>
+  <h1>Additional Antigravity tasks — with exact timing</h1>
+  <p class="header-sub">Tasks not in the main module plans that Antigravity handles entirely. Each has an exact "do this after M[x] S[x]" trigger so you know precisely when to run it.</p>
+</div>
+
+<div class="nav">
+  <a href="#module1" class="active">Module 1</a>
+  <a href="#module2">Module 2</a>
+  <a href="#module3">Module 3</a>
+  <a href="#module4">Module 4</a>
+  <a href="#module5">Module 5</a>
+  <a href="#module6">Module 6</a>
+</div>
+
+<div class="main">
+
+<div class="intro-box">
+  <p>These are all <strong>zero judgment</strong> tasks — standard patterns, boilerplate, and tooling that Antigravity generates in one prompt. None require your medical reasoning or architectural decisions. The timing column tells you exactly when in the main plan to slot each one in.</p>
+</div>
+
+<div class="summary">
+  <div class="sum-cell"><div class="sum-n" style="color:var(--teal)">5</div><div class="sum-l">Module 1</div></div>
+  <div class="sum-cell"><div class="sum-n" style="color:var(--ai)">2</div><div class="sum-l">Module 2</div></div>
+  <div class="sum-cell"><div class="sum-n" style="color:var(--purple)">3</div><div class="sum-l">Module 3</div></div>
+  <div class="sum-cell"><div class="sum-n" style="color:var(--amber)">2</div><div class="sum-l">Module 4</div></div>
+  <div class="sum-cell"><div class="sum-n" style="color:var(--green)">2</div><div class="sum-l">Module 5</div></div>
+  <div class="sum-cell"><div class="sum-n" style="color:var(--red)">2</div><div class="sum-l">Module 6</div></div>
+</div>
+
+<div class="timeline">
+
+<!-- ─── MODULE 1 ─── -->
+<div class="tl-group" id="module1">
+  <div class="tl-group-title">Module 1 — Project Setup</div>
+
+  <!-- pyproject.toml -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m1">After M1 S3</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">pyproject.toml — tool configuration</div>
+          <div class="tl-card-file">pyproject.toml (repo root)</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-config">Config</span>
+          <span class="time-est">~5 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">After folder structure exists (M1 S3) but before installing packages (M1 S4). Configures black, isort, mypy, and pytest so every tool in requirements.txt is already configured when you install them. <strong>Do this once — never touch it again.</strong></div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p1"><span class="copy-btn" onclick="copyPrompt('p1',event)">Copy</span>Write pyproject.toml for MediAssist AI backend (Python 3.11).
+
+Configure:
+- black: line-length=88, target-version=["py311"]
+- isort: profile="black", known_first_party=["app"]
+- mypy: ignore_missing_imports=true, strict=false, exclude=["tests/"]
+- pytest: testpaths=["tests"], addopts="-v --tb=short", asyncio_mode="auto"
+- flake8: max-line-length=88, extend-ignore=["E203","W503"]
+
+Place in repo root alongside requirements.txt.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- .pre-commit -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m1">After M1 S3</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">.pre-commit-config.yaml — auto code quality</div>
+          <div class="tl-card-file">.pre-commit-config.yaml (repo root)</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-config">Config</span>
+          <span class="time-est">~5 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Same timing as pyproject.toml — right after the folder structure is created. Pre-commit hooks run on every <code style="font-family:var(--mono);font-size:11px">git commit</code> and catch formatting issues, import order, and hardcoded secrets before they ever reach GitHub. <strong>Set it up once, it runs silently forever.</strong></div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p2"><span class="copy-btn" onclick="copyPrompt('p2',event)">Copy</span>Write .pre-commit-config.yaml for MediAssist AI.
+
+Hooks:
+- black (code formatting)
+- isort (import sorting, black-compatible profile)
+- flake8 (linting, max-line-length=88)
+- detect-secrets (no hardcoded secrets — baseline: .secrets.baseline)
+- trailing-whitespace and end-of-file-fixer
+
+Also write the install command:
+pip install pre-commit && pre-commit install
+And generate .secrets.baseline:
+detect-secrets scan > .secrets.baseline</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- exceptions.py -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m1">After M1 S9</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">exceptions.py — custom exception classes</div>
+          <div class="tl-card-file">backend/app/exceptions.py</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-config">Config</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Right after main.py is written (M1 S9) but before any route logic is added. Every module from Module 2 onward will raise these exceptions — defining them once here means all error handling is consistent across the entire codebase.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p3"><span class="copy-btn" onclick="copyPrompt('p3',event)">Copy</span>Write backend/app/exceptions.py for MediAssist AI.
+
+Custom exception classes:
+- MediAssistBaseError(message, error_code, http_status, is_retryable)
+- InputValidationError(http_status=422)
+- RAGChainError(is_retryable=True, http_status=503)
+- ModelInferenceError(is_retryable=False, http_status=500)
+- ExternalAPIError(service_name, is_retryable=True, http_status=502)
+  subclasses: BedrockError, PineconeError, TextractError, GooglePlacesError
+
+Also add global FastAPI exception handler in main.py:
+@app.exception_handler(MediAssistBaseError)
+Returns JSON: {error_code, message, is_retryable, timestamp}
+Log all errors with logger.error() including stack trace.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- logging_config.py -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m1">After M1 S9</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">logging_config.py — structured JSON logging</div>
+          <div class="tl-card-file">backend/app/logging_config.py</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-config">Config</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Same timing as exceptions.py. JSON-structured logs are readable by CloudWatch Insights — you can query them by session_id, module, or latency. Setting this up before any module code is written means every log line from Module 2 onward is already structured correctly.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p4"><span class="copy-btn" onclick="copyPrompt('p4',event)">Copy</span>Write backend/app/logging_config.py for MediAssist AI.
+
+JSON structured logging using python-json-logger.
+Each log line must include: timestamp, level, module, function,
+session_id (from request context), processing_time_ms (where available).
+
+Add FastAPI middleware in main.py:
+- CorrelationIdMiddleware: injects session_id into request state
+- RequestLoggingMiddleware: logs method, path, status_code, duration_ms
+  for every request
+
+Logger usage in modules:
+  from app.logging_config import get_logger
+  logger = get_logger(__name__)
+  logger.info("RAG chain started", extra={"session_id": ctx.session_id})
+
+Configure uvicorn to use the same JSON formatter.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- conftest.py -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m1">After M1 S10</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">conftest.py — shared test fixtures</div>
+          <div class="tl-card-file">backend/tests/conftest.py</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-config">Config</span>
+          <span class="time-est">~15 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Right after the route stubs are written (M1 S10). Every test file from Module 2 onward imports from conftest.py — having it ready means every module test you write just calls <code style="font-family:var(--mono);font-size:11px">cardiac_patient()</code> instead of recreating fixtures from scratch.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p5"><span class="copy-btn" onclick="copyPrompt('p5',event)">Copy</span>Write backend/tests/conftest.py for MediAssist AI using pytest fixtures.
+
+Fixtures:
+- cardiac_patient() → PatientProfile: age=55, gender="male",
+  smoking="current", pack_years=20, conditions=["hypertension"],
+  allergies=["penicillin"], medications=["amlodipine 5mg"]
+- young_healthy_patient() → PatientProfile: age=22, gender="female",
+  smoking="never", conditions=[], allergies=[]
+- jaipur_location() → LocationData: lat=26.9124, lng=75.7873, city="Jaipur"
+- mock_s3(monkeypatch) → patches boto3 S3 client, upload returns fake key
+- mock_bedrock(monkeypatch) → patches bedrock_service.generate_diagnosis,
+  returns fixed DiagnosisResult JSON string
+- mock_pinecone(monkeypatch) → patches retriever.retrieve,
+  returns 5 fixed medical chunks with pmid metadata
+- mock_dynamodb(monkeypatch) → patches dynamodb_service, save returns True
+- mock_google_places(monkeypatch) → patches requests.get for Places API,
+  returns 3 fixed DoctorResult-shaped dicts
+- async_client(app) → httpx.AsyncClient pointed at the FastAPI app
+
+Use pytest scope="function" for all mocks.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── MODULE 2 ─── -->
+<div class="tl-group" id="module2">
+  <div class="tl-group-title">Module 2 — Multimodal Input Handler</div>
+
+  <!-- notebook skeletons -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m2">After M2 S1</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">All 6 notebook skeletons with section headers</div>
+          <div class="tl-card-file">backend/notebooks/01–06_*.ipynb</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-nb">Notebooks</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Right after scispaCy is installed (M2 S1) when you're already in the notebooks environment. Create all 6 skeletons now so every notebook is ready with section headers and markdown interpretation cells — you just fill code as each module progresses. Creating them all at once takes one prompt, creating them one by one across weeks wastes time.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p6"><span class="copy-btn" onclick="copyPrompt('p6',event)">Copy</span>Create 6 Jupyter notebook skeletons for MediAssist AI.
+All code cells empty. All markdown cells filled with section titles.
+After each analysis section add: ## 🔍 My Interpretation
+(empty markdown cell where I will write my findings)
+
+01_eda_symptoms.ipynb sections:
+  1. Dataset loading + shape, 2. Class distribution, 3. Symptom frequency,
+  4. Co-occurrence heatmap, 5. Missing values, 6. ChestX-ray14 profile
+
+02_nlp_preprocessing.ipynb sections:
+  1. scispaCy model loading, 2. NER on sample texts, 3. Negation test cases,
+  4. Uncertainty test cases, 5. Duration extraction, 6. Pipeline evaluation
+
+03_xray_cnn_training.ipynb sections:
+  1. Dataset loading + split, 2. Class distribution + imbalance,
+  3. Augmentation preview, 4. Model definition, 5. Training loop,
+  6. Training curves, 7. Per-class AUC evaluation, 8. Grad-CAM samples
+
+04_embeddings_indexing.ipynb sections:
+  1. PubMed download, 2. MedMCQA loading, 3. OpenFDA fetch,
+  4. Chunking pipeline, 5. Embedding generation, 6. Pinecone upsert,
+  7. Retrieval sanity checks
+
+05_symptom_classifier.ipynb sections:
+  1. Feature engineering, 2. SMOTE + split, 3. Baseline XGBoost,
+  4. Optuna tuning, 5. Final model eval, 6. Feature importance,
+  7. Ablation study (with/without engineered features)
+
+06_severity_scorer.ipynb sections:
+  1. Label generation from rules, 2. Feature set, 3. LightGBM training,
+  4. Threshold tuning, 5. Emergency recall analysis, 6. Confusion matrix</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- seed_test_data.py -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m2">After M2 S11</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">seed_test_data.py — local dev session seeder</div>
+          <div class="tl-card-file">backend/scripts/seed_test_data.py</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-data">Data</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">After the analyze route is wired to patient_context (M2 S11). Now that DynamoDB sessions exist, you need sample data to test the /history endpoint and feedback flow without running a full analyze every time. Run this once locally; it inserts 5 realistic sessions covering all urgency levels.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p7"><span class="copy-btn" onclick="copyPrompt('p7',event)">Copy</span>Write backend/scripts/seed_test_data.py for MediAssist AI.
+
+Insert 5 sample AnalyzeResponse sessions into DynamoDB mediassist-sessions table.
+Each session covers a different urgency level:
+1. EMERGENCY — 55yo male smoker, chest pain (session_id: "test-emergency-001")
+2. URGENT — 35yo, dengue fever symptoms, Jaipur monsoon
+3. MODERATE — 45yo female, persistent fever 3 days
+4. LOW — 22yo, common cold, runny nose
+5. LOW — 28yo, mild sprain, twisted ankle
+
+Use realistic PatientProfile, fake DiagnosisResult with real condition names,
+2 fake DoctorResult each, appropriate disclaimer per urgency level.
+Set expires_at = now + 90 days TTL.
+Print session_id for each inserted record.
+Skip if session_id already exists (idempotent).</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── MODULE 3 ─── -->
+<div class="tl-group" id="module3">
+  <div class="tl-group-title">Module 3 — RAG Pipeline</div>
+
+  <!-- validate_chunks.py -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m3">After M3 S2<br>Before M3 S3</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">validate_chunks.py — auto quality filter before indexing</div>
+          <div class="tl-card-file">backend/scripts/validate_chunks.py</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-data">Data</span>
+          <span class="time-est">~15 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Run this <strong>before</strong> your manual spot-check (M3 S3). The script auto-removes obvious garbage (reference lists, empty chunks, duplicates) so when you manually review 50 samples, you're reviewing actual content — not wasting your time on chunks that should have been filtered programmatically. Reduces manual review burden by ~20%.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p8"><span class="copy-btn" onclick="copyPrompt('p8',event)">Copy</span>Write backend/scripts/validate_chunks.py for MediAssist AI.
+
+Reads: data/medical_chunks.jsonl and data/drug_chunks.jsonl
+Writes: data/medical_chunks_clean.jsonl and data/drug_chunks_clean.jsonl
+
+Auto-reject chunks if ANY of these are true:
+- len(text) < 100 characters
+- text is >85% digits and punctuation
+- text contains HTML tags (&lt;p&gt;, &lt;div&gt;, &lt;a href&gt;, etc.)
+- text matches reference pattern: starts with "[1]" or "1." followed by author names
+- text contains "doi:", "PMID:", "©" as the majority of content
+- exact duplicate of a previously seen chunk (use sha256 hash set)
+
+Print report:
+  Total chunks read: X
+  Auto-rejected: X (breakdown by reason)
+  Clean chunks saved: X
+  Deduplication removed: X
+
+Also flag (don't remove) chunks where:
+- disease_category doesn't match text content (keyword mismatch)
+- chunk_index > 0 but starts with a capital letter suggesting clean section boundary</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- monitor_index.py -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m3">After M3 S4</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">monitor_index.py — Pinecone health checker</div>
+          <div class="tl-card-file">backend/scripts/monitor_index.py</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-data">Data</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Right after the first Pinecone indexing run (M3 S4). Run this immediately to confirm the indexing worked correctly — right vector count, right namespaces, sane retrieval scores. Then run it again after every weekly ETL update (Module 6 S9) to catch any indexing failures silently.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p9"><span class="copy-btn" onclick="copyPrompt('p9',event)">Copy</span>Write backend/scripts/monitor_index.py for MediAssist AI.
+
+Connects to Pinecone using settings from app/config.py.
+
+Checks:
+1. Index stats: print vector count per namespace
+   Flag if medical-kb < 40000 or drug-db < 10000
+2. Run 5 test queries and print top-1 score + snippet:
+   - "chest pain shortness of breath"
+   - "dengue fever rash platelet count"
+   - "amoxicillin penicillin allergy"
+   - "stroke facial drooping arm weakness"
+   - "diabetes insulin metformin"
+   Flag if any top-1 score < 0.60
+3. Check last upsert timestamp from index metadata
+   Flag if older than 10 days
+4. Print overall health: ✓ HEALTHY or ✗ ISSUES FOUND
+
+Exit code 0 if healthy, 1 if issues found.
+Can be run in CI/CD to gate deployments on index health.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- openapi_export.py -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m3">After M3 S10</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">openapi_export.py — API spec + Postman collection</div>
+          <div class="tl-card-file">backend/docs/openapi_export.py · docs/openapi.json</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-api">API</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">After the RAG chain is wired into analyze.py (M3 S10), your API shape is now stable enough to document. Export the spec now — it gives you a Postman collection to test with during Modules 4 and 5 without rewriting curl commands every time. Also useful for Lovable developers who can import the spec directly.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p10"><span class="copy-btn" onclick="copyPrompt('p10',event)">Copy</span>Write backend/docs/openapi_export.py for MediAssist AI.
+
+1. Export FastAPI OpenAPI spec to docs/openapi.json:
+   from app.main import app
+   import json
+   json.dump(app.openapi(), open("docs/openapi.json", "w"), indent=2)
+
+2. Generate Postman collection from openapi.json:
+   Use openapi-to-postmanv2 library (pip install openapi-to-postmanv2)
+   Save as docs/mediassist_postman.json
+   Pre-fill example request body for /analyze with cardiac patient data
+
+3. Add to main.py: serve Swagger UI at /api/v1/docs
+   and ReDoc at /api/v1/redoc (FastAPI does this automatically,
+   just confirm they're enabled in production, not just dev)
+
+4. Add docs/ to .gitignore except for openapi.json and postman collection
+   (regenerate on deploy, don't commit auto-generated files)
+
+Run with: python docs/openapi_export.py</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── MODULE 4 ─── -->
+<div class="tl-group" id="module4">
+  <div class="tl-group-title">Module 4 — Data Science Models</div>
+
+  <!-- mlflow setup -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m4">After M4 S1<br>Before M4 S3</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">MLflow experiment setup + S3 artifact store</div>
+          <div class="tl-card-file">backend/scripts/setup_mlflow.py · mlflow.env</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-data">Data</span>
+          <span class="time-est">~15 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">After EDA (M4 S1) but before the first XGBoost training run (M4 S3). If MLflow isn't configured before training starts, you lose all experiment tracking from your first runs. Set it up once here — every training run from S3 onward automatically logs to the same server with all artifacts stored in S3.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p11"><span class="copy-btn" onclick="copyPrompt('p11',event)">Copy</span>Write backend/scripts/setup_mlflow.py for MediAssist AI.
+
+1. Configure MLflow to use S3 as artifact store:
+   mlflow.set_tracking_uri("http://localhost:5000")
+   Set MLFLOW_S3_ENDPOINT_URL for S3 artifact storage
+   Create experiments: "xgboost-symptom-classifier",
+   "resnet50-xray", "lightgbm-urgency"
+
+2. Write mlflow.env with all required env vars:
+   MLFLOW_TRACKING_URI, MLFLOW_S3_ENDPOINT_URL,
+   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+
+3. Write a standard logging wrapper to use in all notebooks:
+   def log_model_run(experiment_name, params, metrics, model, tags):
+     with mlflow.start_run():
+       mlflow.log_params(params)
+       mlflow.log_metrics(metrics)
+       mlflow.sklearn.log_model(model, "model")
+       mlflow.set_tags(tags)
+
+4. Add to all training notebooks:
+   import mlflow
+   mlflow.set_experiment("xgboost-symptom-classifier")
+   with mlflow.start_run(run_name=f"run_{timestamp}"):
+
+Print confirmation that all 3 experiments were created.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- onnx verify script -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m4">After M4 S11</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">verify_onnx_models.py — output comparison script</div>
+          <div class="tl-card-file">backend/scripts/verify_onnx_models.py</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-data">Data</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Immediately after ONNX export (M4 S11). ONNX conversion can introduce subtle numerical differences — this script runs 10 test inputs through both the original model and the ONNX model and asserts outputs match within tolerance. If they don't match, Lambda will produce different results than your Kaggle training run. Catch it here before it ships.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p12"><span class="copy-btn" onclick="copyPrompt('p12',event)">Copy</span>Write backend/scripts/verify_onnx_models.py for MediAssist AI.
+
+For each of the 3 models, run 10 random test inputs through:
+  (a) original model (joblib/torch)
+  (b) ONNX model (onnxruntime InferenceSession)
+Assert outputs match within rtol=1e-4.
+
+XGBoost: generate 10 random feature vectors (correct shape from feature_names.json)
+  Compare: predict_proba() vs ONNX "probabilities" output
+  Assert: np.allclose(original, onnx, rtol=1e-4)
+
+LightGBM: same approach
+  Compare: predict_proba() vs ONNX "probabilities" output
+
+ResNet-50: load 3 real X-ray test images from data/test_xrays/
+  Compare: torch model sigmoid output vs TorchScript model output
+  Assert: np.allclose within rtol=1e-3 (slightly looser for float16 ops)
+
+Print per model:
+  ✓ XGBoost ONNX verified — max diff: 0.0000034
+  ✓ LightGBM ONNX verified — max diff: 0.0000012
+  ✓ ResNet-50 TorchScript verified — max diff: 0.00021
+
+Exit code 1 if any assertion fails — block deployment.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── MODULE 5 ─── -->
+<div class="tl-group" id="module5">
+  <div class="tl-group-title">Module 5 — Doctor Finder + Output Layer</div>
+
+  <!-- useAnalyze hook -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m5">After M5 S10</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">useAnalyze.ts — React hook for API calls</div>
+          <div class="tl-card-file">frontend/src/hooks/useAnalyze.ts</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-fe">Frontend</span>
+          <span class="time-est">~15 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">After the TypeScript contract is verified (M5 S10) — you know the exact API shape now. This hook wraps all fetch logic so your Lovable components never contain raw API calls. Every component just calls <code style="font-family:var(--mono);font-size:11px">const {"{"}analyze, loading, result{"}"} = useAnalyze()</code>. Makes testing and refactoring drastically simpler.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p13"><span class="copy-btn" onclick="copyPrompt('p13',event)">Copy</span>Write frontend/src/hooks/useAnalyze.ts for MediAssist AI Lovable frontend.
+
+Custom React hook: useAnalyze()
+Returns: { analyze, loading, error, result, reset, progress }
+
+analyze(data: AnalyzeFormData) → Promise<void>
+  - Builds FormData: appends symptoms_text, patient JSON string,
+    location JSON string, and any uploaded files
+  - Sets loading=true, error=null
+  - Calls analyzeSymptoms() from src/api/mediassist.ts
+  - On success: sets result (AnalyzeResponse), loading=false
+  - On error: sets error message, loading=false
+  - progress: "uploading" | "analyzing" | "finding_doctors" | "done"
+    (simulate stages using setTimeout since we can't stream)
+
+Also write:
+useDoctorSearch() → { search, loading, doctors, error }
+useSessionHistory(sessionId) → { session, loading, error }
+useFeedback() → { submitFeedback, submitting, submitted }
+
+Use useState + useCallback. No external state library needed.
+TypeScript strict — all types from src/types/api.types.ts.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- formatters.ts -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m5">After M5 S10</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">formatters.ts — display utility functions</div>
+          <div class="tl-card-file">frontend/src/utils/formatters.ts</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-fe">Frontend</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Same timing as useAnalyze.ts. These helper functions are needed in every Lovable component — the urgency color for the badge, the distance formatter for doctor cards, confidence percentage for the diagnosis display. Write them once here so every component imports from one place instead of duplicating display logic.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p14"><span class="copy-btn" onclick="copyPrompt('p14',event)">Copy</span>Write frontend/src/utils/formatters.ts for MediAssist AI.
+
+Export these typed utility functions:
+
+formatUrgencyColor(level: UrgencyLevel): string
+  "EMERGENCY" → "bg-red-600 text-white"
+  "URGENT" → "bg-orange-500 text-white"
+  "MODERATE" → "bg-yellow-500 text-black"
+  "LOW" → "bg-green-500 text-white"
+
+formatUrgencyLabel(level: UrgencyLevel): string
+  "EMERGENCY" → "🚨 Emergency — Call 112 Now"
+  "URGENT" → "⚠️ Urgent — See a doctor today"
+  "MODERATE" → "📋 Moderate — Book appointment soon"
+  "LOW" → "✅ Low — Monitor at home"
+
+formatDistance(km: number): string
+  < 1 → "500 m away", >= 1 → "3.2 km away"
+
+formatConfidence(score: number): string
+  0.82 → "82% confidence"
+
+formatRiskFlags(flags: string[]): string[]
+  "cardiac_risk_critical" → "High cardiac risk"
+  "age_over_50" → "Age over 50"
+  "respiratory_risk_high" → "High respiratory risk"
+
+formatProcessingTime(ms: number): string
+  4820 → "4.8 seconds"
+
+formatRating(rating: number): string
+  4.6 → "⭐ 4.6"
+
+All functions: TypeScript strict, export named, no external dependencies.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── MODULE 6 ─── -->
+<div class="tl-group" id="module6">
+  <div class="tl-group-title">Module 6 — Testing, Deployment & Polish</div>
+
+  <!-- locustfile -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m6">After M6 S1<br>Before M6 S2</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">locustfile.py — load test script</div>
+          <div class="tl-card-file">backend/tests/locustfile.py</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-api">API</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">After the test suite audit (M6 S1) but before the performance tests step (M6 S2). Antigravity writes the locust script — you just run it. The script must be ready before S2 so you can immediately launch load tests as part of that step without writing it on the fly.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p15"><span class="copy-btn" onclick="copyPrompt('p15',event)">Copy</span>Write backend/tests/locustfile.py for MediAssist AI load testing.
+
+Use locust (pip install locust).
+Target: MEDIASSIST_API_URL env var (production Lambda URL)
+
+Tasks:
+- analyze_text_only (weight=60): POST /analyze with symptoms_text +
+  cardiac patient profile. No file uploads.
+- doctor_search (weight=30): POST /doctors/search with Jaipur coordinates
+  and "Cardiologist" specialty.
+- health_check (weight=10): GET /health
+
+User class: MediAssistUser
+  wait_time = between(2, 8)  seconds between requests
+  on_start: log user starting
+
+Run config for baseline test:
+  locust -f locustfile.py --headless -u 5 -r 1 --run-time 2m \
+  --host=$MEDIASSIST_API_URL --csv=load_test_results
+
+Print at end: p50, p95, p99 response times + error rate.
+Assert in CI: p95 < 8000ms and error_rate < 0.02 (2%)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- deploy smoke test -->
+  <div class="tl-item">
+    <div class="tl-when"><span class="tl-when-badge when-m6">After M6 S7</span></div>
+    <div class="tl-dot"></div>
+    <div class="tl-card" onclick="toggle(this)">
+      <div class="tl-card-header">
+        <div>
+          <div class="tl-card-title">smoke_test.sh — post-deploy verification script</div>
+          <div class="tl-card-file">backend/scripts/smoke_test.sh</div>
+        </div>
+        <div class="tl-card-right">
+          <span class="tl-tag tag-api">API</span>
+          <span class="time-est">~10 min</span>
+        </div>
+      </div>
+      <div class="tl-card-detail">
+        <div class="detail-why">Right after production Lambda deploy (M6 S7). This script runs automatically in GitHub Actions after every deploy as the final gate — if any endpoint returns a non-200, the deploy is flagged as failed. Also useful to run manually before demoing to anyone.</div>
+        <div class="prompt-label">Prompt to give Antigravity</div>
+        <div class="prompt-box" id="p16"><span class="copy-btn" onclick="copyPrompt('p16',event)">Copy</span>Write backend/scripts/smoke_test.sh for MediAssist AI.
+
+Reads API_URL from environment variable.
+
+Tests (in order, stop on first failure):
+
+1. Health check:
+   GET /api/v1/health → expect 200 + {"status":"ok"}
+
+2. Analyze stub (text only, no images):
+   POST /api/v1/analyze with minimal cardiac patient + symptoms text
+   → expect 200 + response has session_id, urgency.level, recommendations[]
+
+3. Doctor search:
+   POST /api/v1/doctors/search with Jaipur coords + "Cardiologist"
+   → expect 200 + list of at least 1 result
+
+4. History retrieval:
+   GET /api/v1/history/{session_id from test 2}
+   → expect 200 + same session returned
+
+5. Feedback:
+   POST /api/v1/feedback {session_id, rating: 1}
+   → expect 200 + saved: true
+
+Print: ✓ or ✗ per test with response time.
+Exit code 0 if all pass, 1 if any fail.
+Add to .github/workflows/deploy.yml after Lambda update step.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- end timeline -->
+</div><!-- end main -->
+
+<script>
+function toggle(card){
+  const detail = card.querySelector('.tl-card-detail');
+  detail.classList.toggle('open');
+}
+function copyPrompt(id, e){
+  e.stopPropagation();
+  const box = document.getElementById(id);
+  const text = box.innerText.replace('Copy','').trim();
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = box.querySelector('.copy-btn');
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+const navLinks = document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{
+  const sections = ['module1','module2','module3','module4','module5','module6'];
+  let current = 'module1';
+  sections.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && window.scrollY >= el.offsetTop - 80) current = id;
+  });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href')==='#'+current));
+});
+</script>
+</body>
+</html>

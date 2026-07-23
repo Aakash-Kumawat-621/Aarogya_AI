@@ -1,0 +1,89 @@
+# ── Environment & Secrets ──────────────────────────────────────────────────────
+.env
+*.env
+.env.*
+!.env.example
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ── Virtual environments ────────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ── Testing ─────────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# ── Type checking ───────────────────────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ── ML artifacts ────────────────────────────────────────────────────────────────
+backend/ml_models/*.pkl
+backend/ml_models/*.pt
+backend/ml_models/*.pth
+backend/ml_models/*.onnx
+backend/ml_models/*.joblib
+!backend/ml_models/.gitkeep
+
+# ── Notebooks ───────────────────────────────────────────────────────────────────
+backend/notebooks/.ipynb_checkpoints/
+
+# ── IDE ─────────────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ── OS ──────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Docker ──────────────────────────────────────────────────────────────────────
+*.tar
+
+# ── AWS / Deployment ────────────────────────────────────────────────────────────
+.aws/
+sam-deployment/
+cdk.out/
+.serverless/
+
+# ── MLflow ──────────────────────────────────────────────────────────────────────
+mlruns/
+mlartifacts/
+
+# ── Logs ────────────────────────────────────────────────────────────────────────
+*.log
+logs/

@@ -1,0 +1,1 @@
+"""Aarogya AI app package."""
