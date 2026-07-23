@@ -18,6 +18,7 @@ langchain-pinecone==0.1.2
 
 # ── Vector DB ───────────────────────────────────────────────────────────────────
 pinecone-client==4.1.0
+# faiss-cpu for Lambda; for local with GPU use: pip install faiss-gpu
 faiss-cpu==1.8.0
 
 # ── Embeddings ──────────────────────────────────────────────────────────────────
@@ -28,10 +29,18 @@ spacy==3.7.4
 scispacy==0.5.4
 
 # ── Image / ML ──────────────────────────────────────────────────────────────────
-# NOTE: Install torch CPU separately on Lambda — see README
-# pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-torch==2.3.1
-torchvision==0.18.1
+# ⚠️  DO NOT pip install torch from this file directly.
+#
+# LOCAL DEV (RTX 5050 — Blackwell, CUDA 12.8):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#
+# LAMBDA / DOCKER (CPU only — no GPU on Lambda):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#
+# torch and torchvision are intentionally excluded here to avoid
+# pip installing the wrong build. Run the correct command above first.
+torch>=2.7.0
+torchvision>=0.22.0
 opencv-python-headless==4.10.0.84
 Pillow==10.4.0
 albumentations==1.4.11
