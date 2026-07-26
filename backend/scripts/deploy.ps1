@@ -113,7 +113,8 @@ Get-Content (Join-Path $BACKEND_DIR ".env") | ForEach-Object {
         $envVars[$parts[0].Trim()] = $parts[1].Trim()
     }
 }
-$envJson = @{ Variables = $envVars } | ConvertTo-Json -Compress
+$envFile = Join-Path $env:TEMP "lambda_env.json"
+@{ Variables = $envVars } | ConvertTo-Json -Compress | Set-Content -Path $envFile -Encoding utf8
 
 # Try to get existing Lambda
 $getResult = aws lambda get-function --function-name $LAMBDA_NAME 2>&1
@@ -121,7 +122,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "  Updating existing Lambda..."
     aws lambda update-function-code --function-name $LAMBDA_NAME --image-uri "${ECR_URI}:latest" | Out-Null
     aws lambda wait function-updated --function-name $LAMBDA_NAME
-    aws lambda update-function-configuration --function-name $LAMBDA_NAME --environment $envJson | Out-Null
+    aws lambda update-function-configuration --function-name $LAMBDA_NAME --environment "file://$envFile" | Out-Null
     Write-Host "  [OK] Lambda updated."
 } else {
     Write-Host "  Creating new Lambda..."
@@ -133,7 +134,7 @@ if ($LASTEXITCODE -eq 0) {
         --memory-size 1024 `
         --timeout 30 `
         --architecture x86_64 `
-        --environment $envJson | Out-Null
+        --environment "file://$envFile" | Out-Null
     aws lambda wait function-active --function-name $LAMBDA_NAME
     Write-Host "  [OK] Lambda created."
 }
