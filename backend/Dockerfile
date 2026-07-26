@@ -11,28 +11,26 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /build
 
-# Install gcc/g++ — required to build lightgbm, numkong, nmslib from source
-RUN yum install -y gcc gcc-c++ make && yum clean all
+# Install gcc/g++ and development headers for compilation
+RUN yum install -y gcc gcc-c++ make cmake && yum clean all
 
 COPY requirements.txt .
 
 RUN pip install --upgrade pip
 
-# Install everything in ONE pip transaction:
-#   - Exclude torch/torchvision from requirements (we pin them below)
-#   - Specify torch==2.3.1+cpu so ALL deps (incl. sentence-transformers)
-#     see CPU torch already in the resolution and don't pull GPU torch
-#   - --extra-index-url lets pip find the +cpu wheel from PyTorch's index
+# Install dependencies using --prefer-binary so pip prefers pre-compiled wheels
+# over building from source for packages like numkong/lightgbm/albucore
 RUN grep -vE "^torch==|^torchvision==" requirements.txt > /tmp/req_no_torch.txt && \
     pip install \
         --target /build/deps \
+        --prefer-binary \
         --extra-index-url https://download.pytorch.org/whl/cpu \
         torch==2.3.1+cpu \
         torchvision==0.18.1+cpu \
         -r /tmp/req_no_torch.txt
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 2 — Final Lambda image (lean, no build tools)
+# Stage 2 — Final Lambda image
 # ─────────────────────────────────────────────────────────────────────────────
 FROM public.ecr.aws/lambda/python:3.10
 
