@@ -64,8 +64,8 @@ $policyFile = Join-Path $env:TEMP "lambda_policy.json"
 aws iam put-role-policy --role-name $LAMBDA_ROLE --policy-name $POLICY_NAME --policy-document "file://$policyFile" 2>&1 | Out-Null
 Write-Host "  [OK] IAM policy attached."
 
-Write-Host "  [WAIT] 10s for IAM to propagate..."
-Start-Sleep -Seconds 10
+Write-Host "  [WAIT] 20s for IAM to propagate..."
+Start-Sleep -Seconds 20
 
 
 # ─────────────────────────────────────────────────────────────────────────────
