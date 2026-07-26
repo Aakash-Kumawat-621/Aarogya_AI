@@ -106,11 +106,16 @@ $ROLE_ARN = "arn:aws:iam::${AWS_ACCOUNT}:role/${LAMBDA_ROLE}"
 
 # Build env vars JSON from .env file
 $envVars = [ordered]@{}
+$skipKeys = @("AWS_REGION", "AWS_ACCOUNT_ID", "ECR_REPO_URI", "LAMBDA_FUNCTION_NAME", "API_GATEWAY_URL", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
 Get-Content (Join-Path $BACKEND_DIR ".env") | ForEach-Object {
     $line = $_.Trim()
     if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
         $parts = $line.Split("=", 2)
-        $envVars[$parts[0].Trim()] = $parts[1].Trim()
+        $key = $parts[0].Trim()
+        $val = $parts[1].Trim()
+        if ($skipKeys -notcontains $key) {
+            $envVars[$key] = $val
+        }
     }
 }
 $envFile = Join-Path $env:TEMP "lambda_env.json"
