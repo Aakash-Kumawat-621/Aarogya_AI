@@ -114,7 +114,8 @@ Get-Content (Join-Path $BACKEND_DIR ".env") | ForEach-Object {
     }
 }
 $envFile = Join-Path $env:TEMP "lambda_env.json"
-@{ Variables = $envVars } | ConvertTo-Json -Compress | Set-Content -Path $envFile -Encoding utf8
+$jsonStr = @{ Variables = $envVars } | ConvertTo-Json -Compress
+[System.IO.File]::WriteAllText($envFile, $jsonStr, [System.Text.UTF8Encoding]::new($false))
 
 # Try to get existing Lambda
 $getResult = aws lambda get-function --function-name $LAMBDA_NAME 2>&1
