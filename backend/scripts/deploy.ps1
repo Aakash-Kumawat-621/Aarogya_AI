@@ -105,14 +105,15 @@ Write-Host "`n[5/6] Lambda deployment ..." -ForegroundColor Yellow
 $ROLE_ARN = "arn:aws:iam::${AWS_ACCOUNT}:role/${LAMBDA_ROLE}"
 
 # Build env vars JSON from .env file
-$envVars = @{}
+$envVars = [ordered]@{}
 Get-Content (Join-Path $BACKEND_DIR ".env") | ForEach-Object {
-    if ($_ -match "^([^#][^=]*)=(.*)$") {
-        $envVars[$matches[1].Trim()] = $matches[2].Trim()
+    $line = $_.Trim()
+    if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
+        $parts = $line.Split("=", 2)
+        $envVars[$parts[0].Trim()] = $parts[1].Trim()
     }
 }
-$pairs = ($envVars.GetEnumerator() | ForEach-Object { "`"$($_.Key)`":`"$($_.Value)`"" }) -join ","
-$envJson = "{`"Variables`":{$pairs}}"
+$envJson = @{ Variables = $envVars } | ConvertTo-Json -Compress
 
 # Try to get existing Lambda
 $getResult = aws lambda get-function --function-name $LAMBDA_NAME 2>&1
@@ -172,16 +173,16 @@ if ($existingApi) {
     # Auto-deploy stage
     aws apigatewayv2 create-stage --api-id $API_ID --stage-name '$default' --auto-deploy --region $AWS_REGION | Out-Null
 
-    # Permission for API Gateway to invoke Lambda
-    aws lambda add-permission `
-        --function-name $LAMBDA_NAME `
-        --statement-id apigateway-invoke `
-        --action lambda:InvokeFunction `
-        --principal apigateway.amazonaws.com `
-        --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT}:${API_ID}/*" | Out-Null
-
     Write-Host "  [OK] API Gateway created: $API_ID"
 }
+
+# Ensure Lambda has permission to be invoked by API Gateway (ignore error if already added)
+aws lambda add-permission `
+    --function-name $LAMBDA_NAME `
+    --statement-id apigateway-invoke `
+    --action lambda:InvokeFunction `
+    --principal apigateway.amazonaws.com `
+    --source-arn "arn:aws:execute-api:${AWS_REGION}:${AWS_ACCOUNT}:${API_ID}/*" 2>&1 | Out-Null
 
 $API_URL = "https://${API_ID}.execute-api.${AWS_REGION}.amazonaws.com"
 
