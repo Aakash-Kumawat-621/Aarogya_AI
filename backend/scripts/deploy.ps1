@@ -82,7 +82,7 @@ Write-Host "  [OK] Logged in to ECR."
 # STEP 3 — Docker Build
 # ─────────────────────────────────────────────────────────────────────────────
 Write-Host "`n[3/6] Building Docker image ..." -ForegroundColor Yellow
-docker build --platform linux/amd64 -t $ECR_REPO $BACKEND_DIR
+docker buildx build --platform linux/amd64 --provenance=false --load -t $ECR_REPO $BACKEND_DIR
 if ($LASTEXITCODE -ne 0) { Write-Host "Docker build failed!" -ForegroundColor Red; exit 1 }
 Write-Host "  [OK] Image built."
 
