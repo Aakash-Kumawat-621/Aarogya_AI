@@ -1,47 +1,46 @@
-"""Application configuration — loads all env vars via Pydantic BaseSettings."""
-
-from functools import lru_cache
-
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
+from pydantic import model_validator
+from typing import Optional
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-    )
+    # ── AWS ─────────────────────────────────────────────
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "us-east-1"
 
-    # ── AWS ─────────────────────────────────────────────────────────────────────
-    aws_access_key_id: str = ""
-    aws_secret_access_key: str = ""
-    aws_region: str = "ap-south-1"
+    # ── Bedrock ──────────────────────────────────────────
+    BEDROCK_MODEL_ID: str = "amazon.nova-pro-v1:0"
 
-    # ── Bedrock ─────────────────────────────────────────────────────────────────
-    bedrock_model_id: str = "amazon.nova-pro-v1:0"
+    # ── Pinecone ─────────────────────────────────────────
+    PINECONE_API_KEY: str = ""
+    PINECONE_INDEX_NAME: str = "aarogya-index"
 
-    # ── Pinecone ────────────────────────────────────────────────────────────────
-    pinecone_api_key: str = ""
-    pinecone_index_name: str = "aarogya-index"
+    # ── DynamoDB ─────────────────────────────────────────
+    DYNAMODB_SESSIONS_TABLE: str = "aarogya-sessions"
+    DYNAMODB_PROFILES_TABLE: str = "aarogya-profiles"
 
-    # ── DynamoDB ────────────────────────────────────────────────────────────────
-    dynamodb_sessions_table: str = "aarogya-sessions"
-    dynamodb_profiles_table: str = "aarogya-profiles"
+    # ── S3 ───────────────────────────────────────────────
+    S3_BUCKET_NAME: str = "aarogya-uploads"
 
-    # ── S3 ──────────────────────────────────────────────────────────────────────
-    s3_bucket_name: str = "aarogya-uploads"
+    # ── Google Places ────────────────────────────────────
+    GOOGLE_PLACES_API_KEY: str = ""
 
-    # ── Google Places ───────────────────────────────────────────────────────────
-    google_places_api_key: str = ""
+    # ── App ──────────────────────────────────────────────
+    APP_ENV: str = "development"
+    LOG_LEVEL: str = "INFO"
 
-    # ── App ─────────────────────────────────────────────────────────────────────
-    app_env: str = "development"
-    log_level: str = "INFO"
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+
+    @property
+    def is_local(self) -> bool:
+        """Returns True if using a real IAM key (starts with AKIA)."""
+        return self.AWS_ACCESS_KEY_ID.startswith("AKIA")
+
+    @property
+    def is_production(self) -> bool:
+        return self.APP_ENV == "production"
 
 
-@lru_cache
-def get_settings() -> Settings:
-    return Settings()
-
-
-settings = get_settings()
+# Singleton — import this everywhere
+settings = Settings()
