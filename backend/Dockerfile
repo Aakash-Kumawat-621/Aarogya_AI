@@ -1,31 +1,39 @@
-FROM public.ecr.aws/lambda/python:3.11
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 1 — Builder: install all Python dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+FROM public.ecr.aws/lambda/python:3.10 AS builder
 
-# ── System dependencies ────────────────────────────────────────────────────────
-RUN dnf install -y \
-    gcc \
-    gcc-c++ \
-    libgomp \
-    && dnf clean all
+# Env flags — keep image lean
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# ── Set working directory ──────────────────────────────────────────────────────
-WORKDIR ${LAMBDA_TASK_ROOT}
+WORKDIR /build
 
-# ── Install Python dependencies ────────────────────────────────────────────────
+# Copy only requirements first (layer cache — only re-runs if requirements change)
 COPY requirements.txt .
 
-# Install torch CPU version first (smaller than GPU, required for Lambda)
-RUN pip install --no-cache-dir torch torchvision \
-    --index-url https://download.pytorch.org/whl/cpu
+# Install into a local dir so we can copy selectively to the final stage
+RUN pip install --upgrade pip && \
+    pip install --target /build/deps -r requirements.txt
 
-# Install all other packages
-RUN pip install --no-cache-dir -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 2 — Final Lambda image
+# ─────────────────────────────────────────────────────────────────────────────
+FROM public.ecr.aws/lambda/python:3.10
 
-# Download scispaCy medical NLP model
-RUN pip install --no-cache-dir \
-    https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_sm-0.5.4.tar.gz
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/var/task
 
-# ── Copy application code ──────────────────────────────────────────────────────
-COPY app/ ${LAMBDA_TASK_ROOT}/app/
+WORKDIR /var/task
 
-# ── Lambda handler ─────────────────────────────────────────────────────────────
+# Copy installed packages from builder
+COPY --from=builder /build/deps ./
+
+# Copy application code
+COPY app/ ./app/
+
+# Lambda entry point — Mangum wraps FastAPI
 CMD ["app.main.handler"]
