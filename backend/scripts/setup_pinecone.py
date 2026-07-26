@@ -47,7 +47,7 @@ def main():
     # ── Create index if it doesn't exist ─────────────────────────────────────
     existing = [idx.name for idx in pc.list_indexes()]
     if INDEX_NAME in existing:
-        print(f"\nℹ️  Index '{INDEX_NAME}' already exists — skipping creation.")
+        print(f"\n[SKIP] Index '{INDEX_NAME}' already exists -- skipping creation.")
     else:
         print(f"\n[Pinecone] Creating serverless index: {INDEX_NAME} ...")
         pc.create_index(
@@ -58,19 +58,20 @@ def main():
         )
 
         # Wait until index is ready
-        print("  ⏳ Waiting for index to become ready ...")
+        print("  [WAIT] Waiting for index to become ready ...")
         while True:
             status = pc.describe_index(INDEX_NAME).status
             if status.get("ready"):
                 break
             time.sleep(2)
-        print(f"  ✅ Index '{INDEX_NAME}' is ready.")
+        print(f"  [OK] Index '{INDEX_NAME}' is ready.")
 
     # ── Seed namespaces ───────────────────────────────────────────────────────
     index = pc.Index(INDEX_NAME)
 
     print("\n[Pinecone] Initialising namespaces ...")
-    dummy_vector = [0.0] * DIMENSION
+    # Pinecone requires at least one non-zero value in a vector
+    dummy_vector = [1.0] + [0.0] * (DIMENSION - 1)
 
     for ns in NAMESPACES:
         # Upsert a dummy vector to create the namespace
