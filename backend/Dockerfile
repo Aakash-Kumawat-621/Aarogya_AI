@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 1 — Builder: install all Python dependencies
+# Stage 1 — Builder
 # ─────────────────────────────────────────────────────────────────────────────
 FROM public.ecr.aws/lambda/python:3.10 AS builder
 
@@ -7,32 +7,32 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_DEFAULT_TIMEOUT=120 \
-    PIP_RETRIES=5
+    PIP_DEFAULT_TIMEOUT=120
 
 WORKDIR /build
+
+# Install gcc/g++ — required to build lightgbm, numkong, nmslib from source
+RUN yum install -y gcc gcc-c++ make && yum clean all
 
 COPY requirements.txt .
 
 RUN pip install --upgrade pip
 
-# ── Install CPU-only torch FIRST (saves ~600MB vs GPU wheel) ──────────────────
-# Lambda has no GPU — CPU wheel is mandatory and much smaller
-RUN pip install \
-        torch==2.3.1+cpu \
-        torchvision==0.18.1+cpu \
-    --index-url https://download.pytorch.org/whl/cpu \
-    --target /build/deps
-
-# ── Install everything else (skip torch/torchvision — already installed) ──────
-RUN grep -vE "^torch==|^torchvision==" requirements.txt > /tmp/requirements_no_torch.txt && \
+# Install everything in ONE pip transaction:
+#   - Exclude torch/torchvision from requirements (we pin them below)
+#   - Specify torch==2.3.1+cpu so ALL deps (incl. sentence-transformers)
+#     see CPU torch already in the resolution and don't pull GPU torch
+#   - --extra-index-url lets pip find the +cpu wheel from PyTorch's index
+RUN grep -vE "^torch==|^torchvision==" requirements.txt > /tmp/req_no_torch.txt && \
     pip install \
         --target /build/deps \
-        --retries 5 \
-        -r /tmp/requirements_no_torch.txt
+        --extra-index-url https://download.pytorch.org/whl/cpu \
+        torch==2.3.1+cpu \
+        torchvision==0.18.1+cpu \
+        -r /tmp/req_no_torch.txt
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 2 — Final Lambda image
+# Stage 2 — Final Lambda image (lean, no build tools)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM public.ecr.aws/lambda/python:3.10
 
@@ -42,11 +42,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /var/task
 
-# Copy installed packages from builder
 COPY --from=builder /build/deps ./
-
-# Copy application code
 COPY app/ ./app/
 
-# Lambda entry point — Mangum wraps FastAPI
 CMD ["app.main.handler"]
