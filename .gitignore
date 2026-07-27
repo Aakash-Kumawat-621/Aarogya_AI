@@ -84,6 +84,10 @@ cdk.out/
 mlruns/
 mlartifacts/
 
+# ── Local Documentation & Plans ─────────────────────────────────────────────────
+docs/
+mediassist/
+
 # ── Logs ────────────────────────────────────────────────────────────────────────
 *.log
 logs/
