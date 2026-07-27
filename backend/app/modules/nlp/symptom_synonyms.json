@@ -1,0 +1,544 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "description": "Symptom synonym dictionary for MediAssist AI. Maps colloquial/Hinglish terms to canonical medical concept names. Reviewed for clinical accuracy.",
+    "canonical_count": 120,
+    "includes_hinglish": true
+  },
+
+  "chest pain": [
+    "chest ache", "chest tightness", "chest pressure", "precordial pain",
+    "thoracic pain", "chest discomfort", "pain in chest", "my chest hurts",
+    "chest heaviness", "sternal pain", "chest squeezing", "chest burning",
+    "seene mein dard", "seene mein jalan", "dil ka dard", "chest mein dard",
+    "chhati mein dard"
+  ],
+
+  "dyspnea": [
+    "shortness of breath", "difficulty breathing", "breathlessness",
+    "can't breathe", "hard to breathe", "breathing difficulty",
+    "short of breath", "unable to breathe", "labored breathing",
+    "saans nahi aa rahi", "saans lene mein taklif", "saans phoolna",
+    "dama", "breathless"
+  ],
+
+  "fever": [
+    "high temperature", "elevated temperature", "pyrexia", "febrile",
+    "running a temperature", "hot body", "body heat", "temperature",
+    "bukhar", "tap", "jwara", "body garm hai", "tez bukhar"
+  ],
+
+  "headache": [
+    "head pain", "head ache", "pain in head", "head hurts", "cranial pain",
+    "cephalgia", "throbbing head", "head pounding", "head pressure",
+    "sir dard", "sir mein dard", "sir mein thakan", "sar dard",
+    "dimaag mein dard", "matha dard"
+  ],
+
+  "cough": [
+    "coughing", "dry cough", "wet cough", "persistent cough",
+    "productive cough", "hacking cough", "chronic cough", "mild cough",
+    "khansi", "khaansi", "sukhhi khansi", "balgam wali khansi"
+  ],
+
+  "abdominal pain": [
+    "stomach pain", "stomach ache", "belly pain", "tummy pain",
+    "pain in stomach", "gut pain", "abdominal cramps", "tummy ache",
+    "abdominal discomfort", "gastric pain", "epigastric pain",
+    "pet mein dard", "pet dard", "peit dard", "uda ka dard",
+    "pet mein jalan", "naaf ke paas dard"
+  ],
+
+  "nausea": [
+    "feeling sick", "queasy", "feel like vomiting", "want to vomit",
+    "upset stomach", "stomach upset", "nauseated", "sick to stomach",
+    "ji machlana", "ulti jaisi feeling", "matlaa", "ji ghabrana"
+  ],
+
+  "vomiting": [
+    "throwing up", "puking", "emesis", "retching", "being sick", "vomit",
+    "ulti", "vaman", "ulti aana", "kee karna", "khana bahar aana"
+  ],
+
+  "diarrhea": [
+    "loose motions", "loose stools", "watery stools", "frequent stools",
+    "runny stools", "traveler's diarrhea", "gastroenteritis", "stomach flu",
+    "dast", "patla potty", "loose motion", "patla mal", "pait kharaab"
+  ],
+
+  "constipation": [
+    "hard stools", "difficulty passing stool", "infrequent stools", "no bowel movement",
+    "unable to pass stool", "straining to pass stool", "pebble stools",
+    "kabz", "qabz", "mala rukna", "potty na aana"
+  ],
+
+  "fatigue": [
+    "tiredness", "exhaustion", "weakness", "low energy", "feeling tired",
+    "chronic tiredness", "lethargy", "lack of energy", "worn out",
+    "burnout", "debility", "asthenia",
+    "thakan", "kamzori", "bahut thakan", "jism mein thakan", "tanhayi"
+  ],
+
+  "dizziness": [
+    "lightheadedness", "vertigo", "feeling faint", "unsteadiness",
+    "spinning sensation", "wooziness", "balance problem",
+    "chakkar aana", "sar ghoomna", "chakkar", "matha ghoomna"
+  ],
+
+  "back pain": [
+    "lower back pain", "upper back pain", "lumbar pain", "backache",
+    "spine pain", "back ache", "dorsal pain", "sacral pain",
+    "kamar dard", "peeth mein dard", "kamar mein dard", "peeth dard",
+    "reedh ki haddi mein dard"
+  ],
+
+  "joint pain": [
+    "arthralgia", "joint ache", "painful joints", "stiff joints",
+    "joint swelling", "joint inflammation", "articular pain",
+    "jodo mein dard", "gathiya", "jodo ka dard", "jor dard"
+  ],
+
+  "skin rash": [
+    "rash", "skin eruption", "hives", "urticaria", "eczema flare",
+    "dermatitis", "allergic rash", "skin breakout", "red spots on skin",
+    "itchy rash", "skin inflammation",
+    "chamdi ka lal hona", "khujli wali chamdi", "daane", "kharish"
+  ],
+
+  "itching": [
+    "pruritus", "itchiness", "skin itch", "itch", "scratching urge",
+    "body itch", "generalized itch",
+    "kharish", "khujli", "chamdi mein kharish", "jism mein kharish"
+  ],
+
+  "swelling": [
+    "edema", "oedema", "puffiness", "bloating", "swollen", "fluid retention",
+    "swollen feet", "swollen legs", "swollen face", "swollen hands",
+    "soojhan", "sujan", "soojan", "fulao", "akad"
+  ],
+
+  "numbness": [
+    "tingling", "pins and needles", "paresthesia", "loss of sensation",
+    "limb numbness", "hand numbness", "foot numbness", "numb feeling",
+    "feeling numb", "numbness in hands", "numbness in feet",
+    "soonapan", "sunnapan", "hatho mein sunnapan", "pairon mein sunnapan"
+  ],
+
+  "palpitations": [
+    "heart racing", "heart pounding", "irregular heartbeat",
+    "rapid heartbeat", "skipping heartbeat", "heart fluttering",
+    "tachycardia", "racing pulse", "heart beating fast",
+    "dil ki dharkan tez hona", "dil dhak dhak karna", "dhadkan tez hona"
+  ],
+
+  "urinary frequency": [
+    "frequent urination", "polyuria", "frequent peeing", "frequent urge to urinate",
+    "can't hold urine", "overactive bladder", "nocturia",
+    "baar baar peshab aana", "bar bar peshab", "peshab jaldi aana"
+  ],
+
+  "painful urination": [
+    "dysuria", "burning urination", "pain while urinating", "burning while peeing",
+    "stinging urination", "burning sensation when passing urine",
+    "peshab mein jalan", "peshab mein dard", "muthre mein jalan"
+  ],
+
+  "blood in urine": [
+    "hematuria", "bloody urine", "pink urine", "red urine", "urine with blood",
+    "peshab mein khoon", "lal rang ka peshab"
+  ],
+
+  "blood in stool": [
+    "hematochezia", "melena", "rectal bleeding", "bloody stool", "dark stools",
+    "blood in feces", "bleeding from rectum",
+    "potty mein khoon", "latrine mein khoon", "mal mein khoon"
+  ],
+
+  "sore throat": [
+    "throat pain", "pain in throat", "scratchy throat", "throat ache",
+    "pharyngitis", "tonsillitis", "strep throat", "throat irritation",
+    "gale mein dard", "gala dard karna", "gala kharaab", "gale mein kharaash"
+  ],
+
+  "runny nose": [
+    "rhinorrhea", "nasal discharge", "dripping nose", "nose running",
+    "nasal congestion", "stuffy nose", "blocked nose", "nasal drip",
+    "naak behna", "naak bagna", "nazla", "naak bharna"
+  ],
+
+  "ear pain": [
+    "otalgia", "ear ache", "pain in ear", "earache", "ear hurts",
+    "kaan mein dard", "kaan dard karna", "kaan ka dard"
+  ],
+
+  "eye pain": [
+    "ocular pain", "eye ache", "pain in eye", "sore eye", "eye discomfort",
+    "aankh mein dard", "aankh dard karna", "aankhon mein dard"
+  ],
+
+  "blurry vision": [
+    "blurred vision", "visual impairment", "foggy vision", "cloudy vision",
+    "double vision", "diplopia", "poor eyesight", "vision problem",
+    "dhundla dikhna", "ankhon se dhundla dikhna", "aankhon ki roshni kam hona"
+  ],
+
+  "mouth ulcer": [
+    "aphthous ulcer", "canker sore", "oral ulcer", "mouth sore",
+    "munh mein chaale", "munh mein ghaa", "chhale"
+  ],
+
+  "toothache": [
+    "dental pain", "tooth pain", "tooth ache", "dental ache",
+    "daant dard", "daanto mein dard", "daant ka dard"
+  ],
+
+  "muscle pain": [
+    "myalgia", "muscle ache", "muscle soreness", "muscle spasm",
+    "sore muscles", "body ache", "muscle cramps",
+    "body dard", "jism mein dard", "maanspeshiyon mein dard", "pesha dard"
+  ],
+
+  "cramps": [
+    "muscle cramps", "stomach cramps", "menstrual cramps", "leg cramps",
+    "abdominal cramps", "spasm", "painful muscle contraction",
+    "maror", "marore", "pet mein maror", "taang mein maror"
+  ],
+
+  "weight loss": [
+    "unexplained weight loss", "losing weight", "decreased body weight",
+    "wasting", "unintentional weight loss",
+    "vajan kam hona", "wazn ghatna"
+  ],
+
+  "weight gain": [
+    "gaining weight", "increased body weight", "obesity", "excessive weight",
+    "vajan badhna", "motapa", "wazn badhna"
+  ],
+
+  "loss of appetite": [
+    "anorexia", "decreased appetite", "no hunger", "not feeling hungry",
+    "poor appetite", "food aversion",
+    "bhookh na lagna", "khana accha na lagna", "khaane ki ichcha na hona"
+  ],
+
+  "excessive thirst": [
+    "polydipsia", "increased thirst", "always thirsty", "drinking too much",
+    "unquenchable thirst",
+    "zyada pyaas lagna", "bahut pyaas", "haad se zyada pyaas"
+  ],
+
+  "excessive hunger": [
+    "polyphagia", "increased appetite", "always hungry", "overeating urge",
+    "zyada bhookh", "haad se zyada bhookh"
+  ],
+
+  "night sweats": [
+    "sweating at night", "nocturnal sweating", "excessive sweating while sleeping",
+    "raat ko paseena aana", "sote waqt paseena", "raat mein paseena"
+  ],
+
+  "hot flashes": [
+    "hot flushes", "sudden heat sensation", "flushing", "menopause symptoms",
+    "ek dum garm lagna", "achanak garm lagna"
+  ],
+
+  "irregular periods": [
+    "irregular menstruation", "missed period", "menstrual irregularity",
+    "late period", "early period", "abnormal bleeding", "oligomenorrhea",
+    "mahavari ka aana jayaa rehna", "masik dharm mein aavyavastha"
+  ],
+
+  "heavy periods": [
+    "menorrhagia", "heavy menstrual bleeding", "heavy flow", "prolonged bleeding",
+    "excessive menstrual flow",
+    "zyada mahavari", "adhik masik"
+  ],
+
+  "painful periods": [
+    "dysmenorrhea", "menstrual cramps", "period pain", "menstrual pain",
+    "period dard", "mahavari mein dard", "masik mein takleef"
+  ],
+
+  "vaginal discharge": [
+    "leukorrhea", "abnormal vaginal discharge", "white discharge",
+    "yellow discharge", "unusual discharge",
+    "safed paani aana", "safed dhatu", "yoni se paani aana"
+  ],
+
+  "erectile dysfunction": [
+    "impotence", "ED", "unable to maintain erection", "sexual dysfunction in men",
+    "napunsakta", "sambhog shakti mein kami"
+  ],
+
+  "anxiety": [
+    "nervousness", "feeling anxious", "panic", "worry", "restlessness",
+    "apprehension", "unease", "stress",
+    "ghabrahat", "chinta", "bekhayali", "dara rehna"
+  ],
+
+  "depression": [
+    "feeling depressed", "sadness", "low mood", "hopelessness",
+    "persistent sadness", "melancholy", "feeling worthless",
+    "udaasi", "nirasha", "mano-shaithilya", "man kharaab rehna"
+  ],
+
+  "insomnia": [
+    "sleeplessness", "can't sleep", "difficulty sleeping",
+    "trouble sleeping", "inability to sleep", "poor sleep",
+    "neend na aana", "neend nahi aana", "anidra", "jagrate"
+  ],
+
+  "excessive sleepiness": [
+    "hypersomnia", "drowsiness", "always sleepy", "can't stay awake",
+    "narcolepsy-like", "daytime sleepiness",
+    "neend zyada aana", "hamesha neend aana", "jaagna mushkil lagta hai"
+  ],
+
+  "confusion": [
+    "disorientation", "mental fog", "brain fog", "cognitive impairment",
+    "memory problems", "delirium",
+    "dimag ka kaam na karna", "bhulne ki bimari", "akal kam lagna"
+  ],
+
+  "seizure": [
+    "convulsion", "fit", "epileptic attack", "involuntary jerking",
+    "epilepsy episode",
+    "mirgi ka daura", "jhatkaa aana", "daura"
+  ],
+
+  "fainting": [
+    "syncope", "loss of consciousness", "passing out", "blacking out",
+    "vasovagal syncope", "collapsed", "feeling faint",
+    "behosh hona", "behoshi", "chakkhar khake girna"
+  ],
+
+  "tremor": [
+    "shaking", "trembling", "involuntary shaking", "hand tremor",
+    "body shaking", "Parkinson's tremor",
+    "kaampna", "haath kaampna", "jism kaampna"
+  ],
+
+  "weakness": [
+    "paresis", "motor weakness", "one-sided weakness", "limb weakness",
+    "muscle weakness", "paralysis", "hemiplegia",
+    "kamzori", "jism mein kamzori", "ek taraf kamzori"
+  ],
+
+  "speech difficulty": [
+    "dysarthria", "slurred speech", "speech problem", "difficulty speaking",
+    "aphasia", "stuttering",
+    "baat karne mein takleef", "boli mein problem", "bol nahi paa raha"
+  ],
+
+  "difficulty swallowing": [
+    "dysphagia", "trouble swallowing", "pain when swallowing", "odynophagia",
+    "food stuck in throat",
+    "nighalna mushkil hona", "gale mein khaana rukna"
+  ],
+
+  "heartburn": [
+    "acid reflux", "GERD", "gastroesophageal reflux", "acidity",
+    "burning in chest after eating", "sour belching",
+    "seene mein jalan", "acidity", "khatta dakar", "pet mein gas",
+    "jalan seene mein"
+  ],
+
+  "bloating": [
+    "abdominal bloating", "gas", "flatulence", "distension", "gassy stomach",
+    "tummy swelling", "belly bloat",
+    "pet phoolna", "gas banana", "afara", "pet mein gas"
+  ],
+
+  "belching": [
+    "burping", "eructation", "frequent burping", "excessive belching",
+    "dakar aana", "dakaar", "bar bar dakar aana"
+  ],
+
+  "jaundice": [
+    "yellow skin", "yellow eyes", "yellowing of skin", "icterus",
+    "yellow discoloration",
+    "peeliya", "aankhon ka peela hona", "chamdi peeli padna"
+  ],
+
+  "dark urine": [
+    "cola-colored urine", "brown urine", "tea-colored urine",
+    "concentrated urine",
+    "pesha ka rang kala ya bhoora hona", "peshab ka rng badalna"
+  ],
+
+  "pale stools": [
+    "clay-colored stools", "white stools", "acholic stools",
+    "faike rang ki latrine"
+  ],
+
+  "hair loss": [
+    "alopecia", "baldness", "thinning hair", "losing hair",
+    "excessive hair fall", "hair fall",
+    "baal girna", "baal jhadna", "ganjapan", "taklapan"
+  ],
+
+  "nail changes": [
+    "brittle nails", "nail discoloration", "nail pitting", "thickened nails",
+    "nakhoon ka badalna", "nakhoon ka toot jaana"
+  ],
+
+  "excessive sweating": [
+    "hyperhidrosis", "profuse sweating", "diaphoresis", "sweaty",
+    "abnormal sweating",
+    "bahut paseena aana", "zyada pasina aana"
+  ],
+
+  "cold extremities": [
+    "cold hands", "cold feet", "poor circulation", "Raynaud's phenomenon",
+    "haath pair thande hona", "angiyo ka thanda rehna"
+  ],
+
+  "leg pain": [
+    "lower limb pain", "calf pain", "thigh pain", "leg cramp",
+    "shin pain", "claudication",
+    "taang mein dard", "paon mein dard", "pindli mein dard"
+  ],
+
+  "arm pain": [
+    "upper limb pain", "shoulder arm pain", "forearm pain", "elbow pain",
+    "haath mein dard", "baazu mein dard"
+  ],
+
+  "neck pain": [
+    "cervical pain", "neck ache", "stiff neck", "cervicalgia",
+    "gardan mein dard", "gardan akadna", "gardan dard"
+  ],
+
+  "shoulder pain": [
+    "shoulder ache", "rotator cuff pain", "frozen shoulder",
+    "kandha dard", "kandhon mein dard"
+  ],
+
+  "knee pain": [
+    "knee ache", "patellofemoral pain", "knee swelling",
+    "ghutne mein dard", "ghutna dard"
+  ],
+
+  "ankle pain": [
+    "ankle ache", "ankle sprain", "ankle swelling",
+    "takne mein dard", "takna dard"
+  ],
+
+  "hip pain": [
+    "groin pain", "pelvic pain", "hip ache", "hip joint pain",
+    "kamar ke neeche dard", "kanthe mein dard"
+  ],
+
+  "frequent infections": [
+    "recurrent infections", "getting sick often", "low immunity",
+    "immunodeficiency signs",
+    "baar baar beemar padna", "baar baar infection"
+  ],
+
+  "lymph node swelling": [
+    "swollen lymph nodes", "lymphadenopathy", "gland swelling",
+    "swollen glands", "tender lymph nodes",
+    "lymph nodes ka phoolna", "gilthi"
+  ],
+
+  "bruising easily": [
+    "easy bruising", "ecchymosis", "unexplained bruises", "purpura",
+    "neel padna", "baar baar neel padna"
+  ],
+
+  "bleeding gums": [
+    "gingival bleeding", "gums bleeding", "gingivitis", "periodontitis",
+    "maseede se khoon aana", "daanto se khoon"
+  ],
+
+  "nosebleed": [
+    "epistaxis", "nose bleeding", "bleeding from nose",
+    "naak se khoon aana", "naak se khoon"
+  ],
+
+  "chest tightness": [
+    "tight chest", "feeling of pressure in chest", "constricted chest",
+    "seena tight hona", "chhati mein khinchao"
+  ],
+
+  "wheezing": [
+    "whistling breath", "noisy breathing", "respiratory wheeze",
+    "saans lene mein awaaz aana", "seene se awaaz"
+  ],
+
+  "choking": [
+    "choking sensation", "throat closing", "globus sensation",
+    "gale mein ruk jaana", "gala bandh hona"
+  ],
+
+  "snoring": [
+    "loud snoring", "sleep apnea", "breathing noise during sleep",
+    "kharrate", "neend mein awaaz aana"
+  ],
+
+  "skin discoloration": [
+    "hypo pigmentation", "hyperpigmentation", "skin darkening",
+    "vitiligo", "melasma", "uneven skin tone",
+    "chamdi ka rang badalna", "safed daag", "kaale daag"
+  ],
+
+  "acne": [
+    "pimples", "zits", "breakout", "comedones", "cystic acne",
+    "muhase", "pimple", "daane"
+  ],
+
+  "dry skin": [
+    "xerosis", "rough skin", "scaly skin", "dry and flaky skin",
+    "chamdi ka sukhna", "rukhi chamdi"
+  ],
+
+  "oily skin": [
+    "seborrhea", "greasy skin", "excess sebum",
+    "chamdi ka tel aana"
+  ],
+
+  "memory loss": [
+    "forgetfulness", "amnesia", "dementia", "cognitive decline",
+    "poor memory", "difficulty remembering",
+    "bhoolne ki bimari", "yaadashta ki kami", "cheeze bhool jaana"
+  ],
+
+  "concentration difficulty": [
+    "difficulty concentrating", "attention deficit", "brain fog",
+    "poor focus", "can't focus",
+    "dhyan na lagna", "man nahi lagta", "focus na hona"
+  ],
+
+  "mood swings": [
+    "emotional instability", "rapid mood changes", "irritability",
+    "anger outbursts", "bipolar symptoms",
+    "mood ka badalna", "gussa aana", "chidchidahat"
+  ],
+
+  "panic attack": [
+    "anxiety attack", "sudden fear", "heart racing with anxiety",
+    "sudden overwhelming fear",
+    "achanak ghabrahat", "panic hona"
+  ],
+
+  "hallucination": [
+    "seeing things", "hearing voices", "visual hallucination",
+    "auditory hallucination",
+    "andhvishwas nahi, bina kuch hue dikha", "aawaazein sunna"
+  ],
+
+  "sexual dysfunction": [
+    "low libido", "decreased sex drive", "sexual problems",
+    "yoni sambandh mein problem"
+  ],
+
+  "urinary incontinence": [
+    "leaking urine", "unable to hold urine", "involuntary urination",
+    "peshab ka apne aap aana", "kapde mein peshab ho jaana"
+  ],
+
+  "increased urination at night": [
+    "nocturia", "waking to urinate", "nocturnal urination",
+    "raat ko bar bar peshab", "raat mein uthke peshab jaana"
+  ]
+}
