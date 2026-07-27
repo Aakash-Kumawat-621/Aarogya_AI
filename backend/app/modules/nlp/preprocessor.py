@@ -81,14 +81,32 @@ _DURATION_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Disease history patterns
+# Disease history patterns — group(1) captures ONLY the disease name (not the prefix)
 _HISTORY_PATTERNS = [
-    re.compile(r"history\s+of\s+([a-z][a-z\s\-]{2,30}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
-    re.compile(r"diagnosed\s+with\s+([a-z][a-z\s\-]{2,30}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
-    re.compile(r"(?:has|have|had)\s+([a-z][a-z\s\-]{2,30}?)(?=\s+for\s+\d|\s*(?:and|,|\.|;|$))", re.IGNORECASE),
-    re.compile(r"known\s+case\s+of\s+([a-z][a-z\s\-]{2,30}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
-    re.compile(r"chronic\s+([a-z][a-z\s\-]{2,30}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
+    re.compile(r"history\s+of\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
+    re.compile(r"diagnosed\s+with\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
+    re.compile(r"(?:has|have|had)\s+([a-z][a-z\s\-]{2,40}?)(?=\s+for\s+\d|\s*(?:and|,|\.|;|$))", re.IGNORECASE),
+    re.compile(r"known\s+case\s+of\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
+    re.compile(r"chronic\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
 ]
+
+# Tokens that are commonly mis-tagged as entities — filtered out as noise
+_NOISE_TOKENS = frozenset({
+    # pronouns / articles
+    "i", "me", "my", "he", "she", "it", "we", "they", "you",
+    "the", "a", "an", "this", "that", "these", "those",
+    # duration words (picked up by sci model)
+    "day", "days", "week", "weeks", "month", "months", "year", "years",
+    "hour", "hours", "hr", "hrs",
+    # severity/modifier words that get tagged
+    "mild", "moderate", "severe", "severe pain", "excruciating",
+    "slight", "minor", "significant", "intense", "extreme",
+    # common words mistakenly tagged
+    "patient", "patients", "history", "case", "cases",
+    "symptoms", "symptom", "condition", "conditions",
+    "possible", "possibly", "maybe", "might", "could",
+    "chronic", "acute", "past", "since", "for",
+})
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -171,6 +189,36 @@ def _extract_duration(text: str):
     return duration_str, category
 
 
+def _is_noise_entity(span) -> bool:
+    """
+    Return True if this entity span is a noise/false-positive.
+    Filters out:
+      - Single characters or pure digits
+      - Stop words, pronouns, severity adjectives, duration words
+      - Spans longer than 5 words (likely a sentence fragment, not an entity)
+    """
+    text = span.text.strip()
+    lower = text.lower()
+
+    # Single char or digit-only
+    if len(text) <= 1 or text.isdigit():
+        return True
+
+    # Too long (sentence fragments)
+    if len(text.split()) > 5:
+        return True
+
+    # Known noise tokens
+    if lower in _NOISE_TOKENS:
+        return True
+
+    # Pure punctuation or whitespace
+    if not any(c.isalpha() for c in text):
+        return True
+
+    return False
+
+
 def _entity_to_dict(span, doc) -> dict:
     """Convert a spaCy entity span to the MediAssist symptom schema."""
     token = span.root
@@ -217,47 +265,66 @@ def extract_symptoms(text: str) -> dict:
 
     _load_models()
 
-    seen_texts: set[str] = set()
-    symptoms: list[dict] = []
+    # ── Collect all candidate spans from both models ──────────────────────────
+    # We gather everything first, then sort by span length (longer = more specific)
+    # and greedily select non-overlapping spans. This ensures "Back pain" wins
+    # over "pain", and "chest pain" wins over "No chest pain".
+    all_candidates: list[tuple] = []  # (ent, doc)
 
-    # ── Pass 1: BC5CDR model (DISEASE + CHEMICAL NER) ──
     if _bc5cdr_nlp is not None:
         try:
             doc_bc5cdr = _bc5cdr_nlp(text)
             for ent in doc_bc5cdr.ents:
-                key = ent.text.lower().strip()
-                if key not in seen_texts:
-                    seen_texts.add(key)
-                    symptoms.append(_entity_to_dict(ent, doc_bc5cdr))
+                if not _is_noise_entity(ent):
+                    all_candidates.append((ent, doc_bc5cdr))
         except Exception:
             logger.exception("BC5CDR model failed on input.")
 
-    # ── Pass 2: General sci model (broader biomedical concepts) ──
     if _sci_nlp is not None:
         try:
             doc_sci = _sci_nlp(text)
             for ent in doc_sci.ents:
-                key = ent.text.lower().strip()
-                if key not in seen_texts:
-                    seen_texts.add(key)
-                    symptoms.append(_entity_to_dict(ent, doc_sci))
-
-            # Try to annotate body parts from the sci model's parse
-            # (look for noun chunks that describe body anatomy)
-            body_anatomy_hints = {
-                "chest", "abdomen", "stomach", "back", "head", "throat",
-                "neck", "shoulder", "arm", "leg", "knee", "ankle", "foot",
-                "hand", "wrist", "elbow", "hip", "pelvis", "spine", "lung",
-                "heart", "liver", "kidney", "ear", "eye", "nose", "mouth",
-                "skin", "joint", "muscle", "bone",
-            }
-            for ent_dict in symptoms:
-                for part in body_anatomy_hints:
-                    if part in ent_dict["text"].lower():
-                        ent_dict["body_part"] = part
-                        break
+                if not _is_noise_entity(ent):
+                    all_candidates.append((ent, doc_sci))
         except Exception:
             logger.exception("SciSpaCy general model failed on input.")
+
+    # Sort by span length descending so longer, more specific spans are chosen first
+    all_candidates.sort(key=lambda x: -(x[0].end_char - x[0].start_char))
+
+    # ── Greedy non-overlapping span selection ─────────────────────────────────
+    covered_spans: list[tuple[int, int]] = []
+    seen_texts: set[str] = set()
+    symptoms: list[dict] = []
+
+    def _overlaps(start: int, end: int) -> bool:
+        """Return True if [start, end) overlaps with any already-accepted span."""
+        for cs, ce in covered_spans:
+            if not (end <= cs or start >= ce):  # intervals intersect
+                return True
+        return False
+
+    for ent, doc in all_candidates:
+        start, end = ent.start_char, ent.end_char
+        key = ent.text.lower().strip()
+        if key not in seen_texts and not _overlaps(start, end):
+            seen_texts.add(key)
+            covered_spans.append((start, end))
+            symptoms.append(_entity_to_dict(ent, doc))
+
+    # ── Annotate body parts ───────────────────────────────────────────────────
+    body_anatomy_hints = {
+        "chest", "abdomen", "stomach", "back", "head", "throat",
+        "neck", "shoulder", "arm", "leg", "knee", "ankle", "foot",
+        "hand", "wrist", "elbow", "hip", "pelvis", "spine", "lung",
+        "heart", "liver", "kidney", "ear", "eye", "nose", "mouth",
+        "skin", "joint", "muscle", "bone",
+    }
+    for ent_dict in symptoms:
+        for part in body_anatomy_hints:
+            if part in ent_dict["text"].lower():
+                ent_dict["body_part"] = part
+                break
 
     # Confidence heuristic: fraction of input words covered by extracted entities
     word_count = max(len(text.split()), 1)
@@ -294,12 +361,27 @@ def detect_disease_history(text: str) -> list[str]:
     if not text or not text.strip():
         return []
 
+    _HISTORY_STOP = {"the", "and", "for", "his", "her", "this", "that", "a", "an"}
+
     found: set[str] = set()
     for pattern in _HISTORY_PATTERNS:
         for match in pattern.finditer(text):
+            # group(1) is always just the disease name (prefix stripped by regex)
             entity = match.group(1).strip().lower()
-            # Filter out very short fragments (< 3 chars) or stop-words
-            if len(entity) >= 3 and entity not in {"the", "and", "for", "his", "her"}:
+
+            # If the has/have/had pattern captured "history of X", strip the prefix
+            for prefix in ("history of ", "known case of ", "chronic ",
+                           "diagnosis of ", "diagnosed with "):
+                if entity.startswith(prefix):
+                    entity = entity[len(prefix):].strip()
+
+            # Strip trailing filler words that regex sometimes captures
+            for filler in (" and", " or", " with", " the"):
+                if entity.endswith(filler):
+                    entity = entity[: -len(filler)].strip()
+
+            # Filter very short or stop-word-only fragments
+            if len(entity) >= 3 and entity not in _HISTORY_STOP:
                 found.add(entity)
 
     logger.debug("detect_disease_history: %s", found)
