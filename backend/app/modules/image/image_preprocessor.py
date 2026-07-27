@@ -1,7 +1,7 @@
 """
 backend/app/modules/image/image_preprocessor.py
 
-Image preprocessing pipeline for MediAssist AI.
+Image preprocessing pipeline for Aarogya AI.
 
 Exports:
   preprocess_for_model(image_bytes: bytes) -> np.ndarray

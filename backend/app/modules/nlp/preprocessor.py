@@ -1,7 +1,7 @@
 """
 backend/app/modules/nlp/preprocessor.py
 
-Medical NLP preprocessing pipeline for MediAssist AI.
+Medical NLP preprocessing pipeline for Aarogya AI.
 Uses two spaCy models in a cascade:
   1. en_ner_bc5cdr_md  — BC5CDR-trained model for DISEASE and CHEMICAL entities
   2. en_core_sci_sm    — General biomedical model for everything else
@@ -294,7 +294,7 @@ def _is_noise_entity(span) -> bool:
 
 
 def _entity_to_dict(span, doc) -> dict:
-    """Convert a spaCy entity span to the MediAssist symptom schema."""
+    """Convert a spaCy entity span to the Aarogya symptom schema."""
     token = span.root
     duration_str, duration_category = _extract_duration(span.sent.text)
     return {

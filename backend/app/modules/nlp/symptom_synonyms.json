@@ -1,7 +1,7 @@
 {
   "_meta": {
     "version": "1.0.0",
-    "description": "Symptom synonym dictionary for MediAssist AI. Maps colloquial/Hinglish terms to canonical medical concept names. Reviewed for clinical accuracy.",
+    "description": "Symptom synonym dictionary for Aarogya AI. Maps colloquial/Hinglish terms to canonical medical concept names. Reviewed for clinical accuracy.",
     "canonical_count": 120,
     "includes_hinglish": true
   },

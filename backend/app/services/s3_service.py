@@ -1,7 +1,7 @@
 """
 backend/app/services/s3_service.py
 
-AWS S3 service for MediAssist AI — handles all file storage:
+AWS S3 service for Aarogya AI — handles all file storage:
   - Medical image uploads (X-rays, body photos, prescriptions)
   - Presigned URL generation for direct frontend uploads
   - File downloads and deletions
