@@ -9,7 +9,7 @@ router = APIRouter(tags=["Doctors"])
 async def search_doctors() -> dict:
     """
     Find specialists near the user's location based on identified condition.
-    
+
     TODO (Module 5): Implement Google Places API + NMC registry lookup.
     """
     return {"status": "not implemented", "module": "Module 5 will implement this"}

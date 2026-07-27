@@ -1,18 +1,17 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
-import logging
 
-from app.api.routes import analyze, doctors, history, health, feedback
+from app.api.routes import analyze, doctors, feedback, health, history
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Aarogya AI",
-    version="1.0.0",
-    description="Backend API for Aarogya AI"
+    title="Aarogya AI", version="1.0.0", description="Backend API for Aarogya AI"
 )
 
 # CORS middleware for development
@@ -24,9 +23,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Aarogya AI started")
+
 
 # Register routers
 app.include_router(health.router, prefix="/api/v1")

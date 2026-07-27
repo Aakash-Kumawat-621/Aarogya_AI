@@ -67,6 +67,7 @@ _load_synonyms()
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+
 def normalize_symptom(text: str) -> dict:
     """
     Attempt to map *text* to a canonical symptom name.
@@ -91,7 +92,8 @@ def normalize_symptom(text: str) -> dict:
 
     # 2. Fuzzy match via rapidfuzz
     try:
-        from rapidfuzz import process as rf_process, fuzz
+        from rapidfuzz import fuzz
+        from rapidfuzz import process as rf_process
 
         # Build flat list of all synonyms for search
         all_synonyms = list(_synonym_to_canonical.keys())

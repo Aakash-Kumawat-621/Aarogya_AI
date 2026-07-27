@@ -1,17 +1,21 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from enum import Enum
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
+
 
 class SmokingStatus(str, Enum):
     never = "never"
     former = "former"
     current = "current"
 
+
 class ActivityLevel(str, Enum):
     sedentary = "sedentary"
     light = "light"
     moderate = "moderate"
     active = "active"
+
 
 class PatientProfile(BaseModel):
     # Demographics — required
@@ -39,10 +43,12 @@ class PatientProfile(BaseModel):
     # Family history
     family_history: Optional[List[str]] = []
 
+
 class LocationData(BaseModel):
     lat: float = Field(..., ge=-90, le=90)
     lng: float = Field(..., ge=-180, le=180)
     city: Optional[str] = None
+
 
 # AnalyzeRequest — at least one input required
 class AnalyzeRequest(BaseModel):

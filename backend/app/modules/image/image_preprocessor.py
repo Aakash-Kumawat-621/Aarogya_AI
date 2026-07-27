@@ -39,6 +39,7 @@ _TARGET_SIZE = (224, 224)
 
 # ── Internal helpers ─────────────────────────────────────────────────────────
 
+
 def _load_image(image_bytes: bytes) -> np.ndarray:
     """
     Load image bytes → RGB uint8 numpy array.
@@ -90,6 +91,7 @@ def _apply_clahe(image_rgb: np.ndarray) -> np.ndarray:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+
 def preprocess_for_model(image_bytes: bytes) -> np.ndarray:
     """
     Standard preprocessing pipeline for a model input.
@@ -114,7 +116,9 @@ def preprocess_for_model(image_bytes: bytes) -> np.ndarray:
     img_f32 = img_resized.astype(np.float32)
     result = _normalize(img_f32)
 
-    logger.debug("preprocess_for_model output shape=%s dtype=%s", result.shape, result.dtype)
+    logger.debug(
+        "preprocess_for_model output shape=%s dtype=%s", result.shape, result.dtype
+    )
     return result
 
 

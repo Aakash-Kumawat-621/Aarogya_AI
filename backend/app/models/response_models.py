@@ -1,12 +1,15 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from enum import Enum
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
+
 
 class SeverityLevel(str, Enum):
     low = "low"
     moderate = "moderate"
     urgent = "urgent"
     emergency = "emergency"
+
 
 class Diagnosis(BaseModel):
     condition_name: str
@@ -16,10 +19,12 @@ class Diagnosis(BaseModel):
     specialist_needed: str
     citations: List[str] = []
 
+
 class Urgency(BaseModel):
     level: SeverityLevel
     action_plan: List[str]
     call_emergency: bool
+
 
 class DoctorResult(BaseModel):
     name: str
@@ -29,6 +34,7 @@ class DoctorResult(BaseModel):
     distance_km: float
     phone: str
     address: str
+
 
 class AnalyzeResponse(BaseModel):
     session_id: str

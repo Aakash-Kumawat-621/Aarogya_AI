@@ -27,6 +27,7 @@ jobs:
         working-directory: backend
         run: |
           pip install --upgrade pip
+          pip install black isort pytest pytest-asyncio pytest-mock
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt
 
@@ -45,7 +46,7 @@ jobs:
           APP_ENV: test
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
-          AWS_REGION: ap-south-1
+          AWS_REGION: us-east-1
           PINECONE_API_KEY: test
           GOOGLE_PLACES_API_KEY: test
 
@@ -65,7 +66,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
+          aws-region: us-east-1
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -75,7 +76,7 @@ jobs:
         working-directory: backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: aarogya-ai
+          ECR_REPOSITORY: aarogya-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -86,10 +87,10 @@ jobs:
       - name: Update Lambda function with new image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: aarogya-ai
+          ECR_REPOSITORY: aarogya-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
           aws lambda update-function-code \
-            --function-name aarogya-ai-api \
+            --function-name aarogya-api \
             --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            --region ap-south-1
+            --region us-east-1

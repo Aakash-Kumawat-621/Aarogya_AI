@@ -56,8 +56,19 @@ def _load_models() -> None:
 
 _NEGATION_TOKENS = frozenset({"no", "not", "without", "denies", "never", "deny"})
 _UNCERTAINTY_TOKENS = frozenset(
-    {"possible", "possibly", "maybe", "might", "could", "suspected", "likely",
-     "probable", "probably", "questionable", "perhaps"}
+    {
+        "possible",
+        "possibly",
+        "maybe",
+        "might",
+        "could",
+        "suspected",
+        "likely",
+        "probable",
+        "probably",
+        "questionable",
+        "perhaps",
+    }
 )
 _SEVERITY_MAP = {
     "mild": "mild",
@@ -83,33 +94,96 @@ _DURATION_PATTERN = re.compile(
 
 # Disease history patterns — group(1) captures ONLY the disease name (not the prefix)
 _HISTORY_PATTERNS = [
-    re.compile(r"history\s+of\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
-    re.compile(r"diagnosed\s+with\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
-    re.compile(r"(?:has|have|had)\s+([a-z][a-z\s\-]{2,40}?)(?=\s+for\s+\d|\s*(?:and|,|\.|;|$))", re.IGNORECASE),
-    re.compile(r"known\s+case\s+of\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
-    re.compile(r"chronic\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE),
+    re.compile(
+        r"history\s+of\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE
+    ),
+    re.compile(
+        r"diagnosed\s+with\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"(?:has|have|had)\s+([a-z][a-z\s\-]{2,40}?)(?=\s+for\s+\d|\s*(?:and|,|\.|;|$))",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"known\s+case\s+of\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"chronic\s+([a-z][a-z\s\-]{2,40}?)(?=\s*(?:and|,|\.|;|$))", re.IGNORECASE
+    ),
 ]
 
 # Tokens that are commonly mis-tagged as entities — filtered out as noise
-_NOISE_TOKENS = frozenset({
-    # pronouns / articles
-    "i", "me", "my", "he", "she", "it", "we", "they", "you",
-    "the", "a", "an", "this", "that", "these", "those",
-    # duration words (picked up by sci model)
-    "day", "days", "week", "weeks", "month", "months", "year", "years",
-    "hour", "hours", "hr", "hrs",
-    # severity/modifier words that get tagged
-    "mild", "moderate", "severe", "severe pain", "excruciating",
-    "slight", "minor", "significant", "intense", "extreme",
-    # common words mistakenly tagged
-    "patient", "patients", "history", "case", "cases",
-    "symptoms", "symptom", "condition", "conditions",
-    "possible", "possibly", "maybe", "might", "could",
-    "chronic", "acute", "past", "since", "for",
-})
+_NOISE_TOKENS = frozenset(
+    {
+        # pronouns / articles
+        "i",
+        "me",
+        "my",
+        "he",
+        "she",
+        "it",
+        "we",
+        "they",
+        "you",
+        "the",
+        "a",
+        "an",
+        "this",
+        "that",
+        "these",
+        "those",
+        # duration words (picked up by sci model)
+        "day",
+        "days",
+        "week",
+        "weeks",
+        "month",
+        "months",
+        "year",
+        "years",
+        "hour",
+        "hours",
+        "hr",
+        "hrs",
+        # severity/modifier words that get tagged
+        "mild",
+        "moderate",
+        "severe",
+        "severe pain",
+        "excruciating",
+        "slight",
+        "minor",
+        "significant",
+        "intense",
+        "extreme",
+        # common words mistakenly tagged
+        "patient",
+        "patients",
+        "history",
+        "case",
+        "cases",
+        "symptoms",
+        "symptom",
+        "condition",
+        "conditions",
+        "possible",
+        "possibly",
+        "maybe",
+        "might",
+        "could",
+        "chronic",
+        "acute",
+        "past",
+        "since",
+        "for",
+    }
+)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
 
 def _is_negated(token, doc) -> bool:
     """
@@ -225,9 +299,9 @@ def _entity_to_dict(span, doc) -> dict:
     duration_str, duration_category = _extract_duration(span.sent.text)
     return {
         "text": span.text,
-        "canonical_form": span.text,   # overwritten by symptom_normalizer
+        "canonical_form": span.text,  # overwritten by symptom_normalizer
         "label": span.label_,
-        "body_part": None,             # filled by caller if BODY_PART detected
+        "body_part": None,  # filled by caller if BODY_PART detected
         "negated": _is_negated(token, doc),
         "uncertain": _is_uncertain(token, doc),
         "severity": _extract_severity(span, doc),
@@ -237,6 +311,7 @@ def _entity_to_dict(span, doc) -> dict:
 
 
 # ── Public API ───────────────────────────────────────────────────────────────
+
 
 def extract_symptoms(text: str) -> dict:
     """
@@ -314,11 +389,37 @@ def extract_symptoms(text: str) -> dict:
 
     # ── Annotate body parts ───────────────────────────────────────────────────
     body_anatomy_hints = {
-        "chest", "abdomen", "stomach", "back", "head", "throat",
-        "neck", "shoulder", "arm", "leg", "knee", "ankle", "foot",
-        "hand", "wrist", "elbow", "hip", "pelvis", "spine", "lung",
-        "heart", "liver", "kidney", "ear", "eye", "nose", "mouth",
-        "skin", "joint", "muscle", "bone",
+        "chest",
+        "abdomen",
+        "stomach",
+        "back",
+        "head",
+        "throat",
+        "neck",
+        "shoulder",
+        "arm",
+        "leg",
+        "knee",
+        "ankle",
+        "foot",
+        "hand",
+        "wrist",
+        "elbow",
+        "hip",
+        "pelvis",
+        "spine",
+        "lung",
+        "heart",
+        "liver",
+        "kidney",
+        "ear",
+        "eye",
+        "nose",
+        "mouth",
+        "skin",
+        "joint",
+        "muscle",
+        "bone",
     }
     for ent_dict in symptoms:
         for part in body_anatomy_hints:
@@ -370,10 +471,15 @@ def detect_disease_history(text: str) -> list[str]:
             entity = match.group(1).strip().lower()
 
             # If the has/have/had pattern captured "history of X", strip the prefix
-            for prefix in ("history of ", "known case of ", "chronic ",
-                           "diagnosis of ", "diagnosed with "):
+            for prefix in (
+                "history of ",
+                "known case of ",
+                "chronic ",
+                "diagnosis of ",
+                "diagnosed with ",
+            ):
                 if entity.startswith(prefix):
-                    entity = entity[len(prefix):].strip()
+                    entity = entity[len(prefix) :].strip()
 
             # Strip trailing filler words that regex sometimes captures
             for filler in (" and", " or", " with", " the"):

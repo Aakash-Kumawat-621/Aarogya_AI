@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # ── S3 client (created once per Lambda instance) ─────────────────────────────
 
+
 def _get_client():
     """Return a boto3 S3 client. Uses Lambda IAM role in production."""
     kwargs = {"region_name": settings.AWS_REGION}
@@ -47,6 +48,7 @@ def _client():
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
 
 def upload_file(
     file_bytes: bytes,
