@@ -29,6 +29,10 @@ RUN grep -vE "^torch==|^torchvision==" requirements.txt > /tmp/req_no_torch.txt 
         torchvision==0.18.1+cpu \
         -r /tmp/req_no_torch.txt
 
+# Download scispaCy models into the deps layer
+RUN pip install --no-cache-dir --target /build/deps \
+    https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_ner_bc5cdr_md-0.5.4.tar.gz \
+    https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_sm-0.5.4.tar.gz
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2 — Final Lambda image
 # ─────────────────────────────────────────────────────────────────────────────
