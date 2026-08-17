@@ -28,9 +28,8 @@ from typing import Generator
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-# Add backend to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from app.config import settings
+PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY", "")
+PINECONE_INDEX_NAME = os.environ.get("PINECONE_INDEX_NAME", "aarogya-index")
 
 # ---------------------------------------------------------------------------
 # Disease categories — extensible registry
@@ -235,8 +234,8 @@ def upsert_to_pinecone(chunks: list[dict], model, namespace: str):
     """Embeds chunks and upserts to Pinecone in batches of BATCH_SIZE."""
     from pinecone import Pinecone
 
-    pc = Pinecone(api_key=settings.PINECONE_API_KEY)
-    index = pc.Index(settings.PINECONE_INDEX_NAME)
+    pc = Pinecone(api_key=PINECONE_API_KEY)
+    index = pc.Index(PINECONE_INDEX_NAME)
 
     # Check existing IDs to enable incremental indexing
     try:
