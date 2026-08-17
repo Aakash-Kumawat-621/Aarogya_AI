@@ -12,7 +12,7 @@ Usage:
   python scripts/index_knowledge_base.py --source openfda
 
 Requirements (run on Kaggle GPU for speed):
-  pip install biopython datasets rank_bm25 sentence-transformers pinecone-client langchain requests
+  pip install biopython datasets rank_bm25 sentence-transformers pinecone langchain requests
 """
 
 import argparse
