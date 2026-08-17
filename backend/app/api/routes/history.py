@@ -1,19 +1,34 @@
-"""History route — session/analysis history endpoint (stub)."""
+import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+
+from app.services.dynamodb_service import get_session
 
 router = APIRouter(tags=["History"])
+logger = logging.getLogger(__name__)
 
 
-@router.get("/history/{user_id}")
-async def get_history(user_id: str) -> dict:
+@router.get("/history/{session_id}")
+async def get_session_history(session_id: str):
     """
-    Retrieve past analysis sessions for a user from DynamoDB.
+    Retrieves a past analysis session by session ID.
 
-    TODO (Module 5): Implement DynamoDB session retrieval.
+    Returns the saved PatientContext and DiagnosisResult from DynamoDB.
+    Session data is retained for 30 days (TTL).
     """
+    if not session_id or len(session_id) < 8:
+        raise HTTPException(status_code=400, detail="Invalid session_id")
+
+    session = get_session(session_id)
+    if not session:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Session '{session_id}' not found or has expired (30-day TTL)",
+        )
+
     return {
-        "status": "not implemented",
-        "module": "Module 5 will implement this",
-        "user_id": user_id,
+        "session_id": session_id,
+        "created_at": session.get("created_at"),
+        "context": session.get("context"),
+        "diagnosis": session.get("diagnosis"),
     }
