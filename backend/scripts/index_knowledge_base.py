@@ -275,7 +275,13 @@ def main():
     parser = argparse.ArgumentParser(description="Aarogya AI Knowledge Base Indexer")
     parser.add_argument("--source", choices=["pubmed", "openfda", "all"], default="all")
     parser.add_argument("--dry-run", action="store_true", help="Print chunk counts without indexing")
-    args = parser.parse_args()
+    
+    # Jupyter/Colab passes internal args like '-f kernel.json'. 
+    # If we detect this, we just use the default arguments.
+    if any(arg.startswith('-f') for arg in sys.argv):
+        args = parser.parse_args([])
+    else:
+        args = parser.parse_args()
 
     logger.info("Loading BioSentBERT model…")
     from sentence_transformers import SentenceTransformer
