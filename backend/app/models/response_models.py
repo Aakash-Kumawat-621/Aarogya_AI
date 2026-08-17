@@ -37,9 +37,26 @@ class DoctorResult(BaseModel):
 
 
 class AnalyzeResponse(BaseModel):
+    """
+    Response from POST /analyze.
+    In Module 2: returns PatientContext summary.
+    In Module 3+: will include full diagnosis, urgency, and doctor recommendations.
+    """
+
     session_id: str
-    diagnosis: Diagnosis
-    urgency: Urgency
+
+    # Module 2 context fields
+    context_built: bool = False
+    inputs_processed: List[str] = []
+    symptoms_extracted: int = 0
+    risk_flags: List[str] = []
+    context_confidence: float = 0.0
+    primary_concern: Optional[str] = None
+
+    # Module 3+ fields (optional until wired)
+    diagnosis: Optional[Diagnosis] = None
+    urgency: Optional[Urgency] = None
     recommendations: List[DoctorResult] = []
+
     disclaimer: str
     processing_time_ms: int
