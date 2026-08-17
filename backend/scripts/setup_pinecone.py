@@ -3,7 +3,7 @@ setup_pinecone.py
 ─────────────────
 Creates the Aarogya AI Pinecone index with:
   - Index name  : aarogya-index
-  - Dimensions  : 1024  (BioLORD / multilingual-e5-large output size)
+  - Dimensions  : 768  (BioSentBERT output size)
   - Metric      : cosine
   - Cloud       : aws
   - Region      : us-east-1  (Pinecone serverless free tier)
@@ -26,7 +26,7 @@ from app.config import settings
 from pinecone import Pinecone, ServerlessSpec
 
 INDEX_NAME  = settings.PINECONE_INDEX_NAME   # aarogya-index
-DIMENSION   = 1024
+DIMENSION   = 768
 METRIC      = "cosine"
 CLOUD       = "aws"
 REGION      = "us-east-1"
