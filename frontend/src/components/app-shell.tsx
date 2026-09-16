@@ -13,7 +13,6 @@ import {
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/ui/PageTransition";
@@ -83,7 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       ) : null}
 
-      <main className="min-h-screen pt-16 lg:ml-60 lg:pt-0"><AnimatePresence mode="wait"><PageTransition key={location.pathname}>{children}</PageTransition></AnimatePresence></main>
+      <main className="min-h-screen pt-16 lg:ml-60 lg:pt-0"><PageTransition key={location.pathname}>{children}</PageTransition></main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border bg-sidebar/95 p-2 backdrop-blur lg:hidden" aria-label="Mobile tab navigation">
         {navItems.slice(0, 3).concat(navItems[4]).map((item) => (

@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/ui/PageTransition";
@@ -41,7 +40,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
-      <AnimatePresence mode="wait"><PageTransition key={location.pathname}>{children}</PageTransition></AnimatePresence>
+      <PageTransition key={location.pathname}>{children}</PageTransition>
     </div>
   );
 }
