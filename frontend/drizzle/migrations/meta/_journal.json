@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789247273141,
+      "tag": "0000_create_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789533342685,
+      "tag": "0001_extend_profiles_for_health_details",
+      "breakpoints": true
+    }
+  ]
+}

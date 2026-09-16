@@ -1,0 +1,11 @@
+- [x] Add Cloud-backed profiles table and generated types
+- [x] Add auth-aware public pages and protected route layout
+- [x] Add Aarogya AI shell, placeholder pages, design tokens, and typed API client
+- [x] Verify the preview and build signals
+- [x] Add global cursor, motion, public navigation, toast, button/card interactions, and loading skeletons
+- [x] Verify global interactions across desktop and mobile previews
+- [x] Build and verify landing page Part 1: splash, hero, and horizontal how-it-works sequence
+- [x] Build and verify landing page Part 2: features, impact, stories, final CTA, and footer
+- [x] Build and verify polished Login and Sign Up pages with email/password and Google sign-in
+- [x] Verify protected-route session gate and successful auth redirects
+- [ ] Build and verify the authenticated dashboard, analysis wizard, and mock results flow
