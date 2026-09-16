@@ -44,7 +44,7 @@ function SignUpPage() {
 
   async function handleGoogle() {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const result = await supabase.auth.signInWithOAuth("google", { redirectTo: window.location.origin });
     if (result.error) { showToast(result.error.message, "error"); setLoading(false); }
   }
 
