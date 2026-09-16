@@ -40,7 +40,12 @@ function LoginPage() {
 
   async function handleGoogle() {
     setLoading(true);
-    const result = await supabase.auth.signInWithOAuth("google", { redirectTo: window.location.origin });
+    const result = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
     if (result.error) {
       showToast(result.error.message, "error");
       setLoading(false);
