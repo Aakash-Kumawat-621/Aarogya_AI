@@ -10,7 +10,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence } from "framer-motion";
@@ -69,13 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <LogOut className="size-4" />
             <span>Sign out</span>
           </Button>
-          <div className="mt-3 flex items-center gap-3 rounded-md bg-surface-2 px-3 py-3">
-            <div className="flex size-9 items-center justify-center rounded-full bg-teal-dim text-sm font-semibold text-teal">AK</div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">Aarogya user</p>
-              <p className="truncate text-xs text-muted-text">Personal health space</p>
-            </div>
-          </div>
+          <UserProfileDisplay />
         </div>
       </aside>
 
@@ -141,4 +135,39 @@ export function MetricPlaceholder({ label, value }: { label: string; value: stri
 
 export function AnalyticsPlaceholder() {
   return <BarChart3 className="size-5 text-teal" />;
+}
+
+function UserProfileDisplay() {
+  const [profile, setProfile] = useState({ name: "Aarogya user", initials: "U" });
+
+  useEffect(() => {
+    let active = true;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (active && data.user) {
+        const metaName = data.user.user_metadata?.["full_name"];
+        const email = data.user.email || "";
+        const displayName = metaName || email.split("@")[0] || "Aarogya user";
+        
+        let initials = "U";
+        if (metaName) {
+          initials = metaName.split(/\s+/).map((n: string) => n[0]).join("").substring(0, 2).toUpperCase();
+        } else if (email) {
+          initials = email.substring(0, 2).toUpperCase();
+        }
+        
+        setProfile({ name: displayName, initials });
+      }
+    });
+    return () => { active = false; };
+  }, []);
+
+  return (
+    <div className="mt-3 flex items-center gap-3 rounded-md bg-surface-2 px-3 py-3">
+      <div className="flex size-9 items-center justify-center rounded-full bg-teal-dim text-sm font-semibold text-teal">{profile.initials}</div>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">{profile.name}</p>
+        <p className="truncate text-xs text-muted-text">Personal health space</p>
+      </div>
+    </div>
+  );
 }

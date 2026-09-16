@@ -55,6 +55,17 @@ function LoginPage() {
     }
   }
 
+  // If we have an access_token in the URL hash, show a full screen loader instead of the login form
+  if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground">
+        <LoaderCircle className="mb-4 size-12 animate-spin text-teal" />
+        <h2 className="text-xl font-semibold">Authenticating...</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Setting up your secure session</p>
+      </div>
+    );
+  }
+
   return (
     <PublicLayout><main className="grid min-h-screen bg-background pt-20 md:grid-cols-2">
       <section className="auth-pattern relative hidden overflow-hidden bg-surface p-12 md:flex md:flex-col md:justify-between"><div className="flex items-center gap-3"><div className="flex size-11 items-center justify-center rounded-md bg-teal text-lg font-bold text-primary-foreground">A</div><span className="text-xl font-semibold">Aarogya AI</span></div><div className="relative max-w-lg"><HeartPulse className="mb-8 size-16 text-teal" strokeWidth={1.2} /><p className="text-4xl font-bold leading-tight">Thoughtful health guidance, whenever you need clarity.</p><p className="mt-5 text-muted-text">Private, focused, and designed around your next step.</p></div><p className="font-mono text-xs text-dim">CARE, CLARIFIED</p></section>
