@@ -47,7 +47,10 @@ function SignUpPage() {
     const result = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/dashboard`
+        redirectTo: `${window.location.origin}/login`,
+        queryParams: {
+          prompt: 'select_account'
+        }
       }
     });
     if (result.error) { showToast(result.error.message, "error"); setLoading(false); }
