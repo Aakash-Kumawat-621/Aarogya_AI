@@ -37,6 +37,7 @@ function ResultsPage() {
   const conditionName = resultData?.diagnosis?.condition_name || "Viral Fever";
   const confidence = resultData?.diagnosis?.confidence || 85;
   const urgencyLevel = resultData?.urgency?.level || "moderate";
+  const actionPlan = resultData?.urgency?.action_plan || ["Rest and drink plenty of fluids.", "Monitor your temperature and symptoms.", "Speak with a general physician if symptoms continue."];
   const explanation = resultData?.diagnosis?.explanation || "Your symptoms are most consistent with a viral infection that may be causing fever and fatigue. Most cases improve with rest, hydration, and careful monitoring, but a clinician can help confirm the cause and guide treatment.";
 
   return (
@@ -69,14 +70,14 @@ function ResultsPage() {
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <section className="rounded-lg border border-border bg-card p-6 sm:p-8" aria-labelledby="explanation-heading">
             <div className="flex items-center gap-3"><div className="flex size-9 items-center justify-center rounded-md bg-teal-dim text-teal"><Info className="size-4" /></div><h2 id="explanation-heading" className="text-xl font-semibold">What this may mean</h2></div>
-            <p className="mt-6 leading-7 text-muted-text">Your symptoms are most consistent with a viral infection that may be causing fever and fatigue. Most cases improve with rest, hydration, and careful monitoring, but a clinician can help confirm the cause and guide treatment.</p>
+            <p className="mt-6 leading-7 text-muted-text">{explanation}</p>
           </section>
           <section className="rounded-lg border border-border bg-card p-6 sm:p-8" aria-labelledby="action-heading">
             <h2 id="action-heading" className="text-xl font-semibold">Recommended next steps</h2>
             <ul className="mt-6 space-y-4 text-sm text-muted-text">
-              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-teal" />Rest and drink plenty of fluids.</li>
-              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-teal" />Monitor your temperature and symptoms.</li>
-              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-teal" />Speak with a general physician if symptoms continue.</li>
+              {actionPlan.map((step: string, idx: number) => (
+                <li key={idx} className="flex gap-3"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-teal" />{step}</li>
+              ))}
             </ul>
             <Button asChild className="btn-primary mt-7 w-full"><Link to="/doctors">Find Doctors <ArrowRight /></Link></Button>
           </section>
