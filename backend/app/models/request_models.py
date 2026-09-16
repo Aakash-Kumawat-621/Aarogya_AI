@@ -8,6 +8,26 @@ class SmokingStatus(str, Enum):
     never = "never"
     former = "former"
     current = "current"
+    # Extended options
+    occasional = "occasional"          # occasional → treated as current for ML
+    vaping = "vaping"                  # e-cig/vaping → treated as current for ML
+    passive = "passive"                # secondhand/passive → treated as never for ML
+    hookah = "hookah"                  # hookah/shisha → treated as current for ML
+    other = "other"                    # user-written → treated as never unless specified
+
+    def ml_category(self) -> str:
+        """Map to the 3 core ML categories: never / former / current."""
+        _map = {
+            "current": "current",
+            "occasional": "current",
+            "vaping": "current",
+            "hookah": "current",
+            "former": "former",
+            "never": "never",
+            "passive": "never",
+            "other": "never",
+        }
+        return _map.get(self.value, "never")
 
 
 class ActivityLevel(str, Enum):

@@ -1,0 +1,22 @@
+{
+  "best_epoch": 4,
+  "best_val_mean_auc": 0.7975153905954853,
+  "test_mean_auc": 0.7653063939925706,
+  "test_per_class_auc": {
+    "Atelectasis": 0.7309128374436368,
+    "Cardiomegaly": 0.8440333199551796,
+    "Consolidation": 0.7200311080111991,
+    "Edema": 0.8255637924820366,
+    "Effusion": 0.7933565673313606,
+    "Emphysema": 0.8874683791543496,
+    "Fibrosis": 0.7983279176357134,
+    "Hernia": 0.8294567565842853,
+    "Infiltration": 0.6745560913317519,
+    "Mass": 0.7335126424256755,
+    "No Finding": 0.7094884996139701,
+    "Nodule": 0.6885215702333435,
+    "Pleural_Thickening": 0.7385620830848071,
+    "Pneumonia": 0.6728466576076496,
+    "Pneumothorax": 0.832957686993602
+  },
+  "target_met": 

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     DYNAMODB_SESSIONS_TABLE: str = "aarogya-sessions"
     DYNAMODB_PROFILES_TABLE: str = "aarogya-profiles"
     DYNAMODB_HOSPITALS_TABLE: str = "aarogya-hospitals"
+    DYNAMODB_DOCTOR_CACHE_TABLE: str = "mediassist-doctor-cache"
 
     # ── S3 ───────────────────────────────────────────────
     S3_BUCKET_NAME: str = "aarogya-uploads"
@@ -39,7 +40,10 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     ALLOWED_ORIGIN: str = "http://localhost:3000"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    # ── Monitoring ───────────────────────────────────────
+    SENTRY_DSN: str = ""
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
     @property
     def is_local(self) -> bool:

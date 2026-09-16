@@ -119,11 +119,17 @@ def _query_namespace(
 def retrieve(query: str, top_k: int = 5) -> dict:
     """
     Main retrieval function. Searches medical-kb and drug-db namespaces.
-    Falls back to hybrid (dense + BM25) if top score < threshold.
+
+    Strategy:
+    - Dense retrieval: always fetch top_k results via BioSentBERT + Pinecone
+    - Hybrid fallback: if top dense score < threshold, fetch a LARGE candidate
+      pool (HYBRID_CANDIDATE_K=50) and then rerank with BM25 over the full pool.
+      This is true hybrid search — BM25 can surface rare disease chunks that
+      dense retrieval missed entirely.
 
     Args:
         query: The rich query string from query_builder.build_query()
-        top_k: Number of top chunks to return per namespace
+        top_k: Number of final chunks to return per namespace
 
     Returns:
         {
@@ -134,24 +140,36 @@ def retrieve(query: str, top_k: int = 5) -> dict:
           "query_embedding_time_ms": int
         }
     """
+    # Large candidate pool for BM25 reranking (true hybrid search)
+    HYBRID_CANDIDATE_K = 50
+
     t0 = time.time()
     query_vector = _embed(query)
     embed_ms = int((time.time() - t0) * 1000)
 
-    # Query both namespaces
+    # Always fetch standard results for dense retrieval path
     medical_matches = _query_namespace(query_vector, "medical-kb", top_k)
     drug_matches = _query_namespace(query_vector, "drug-db", 3)
 
     top_score = medical_matches[0]["score"] if medical_matches else 0.0
     retrieval_method = "dense"
 
-    # Hybrid fallback for rare conditions
-    if top_score < settings.PINECONE_HYBRID_THRESHOLD and medical_matches:
+    # Hybrid fallback: fetch large pool and rerank with BM25
+    # This surfaces rare diseases missed by dense retrieval
+    if top_score < settings.PINECONE_HYBRID_THRESHOLD:
         logger.info(
-            f"Low dense score ({top_score:.3f}) — applying BM25 re-rank"
+            f"Low dense score ({top_score:.3f} < {settings.PINECONE_HYBRID_THRESHOLD}) "
+            f"— fetching {HYBRID_CANDIDATE_K} candidates for BM25 reranking"
         )
-        medical_matches = _bm25_rerank(query, medical_matches, top_k)
-        retrieval_method = "hybrid"
+        # Fetch a much larger pool from Pinecone
+        candidate_matches = _query_namespace(query_vector, "medical-kb", HYBRID_CANDIDATE_K)
+        if candidate_matches:
+            # BM25 rerank over the FULL candidate pool → return best top_k
+            medical_matches = _bm25_rerank(query, candidate_matches, top_k)
+            retrieval_method = "hybrid"
+            logger.info(
+                f"BM25 reranked {len(candidate_matches)} candidates → top {len(medical_matches)} chunks"
+            )
 
     # Format medical chunks
     medical_chunks = [

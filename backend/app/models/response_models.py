@@ -32,8 +32,16 @@ class DoctorResult(BaseModel):
     hospital: str
     rating: float = Field(..., ge=0.0, le=5.0)
     distance_km: float
-    phone: str
-    address: str
+    phone: str = ""
+    address: str = ""
+
+    # Google Places enrichment (optional)
+    google_place_id: Optional[str] = None
+    is_open_now: Optional[bool] = None
+    source: str = "fallback"        # "google_places" | "nmc_registry" | "fallback"
+
+    # Internal scoring — not serialized
+    _score: float = 0.0
 
 
 class AnalyzeResponse(BaseModel):

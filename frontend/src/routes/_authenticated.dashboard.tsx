@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, ClipboardList, HeartPulse, Stethoscope } from "lucide-react";
 
-import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -34,7 +33,7 @@ function DashboardPage() {
   }, []);
 
   return (
-    <AppShell>
+    <>
       <main className="mx-auto w-full max-w-6xl px-6 py-10 lg:px-10 lg:py-14">
         <header className="mb-10">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-teal">Personal health space</p>
@@ -71,7 +70,7 @@ function DashboardPage() {
           </div>
         </section>
       </main>
-    </AppShell>
+    </>
   );
 }
 

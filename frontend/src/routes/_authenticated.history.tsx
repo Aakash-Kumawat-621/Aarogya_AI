@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, ClipboardList } from "lucide-react";
 
-import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/history")({
@@ -24,7 +23,7 @@ const assessments = [
 
 function HistoryPage() {
   return (
-    <AppShell>
+    <>
       <div className="mx-auto w-full max-w-5xl px-6 py-10 lg:px-10 lg:py-14">
         <header className="mb-10"><p className="font-mono text-xs uppercase tracking-[0.2em] text-teal">Your activity</p><h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Health history</h1><p className="mt-3 max-w-2xl text-muted-text">Revisit your past assessments and keep your next conversation with a clinician focused.</p></header>
         <section aria-labelledby="assessments-heading"><div className="flex items-center justify-between"><h2 id="assessments-heading" className="text-xl font-semibold">Past assessments</h2><span className="font-mono text-xs text-muted-text">{assessments.length} records</span></div>
@@ -32,6 +31,6 @@ function HistoryPage() {
         </section>
         <div className="mt-8 rounded-lg border border-dashed border-border bg-card/50 p-6 text-center"><p className="text-sm text-muted-text">Want to add a new assessment?</p><Button asChild className="btn-primary mt-4"><Link to="/analyze">Start an assessment <ArrowRight /></Link></Button></div>
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -93,23 +93,106 @@ OUTPUT FORMAT — return exactly this JSON schema (no other text):
 def _build_prompt(
     context: PatientContext,
     retrieved: dict,
+    ml_predictions: dict = None,
 ) -> str:
     """
-    Assembles the user-turn message combining patient context + retrieved chunks.
+    Assembles the user-turn message combining patient context + retrieved chunks + ML predictions.
+    Includes full patient demographics, comorbidities, and all top-3 ML candidates.
     """
-    # Patient summary
     profile = context.patient_profile
     active_symptoms = [s for s in context.symptom_entities if not s.negated]
-    symptom_list = ", ".join(s.canonical_form or s.name for s in active_symptoms) or "none reported"
+    negated_symptoms = [s for s in context.symptom_entities if s.negated]
 
-    patient_summary = (
-        f"Patient: {profile.age}-year-old {getattr(profile, 'gender', 'patient') or 'patient'}\n"
-        f"Symptoms: {symptom_list}\n"
-        f"Risk flags: {', '.join(context.risk_flags) or 'none'}\n"
-        f"Known conditions: {', '.join(getattr(profile, 'conditions', None) or []) or 'none'}\n"
-        f"Smoking: {getattr(profile, 'smoking', 'unknown') or 'unknown'}\n"
-        f"Context confidence: {context.context_confidence:.2f}"
+    # Build detailed symptom description including severity and duration
+    symptom_details = []
+    for s in active_symptoms:
+        detail = s.canonical_form or s.name
+        extras = []
+        if getattr(s, "severity", None):
+            extras.append(s.severity)
+        if getattr(s, "duration", None):
+            extras.append(f"for {s.duration}")
+        if getattr(s, "duration_category", None):
+            extras.append(f"({s.duration_category})")
+        if extras:
+            detail += f" [{', '.join(extras)}]"
+        symptom_details.append(detail)
+    symptom_list = ", ".join(symptom_details) or "none reported"
+    negated_list = ", ".join(s.name for s in negated_symptoms) or "none"
+
+    # Build full patient profile section
+    age = getattr(profile, "age", "unknown")
+    gender = getattr(profile, "gender", "patient") or "patient"
+    smoking = getattr(profile, "smoking", "unknown") or "unknown"
+    pack_years = getattr(profile, "pack_years", None)
+    alcohol = getattr(profile, "alcohol_units_per_week", None)
+    activity = getattr(profile, "activity_level", None)
+    sleep = getattr(profile, "sleep_hours", None)
+    conditions = getattr(profile, "conditions", None) or []
+    medications = getattr(profile, "medications", None) or []
+    allergies = getattr(profile, "allergies", None) or []
+    family_hx = getattr(profile, "family_history", None) or []
+
+    # BMI calculation
+    height = getattr(profile, "height_cm", None)
+    weight = getattr(profile, "weight_kg", None)
+    bmi_str = "unknown"
+    if height and weight and height > 0:
+        bmi = weight / ((height / 100) ** 2)
+        bmi_str = f"{bmi:.1f}"
+
+    patient_section = (
+        f"PATIENT PROFILE:\n"
+        f"  Age: {age} | Gender: {gender} | BMI: {bmi_str}\n"
+        f"  Smoking: {smoking}" + (f" ({pack_years} pack-years)" if pack_years else "") + "\n"
+        f"  Alcohol: {f'{alcohol} units/week' if alcohol is not None else 'unknown'}\n"
+        f"  Activity level: {activity or 'unknown'} | Sleep: {f'{sleep}h/night' if sleep else 'unknown'}\n"
+        f"  Known conditions: {', '.join(conditions) or 'none'}\n"
+        f"  Medications: {', '.join(medications) or 'none'}\n"
+        f"  Allergies: {', '.join(allergies) or 'none'}\n"
+        f"  Family history: {', '.join(family_hx) or 'none'}\n"
+        f"  Risk flags: {', '.join(context.risk_flags) or 'none'}\n"
     )
+
+    symptom_section = (
+        f"SYMPTOMS REPORTED:\n"
+        f"  Active: {symptom_list}\n"
+        f"  Denied: {negated_list}\n"
+    )
+
+    # ML predictions section — include all top-3 with probabilities
+    ml_section = ""
+    if ml_predictions:
+        top3 = ml_predictions.get("xgb_top3", [])
+        xgb_summary = ""
+        if top3:
+            xgb_summary = "  XGBoost disease candidates:\n"
+            for i, pred in enumerate(top3, 1):
+                disease = pred.get("disease", "Unknown")
+                prob = pred.get("probability", 0.0)
+                xgb_summary += f"    {i}. {disease} (probability: {prob:.1%})\n"
+        else:
+            xgb_summary = "  XGBoost: no predictions available\n"
+
+        urgency = ml_predictions.get("urgency_level", "N/A")
+        xray = ml_predictions.get("xray_top_condition")
+
+        # Ensemble signal: check if XGBoost top-1 and retrieved KB both suggest same condition
+        xgb_top = (top3[0]["disease"] if top3 else "").lower()
+        rag_categories = [
+            c.get("disease_category", "").lower()
+            for c in retrieved.get("medical_chunks", [])
+        ]
+        ensemble_agreement = any(xgb_top in cat for cat in rag_categories if cat)
+
+        ml_section = (
+            f"MACHINE LEARNING PREDICTIONS:\n"
+            f"{xgb_summary}"
+            f"  Computed urgency (LightGBM/rule-based): {urgency}\n"
+            + (f"  X-ray model finding: {xray}\n" if xray else "")
+            + (f"  ⚡ Ensemble signal: XGBoost and retrieved KB both suggest similar condition — higher confidence warranted.\n"
+               if ensemble_agreement else "")
+        )
 
     # Format retrieved medical chunks
     medical_text = ""
@@ -117,8 +200,9 @@ def _build_prompt(
         pmid = chunk.get("pmid", "N/A")
         source = chunk.get("source", "unknown")
         category = chunk.get("disease_category", "")
+        score = chunk.get("score", 0.0)
         medical_text += (
-            f"\n[{i}] PMID:{pmid} | Source:{source} | Category:{category}\n"
+            f"\n[{i}] PMID:{pmid} | Source:{source} | Category:{category} | Relevance:{score:.3f}\n"
             f"{chunk.get('text', '')}\n"
         )
 
@@ -129,10 +213,15 @@ def _build_prompt(
         drug_text += f"\nDrug: {drug_name}\n{chunk.get('text', '')}\n"
 
     return (
-        f"PATIENT CONTEXT:\n{patient_summary}\n\n"
+        f"{patient_section}\n"
+        f"{symptom_section}\n"
+        f"{ml_section}\n"
         f"RETRIEVED MEDICAL KNOWLEDGE:{medical_text or ' (no relevant chunks found)'}\n\n"
         f"DRUG DATABASE:{drug_text or ' (no relevant drug info found)'}\n\n"
-        "Based ONLY on the above, provide your structured health information response."
+        "Based ONLY on the above evidence, provide your structured health information response. "
+        "Incorporate the ML predictions where they are clinically reasonable given the patient context. "
+        "Pay particular attention to the patient's age, comorbidities, medications, and risk flags when "
+        "assessing severity and specialist recommendation."
     )
 
 
@@ -166,7 +255,7 @@ def _call_bedrock(prompt: str, max_retries: int = 3) -> str:
             code = e.response["Error"]["Code"]
             if code == "ThrottlingException" and attempt < max_retries - 1:
                 wait = 2 ** attempt
-                logger.warning(f"Bedrock throttled — retrying in {wait}s")
+                logger.warning(f"Bedrock throttled - retrying in {wait}s")
                 time.sleep(wait)
             else:
                 raise
@@ -195,7 +284,7 @@ def _parse_response(text: str, context: PatientContext) -> DiagnosisResult:
             specialist_needed="General Physician",
         )
 
-    # Safety override: if cardiac_risk_critical + chest pain → always emergency
+    # Safety override: if cardiac_risk_critical + chest pain +' always emergency
     active = {s.canonical_form or s.name for s in context.symptom_entities if not s.negated}
     cardiac_symptoms = {"chest pain", "palpitations", "shortness of breath"}
     if "cardiac_risk_critical" in context.risk_flags and active & cardiac_symptoms:
@@ -218,7 +307,7 @@ def _parse_response(text: str, context: PatientContext) -> DiagnosisResult:
 # Public API
 # ---------------------------------------------------------------------------
 
-def run(context: PatientContext) -> DiagnosisResult:
+def run(context: PatientContext, ml_predictions: dict = None) -> DiagnosisResult:
     """
     Executes the full RAG chain for a given PatientContext.
 
@@ -231,6 +320,7 @@ def run(context: PatientContext) -> DiagnosisResult:
 
     Args:
         context: Fully assembled PatientContext from patient_context.py
+        ml_predictions: Optional dict containing XGBoost/LightGBM outputs
 
     Returns:
         DiagnosisResult with condition, confidence, severity, specialist
@@ -245,7 +335,7 @@ def run(context: PatientContext) -> DiagnosisResult:
     retrieved = retriever.retrieve(query, top_k=5)
 
     # 3. Build prompt
-    prompt = _build_prompt(context, retrieved)
+    prompt = _build_prompt(context, retrieved, ml_predictions)
 
     # 4. Call Bedrock
     raw_response = _call_bedrock(prompt)

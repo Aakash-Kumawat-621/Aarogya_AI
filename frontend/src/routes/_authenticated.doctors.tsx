@@ -4,7 +4,6 @@ import { ArrowRight, LocateFixed, MapPin, Search, Stethoscope } from "lucide-rea
 
 import { searchDoctors } from "@/api/mediassist";
 import type { DoctorResult } from "@/types/api.types";
-import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/Toast";
@@ -60,7 +59,7 @@ function DoctorFinderPage() {
   }
 
   return (
-    <AppShell>
+    <>
       <div className="mx-auto w-full max-w-7xl px-6 py-10 lg:px-10 lg:py-14">
         <header className="mb-8">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-teal">Care network</p>
@@ -99,7 +98,7 @@ function DoctorFinderPage() {
           </section>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
 

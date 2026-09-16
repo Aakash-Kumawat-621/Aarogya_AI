@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya AI Test Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00C9A7;
+            --primary-dark: #00A98E;
+            --bg: #0E1117;
+            --surface: #161B22;
+            --surface-alt: #1C2230;
+            --border: #2E3D55;
+            --text: #E6EDF3;
+            --text-muted: #8B949E;
+            
+            --urgency-emergency: #FF4D4D;
+            --urgency-urgent: #FF9900;
+            --urgency-moderate: #FFD600;
+            --urgency-low: #00C9A7;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            background-color: var(--surface-alt);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary);
+            color: #000;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        button:disabled {
+            background-color: var(--border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .placeholder-text {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 40px 0;
+            font-style: italic;
+        }
+        
+        .result-section {
+            background-color: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .result-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .urgency-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        .urgency-EMERGENCY { background-color: rgba(255, 77, 77, 0.15); color: var(--urgency-emergency); border: 1px solid var(--urgency-emergency); }
+        .urgency-URGENT { background-color: rgba(255, 153, 0, 0.15); color: var(--urgency-urgent); border: 1px solid var(--urgency-urgent); }
+        .urgency-MODERATE { background-color: rgba(255, 214, 0, 0.15); color: var(--urgency-moderate); border: 1px solid var(--urgency-moderate); }
+        .urgency-LOW { background-color: rgba(0, 201, 167, 0.15); color: var(--urgency-low); border: 1px solid var(--urgency-low); }
+
+        .condition-item {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .condition-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .condition-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 4px;
+        }
+        
+        .condition-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #A5D6FF;
+        }
+        
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 6px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .loader {
+            display: none;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Input Form -->
+        <div class="card">
+            <h2>🩺 Patient Input</h2>
+            
+            <form id="analyze-form">
+                <div class="form-group">
+                    <label>Symptoms</label>
+                    <textarea id="symptoms" placeholder="e.g. Chest pain, left arm pain, sweating" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" id="age" value="35" min="1" max="120" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Smoking Status</label>
+                    <select id="smoking">
+                        <option value="never">Never Smoked</option>
+                        <option value="current">Current Smoker</option>
+                        <option value="former">Former Smoker</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Known Conditions (comma separated)</label>
+                    <input type="text" id="conditions" placeholder="e.g. diabetes, asthma">
+                </div>
+                
+                <button type="submit" id="submit-btn">
+                    <span id="btn-text">Analyze Symptoms</span>
+                    <div class="loader" id="btn-loader"></div>
+                </button>
+            </form>
+        </div>
+
+        <!-- Output Display -->
+        <div class="card results" id="results-container">
+            <h2>📊 Analysis Results</h2>
+            <div class="placeholder-text" id="placeholder">
+                Enter symptoms on the left to see the AI analysis here.
+            </div>
+            
+            <div id="output-content" style="display: none;">
+                
+                <div class="result-section">
+                    <div class="result-title">Triage Urgency</div>
+                    <div id="urgency-badge" class="urgency-badge">UNKNOWN</div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-title">Primary Concern</div>
+                    <div id="primary-concern" style="font-size: 18px; font-weight: 600;"></div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-title">Action Plan</div>
+                    <ul id="action-plan"></ul>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-title">Possible Conditions (RAG/Bedrock output)</div>
+                    <div id="conditions-list"></div>
+                </div>
+                
+                <div style="font-size: 11px; color: var(--text-muted); text-align: right; margin-top: 8px;">
+                    Processing time: <span id="time-ms"></span>ms
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('analyze-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnLoader = document.getElementById('btn-loader');
+            const outputContent = document.getElementById('output-content');
+            const placeholder = document.getElementById('placeholder');
+            
+            // Get form values
+            const symptomsText = document.getElementById('symptoms').value;
+            const age = parseInt(document.getElementById('age').value);
+            const gender = document.getElementById('gender').value;
+            const smoking = document.getElementById('smoking').value;
+            const conditionsRaw = document.getElementById('conditions').value;
+            const conditions = conditionsRaw ? conditionsRaw.split(',').map(c => c.trim()) : [];
+            
+            // Prepare payload as FormData for multipart/form-data
+            const payload = new FormData();
+            payload.append('symptoms_text', symptomsText);
+            payload.append('patient', JSON.stringify({
+                name: "Test Patient",
+                age: age,
+                gender: gender.toLowerCase(),
+                smoking: smoking,
+                conditions: conditions
+            }));
+
+            // UI State - Loading
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'block';
+            outputContent.style.display = 'none';
+            placeholder.style.display = 'block';
+            placeholder.textContent = 'Calling API (NLP -> ML -> Pinecone -> Bedrock)... This may take 5-15 seconds.';
+
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/analyze', {
+                    method: 'POST',
+                    body: payload
+                });
+                
+                if (!response.ok) {
+                    let errorDetail = response.statusText;
+                    try {
+                        const errJson = await response.json();
+                        if (errJson.detail) {
+                            if (Array.isArray(errJson.detail)) {
+                                errorDetail = errJson.detail.map(e => `${e.loc.join('.')}: ${e.msg}`).join(', ');
+                            } else {
+                                errorDetail = errJson.detail;
+                            }
+                        }
+                    } catch (e) {
+                        // ignore json parse errors
+                    }
+                    throw new Error(`API returned ${response.status}: ${errorDetail}`);
+                }
+                
+                const data = await response.json();
+                
+                // Populate results
+                const urgency = data.urgency?.level?.toUpperCase() || 'UNKNOWN';
+                const badge = document.getElementById('urgency-badge');
+                badge.className = `urgency-badge urgency-${urgency}`;
+                badge.textContent = urgency;
+                
+                document.getElementById('primary-concern').textContent = data.primary_concern || 'Unknown';
+                
+                // Action Plan
+                const actionPlanList = document.getElementById('action-plan');
+                actionPlanList.innerHTML = '';
+                const actions = data.urgency?.action_plan || [];
+                actions.forEach(action => {
+                    const li = document.createElement('li');
+                    li.textContent = action;
+                    actionPlanList.appendChild(li);
+                });
+                
+                // Conditions List
+                const condList = document.getElementById('conditions-list');
+                condList.innerHTML = '';
+                const possible = data.analysis?.possible_conditions || [];
+                possible.forEach(cond => {
+                    const div = document.createElement('div');
+                    div.className = 'condition-item';
+                    div.innerHTML = `
+                        <div class="condition-name">${cond.condition || 'Unknown'}</div>
+                        <div class="condition-desc">${cond.explanation || ''}</div>
+                    `;
+                    condList.appendChild(div);
+                });
+                
+                document.getElementById('time-ms').textContent = data.processing_time_ms || '?';
+
+                // UI State - Success
+                placeholder.style.display = 'none';
+                outputContent.style.display = 'block';
+                
+            } catch (error) {
+                placeholder.textContent = `Error: ${error.message}`;
+                placeholder.style.color = 'var(--urgency-emergency)';
+            } finally {
+                // UI State - Reset
+                btn.disabled = false;
+                btnText.style.display = 'block';
+                btnLoader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -11,15 +11,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /build
 
-# Install gcc/g++ and development headers for compilation
-RUN yum install -y gcc gcc-c++ make cmake && yum clean all
+# Install system libraries:
+#   - gcc/g++ for compilation
+#   - mesa-libGL for opencv-python (libGL.so.1 dependency)
+RUN yum install -y gcc gcc-c++ make cmake mesa-libGL mesa-libGL-devel && yum clean all
 
 COPY requirements.txt .
 
 RUN pip install --upgrade pip
 
 # Install dependencies using --prefer-binary so pip prefers pre-compiled wheels
-# over building from source for packages like numkong/lightgbm/albucore
+# over building from source for packages like numpy/lightgbm/albucore
 RUN grep -vE "^torch==|^torchvision==" requirements.txt > /tmp/req_no_torch.txt && \
     pip install \
         --target /build/deps \
@@ -43,6 +45,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/var/task
 
 WORKDIR /var/task
+
+# Install libGL.so.1 — required by opencv-python-headless at runtime
+RUN yum install -y mesa-libGL && yum clean all
 
 COPY --from=builder /build/deps ./
 COPY app/ ./app/

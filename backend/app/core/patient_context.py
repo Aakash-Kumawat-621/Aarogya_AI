@@ -54,12 +54,17 @@ async def _process_symptoms(text: str):
     """Extract and normalize symptoms from free text (runs NLP in thread pool)."""
     try:
         # Wrap CPU-bound tasks so they don't block the event loop
-        entities = await asyncio.to_thread(extract_symptoms, text)
-        normalized = await asyncio.to_thread(normalize_all, entities)
-        return normalized
+        result = await asyncio.to_thread(extract_symptoms, text)
+        if isinstance(result, dict) and "extracted_symptoms" in result:
+            normalized = await asyncio.to_thread(normalize_all, result["extracted_symptoms"])
+            result["extracted_symptoms"] = normalized
+            return result
+        else:
+            # Fallback for old tuple return type or unexpected result
+            return {"extracted_symptoms": [], "disease_history_mentions": [], "raw_text": text, "confidence": 0.0}
     except Exception as e:
         logger.error(f"Error processing symptoms: {e}")
-        return []
+        return {"extracted_symptoms": [], "disease_history_mentions": [], "raw_text": text, "confidence": 0.0}
 
 
 async def _process_xray(image_bytes: bytes):
@@ -127,16 +132,20 @@ async def build_patient_context(
     result_map = dict(zip(active_keys, results))
 
     # Parse symptom entities
-    raw_symptoms = result_map.get("symptoms") or []
-    if isinstance(raw_symptoms, Exception):
-        raw_symptoms = []
+    symptoms_result = result_map.get("symptoms") or {}
+    if isinstance(symptoms_result, Exception):
+        symptoms_result = {}
+
+    raw_symptoms = symptoms_result.get("extracted_symptoms", [])
+    disease_history_mentions = symptoms_result.get("disease_history_mentions", [])
+    nlp_confidence = symptoms_result.get("confidence", 0.0)
 
     symptom_objs = []
     for e in raw_symptoms:
         if isinstance(e, dict):
             symptom_objs.append(
                 SymptomEntity(
-                    name=e.get("entity", e.get("name", "")),
+                    name=e.get("entity", e.get("name", e.get("text", ""))),
                     canonical_form=e.get("canonical_form"),
                     negated=e.get("negated", False),
                     duration=e.get("duration"),

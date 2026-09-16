@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya AI — Diagnostic Conversation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00C9A7;
+            --primary-dark: #00A98E;
+            --bg: #0E1117;
+            --surface: #161B22;
+            --surface-alt: #1C2230;
+            --border: #2E3D55;
+            --text: #E6EDF3;
+            --text-muted: #8B949E;
+            --emergency: #FF4D4D;
+            --urgent: #FF9900;
+            --moderate: #FFD600;
+            --low: #00C9A7;
+            --ai-bubble: #1C2B3A;
+            --user-bubble: #0d3b2e;
+            --file-bg: #12293d;
+            --file-border: #1d4a6b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+        }
+        .page-title { color: var(--primary); font-size: 1.6rem; margin-bottom: 4px; text-align: center; }
+        .page-sub { color: var(--text-muted); font-size: 0.83rem; margin-bottom: 22px; text-align: center; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 1120px;
+        }
+        @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+
+        /* ── Form panel ── */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            align-self: start;
+        }
+        .panel h2 { font-size: 0.9rem; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+        .section-divider {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--text-muted);
+            margin: 16px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-divider.collapsible {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            user-select: none;
+            transition: color 0.15s;
+        }
+        .section-divider.collapsible:hover { color: var(--primary); }
+        .chevron {
+            margin-left: auto;
+            font-size: 0.65rem;
+            transition: transform 0.2s;
+            color: var(--text-muted);
+        }
+        .chevron.open { transform: rotate(90deg); }
+        label {
+            display: block;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            margin-top: 10px;
+        }
+        label .opt { color: #4B5563; font-size: 0.68rem; margin-left: 4px; }
+        input[type="text"], input[type="number"], input[type="email"],
+        select, textarea {
+            width: 100%;
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 8px 10px;
+            font-size: 0.83rem;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+        textarea { min-height: 75px; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        /* Smoking options */
+        .smoking-select-row { display: flex; gap: 6px; }
+        .smoking-select-row select { flex: 1; }
+        #smokingOtherWrap { margin-top: 6px; display: none; }
+        #smokingOtherWrap input { border-color: var(--primary); }
+
+        /* File upload fields */
+        .file-field {
+            background: var(--file-bg);
+            border: 1px dashed var(--file-border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .file-field:hover { border-color: var(--primary); }
+        .file-field input[type="file"] { display: none; }
+        .file-field label {
+            cursor: pointer;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .file-field label .icon { font-size: 1.1rem; }
+        .file-field .file-name {
+            font-size: 0.75rem;
+            color: var(--primary);
+            margin-top: 4px;
+            display: none;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            margin-top: 14px;
+            width: 100%;
+            background: var(--primary);
+            color: #0a1a14;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-secondary {
+            margin-top: 6px;
+            width: 100%;
+            background: var(--surface-alt);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color 0.15s;
+        }
+        .btn-secondary:hover { border-color: var(--primary); }
+        #sessionInfo { margin-top: 10px; font-size: 0.72rem; color: var(--text-muted); }
+
+        /* ── Chat panel ── */
+        .chat-panel {
+            display: flex;
+            flex-direction: column;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 580px;
+        }
+        .chat-header {
+            background: var(--surface-alt);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-header .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); }
+        .chat-header .title { font-size: 0.88rem; font-weight: 600; }
+        .turn-badge {
+            margin-left: auto;
+            background: var(--border);
+            border-radius: 12px;
+            padding: 2px 10px;
+            font-size: 0.73rem;
+            color: var(--text-muted);
+        }
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-empty {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            text-align: center;
+            padding: 20px;
+        }
+        .bubble {
+            max-width: 88%;
+            border-radius: 14px;
+            padding: 11px 14px;
+            font-size: 0.83rem;
+            line-height: 1.55;
+        }
+        .bubble.ai { background: var(--ai-bubble); border: 1px solid var(--border); align-self: flex-start; }
+        .bubble.user { background: var(--user-bubble); border: 1px solid #1a5c42; align-self: flex-end; }
+        .bubble .lbl { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+        .bubble.ai .lbl { color: var(--primary); }
+        .bubble.user .lbl { color: #4ade80; }
+
+        /* Questions */
+        .question-block { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 9px; padding: 12px; margin-top: 8px; }
+        .q-text { font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; }
+        .options { display: flex; flex-direction: column; gap: 5px; }
+        .option-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 7px 11px;
+            font-size: 0.8rem;
+            text-align: left;
+            cursor: pointer;
+            color: var(--text);
+            transition: all 0.14s;
+            width: 100%;
+            font-family: inherit;
+            margin-top: 0;
+        }
+        .option-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .option-btn.selected { border-color: var(--primary); background: #0d3b2e; color: var(--primary); }
+        .yn-buttons { display: flex; gap: 7px; }
+        .yn-btn {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 7px;
+            cursor: pointer;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.8rem;
+            transition: all 0.14s;
+            margin-top: 0;
+        }
+        .yn-btn:hover { border-color: var(--primary); }
+        .yn-btn.selected { border-color: var(--primary); background: #0d3b2e; color: var(--primary); }
+
+        /* Self-exam */
+        .exam-card { background: var(--file-bg); border: 1px solid var(--file-border); border-radius: 9px; padding: 13px; margin-top: 8px; }
+        .exam-title { font-weight: 600; font-size: 0.85rem; color: #60c4f5; margin-bottom: 3px; }
+        .exam-why { font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px; }
+        .exam-steps { font-size: 0.78rem; line-height: 1.65; counter-reset: step; padding-left: 0; list-style: none; }
+        .exam-steps li { counter-increment: step; padding-left: 1.7em; position: relative; margin-bottom: 3px; }
+        .exam-steps li::before { content: counter(step)"."; position: absolute; left: 0; color: var(--primary); font-weight: 600; }
+        .exam-input-row { margin-top: 9px; display: flex; gap: 7px; align-items: center; }
+        .exam-input-row input, .exam-input-row select { flex: 1; padding: 6px 9px; font-size: 0.8rem; }
+        .exam-unit { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+        .normal-range { font-size: 0.73rem; color: #4ade80; margin-top: 4px; }
+        .submit-answers-btn {
+            background: var(--primary); color: #0a1a14; border: none;
+            border-radius: 8px; padding: 10px 18px; font-weight: 700;
+            font-size: 0.85rem; cursor: pointer; margin-top: 12px; width: 100%;
+            font-family: inherit;
+        }
+        .submit-answers-btn:hover { background: var(--primary-dark); }
+
+        /* Diagnosis */
+        .diagnosis-card { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 11px; padding: 14px; margin-top: 8px; }
+        .diagnosis-card h3 { font-size: 0.95rem; margin-bottom: 7px; color: var(--primary); }
+        .urgency-badge {
+            display: inline-block; padding: 3px 11px; border-radius: 20px;
+            font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 9px;
+        }
+        .u-emergency { background: rgba(255,77,77,0.15); color: var(--emergency); border: 1px solid var(--emergency); }
+        .u-urgent { background: rgba(255,153,0,0.15); color: var(--urgent); border: 1px solid var(--urgent); }
+        .u-moderate { background: rgba(255,214,0,0.15); color: var(--moderate); border: 1px solid var(--moderate); }
+        .u-low { background: rgba(0,201,167,0.15); color: var(--low); border: 1px solid var(--low); }
+        .field { margin-top: 8px; }
+        .field .key { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px; }
+        .field .val { font-size: 0.83rem; }
+        .action-list { list-style: none; padding: 0; margin-top: 5px; }
+        .action-list li { font-size: 0.8rem; padding: 3px 0 3px 1.2em; position: relative; }
+        .action-list li::before { content: "→"; position: absolute; left: 0; color: var(--primary); }
+        .spinner {
+            width: 20px; height: 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<h1 class="page-title">🩺 Aarogya AI — Diagnostic Conversation</h1>
+<p class="page-sub">Multi-turn AI interview · Follow-up questions · Self-examination guidance</p>
+
+<div class="layout">
+
+    <!-- ── Left Panel: Patient Form ── -->
+    <div class="panel">
+        <h2>👤 Patient Profile</h2>
+
+        <!-- Demographics -->
+        <div class="section-divider">Demographics</div>
+
+        <label>Full Name</label>
+        <input type="text" id="name" value="Rahul Sharma">
+
+        <div class="two-col">
+            <div>
+                <label>Age</label>
+                <input type="number" id="age" value="47" min="1" max="120">
+            </div>
+            <div>
+                <label>Gender</label>
+                <select id="gender">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other / Prefer not to say</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div>
+                <label>Height <span class="opt">optional (cm)</span></label>
+                <input type="number" id="height" placeholder="e.g. 170" min="50" max="250">
+            </div>
+            <div>
+                <label>Weight <span class="opt">optional (kg)</span></label>
+                <input type="number" id="weight" placeholder="e.g. 75" min="2" max="300">
+            </div>
+        </div>
+
+        <label>Blood Group <span class="opt">optional</span></label>
+        <select id="bloodGroup">
+            <option value="">Not specified</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option>
+            <option>O+</option><option>O-</option>
+        </select>
+
+        <!-- Lifestyle (collapsible, optional) -->
+        <div class="section-divider collapsible" onclick="toggleSection('lifestyleBody', this)">
+            <span>Lifestyle</span>
+            <span class="opt" style="text-transform:none;letter-spacing:0;margin-left:6px;">optional</span>
+            <span class="chevron">▶</span>
+        </div>
+        <div id="lifestyleBody" style="display:none;">
+            <label>Smoking Status</label>
+            <select id="smoking">
+                <option value="never">🚭 Non-smoker</option>
+                <option value="current">🚬 Active smoker</option>
+                <option value="passive">💨 Passive smoker (secondhand)</option>
+                <option value="former">🕐 Former smoker (quit)</option>
+            </select>
+
+            <label>Activity Level</label>
+            <select id="activity">
+                <option value="sedentary">Sedentary (mostly sitting)</option>
+                <option value="light">Light (walks occasionally)</option>
+                <option value="moderate" selected>Moderate (regular exercise)</option>
+                <option value="active">Active (daily intense exercise)</option>
+            </select>
+
+            <div class="two-col">
+                <div>
+                    <label>Alcohol <span class="opt">units/week</span></label>
+                    <input type="number" id="alcohol" placeholder="0" min="0" max="200">
+                </div>
+                <div>
+                    <label>Sleep <span class="opt">hours/night</span></label>
+                    <input type="number" id="sleep" placeholder="7" min="0" max="24" step="0.5">
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical History (collapsible, optional) -->
+        <div class="section-divider collapsible" onclick="toggleSection('medHistBody', this)">
+            <span>Medical History</span>
+            <span class="opt" style="text-transform:none;letter-spacing:0;margin-left:6px;">optional</span>
+            <span class="chevron">▶</span>
+        </div>
+        <div id="medHistBody" style="display:none;">
+            <label>Known Conditions <span class="opt">comma-separated</span></label>
+            <input type="text" id="conditions" placeholder="e.g. diabetes, hypertension, asthma">
+
+            <label>Current Medications <span class="opt">comma-separated</span></label>
+            <input type="text" id="medications" placeholder="e.g. metformin, aspirin">
+
+            <label>Allergies <span class="opt">comma-separated</span></label>
+            <input type="text" id="allergies" placeholder="e.g. penicillin, dust, peanuts">
+
+            <label>Family History <span class="opt">comma-separated</span></label>
+            <input type="text" id="familyHistory" placeholder="e.g. heart disease, diabetes">
+        </div>
+
+        <!-- Symptoms -->
+        <div class="section-divider">Symptoms</div>
+
+        <label>Describe Your Symptoms</label>
+        <textarea id="symptoms" placeholder="Describe your symptoms in detail. Include when they started, how they feel, what makes them worse/better…">chest pain and sweating for 2 hours</textarea>
+
+        <!-- File Uploads (all optional) -->
+        <div class="section-divider">Medical Documents <span style="font-weight:400; text-transform: none; letter-spacing: 0;">(all optional)</span></div>
+
+        <!-- X-Ray -->
+        <div class="file-field" onclick="document.getElementById('fileXray').click()">
+            <input type="file" id="fileXray" accept="image/*,.dcm" onchange="showFileName('fileXray','xrayName')">
+            <label for="fileXray">
+                <span class="icon">🩻</span>
+                <span>X-Ray Image <span style="color:#4B5563; font-size:0.7rem;">(JPEG, PNG, DICOM)</span></span>
+            </label>
+            <div class="file-name" id="xrayName"></div>
+        </div>
+
+        <!-- Body Photo -->
+        <div class="file-field" style="margin-top:8px;" onclick="document.getElementById('filePhoto').click()">
+            <input type="file" id="filePhoto" accept="image/*" onchange="showFileName('filePhoto','photoName')">
+            <label for="filePhoto">
+                <span class="icon">📸</span>
+                <span>Body Photo / Rash / Wound <span style="color:#4B5563; font-size:0.7rem;">(JPEG, PNG)</span></span>
+            </label>
+            <div class="file-name" id="photoName"></div>
+        </div>
+
+        <!-- Prescription -->
+        <div class="file-field" style="margin-top:8px;" onclick="document.getElementById('filePrescription').click()">
+            <input type="file" id="filePrescription" accept="image/*,.pdf" onchange="showFileName('filePrescription','prescriptionName')">
+            <label for="filePrescription">
+                <span class="icon">💊</span>
+                <span>Prescription <span style="color:#4B5563; font-size:0.7rem;">(Image or PDF)</span></span>
+            </label>
+            <div class="file-name" id="prescriptionName"></div>
+        </div>
+
+        <!-- Lab Report -->
+        <div class="file-field" style="margin-top:8px;" onclick="document.getElementById('fileReport').click()">
+            <input type="file" id="fileReport" accept="image/*,.pdf" onchange="showFileName('fileReport','reportName')">
+            <label for="fileReport">
+                <span class="icon">🧪</span>
+                <span>Lab Report / Blood Test <span style="color:#4B5563; font-size:0.7rem;">(Image or PDF)</span></span>
+            </label>
+            <div class="file-name" id="reportName"></div>
+        </div>
+
+        <button class="btn-primary" id="startBtn" onclick="startSession()">🚀 Start Diagnosis</button>
+        <button class="btn-secondary" onclick="resetChat()">↺ Reset</button>
+        <div id="sessionInfo"></div>
+    </div>
+
+    <!-- ── Right Panel: Chat ── -->
+    <div class="chat-panel">
+        <div class="chat-header">
+            <div class="dot"></div>
+            <span class="title">Aarogya AI Diagnostic Assistant</span>
+            <span class="turn-badge" id="turnBadge">Turn 0 / 3</span>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-empty" id="emptyState">
+                <div>
+                    <div style="font-size: 2.2rem; margin-bottom: 10px;">🏥</div>
+                    Fill in the patient profile and click <strong>Start Diagnosis</strong><br>
+                    <span style="font-size:0.76rem; margin-top: 6px; display:block; color: var(--text-muted)">
+                        Files (X-ray, lab reports, prescriptions) are optional and improve accuracy.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = 'http://localhost:8000/api/v1';
+let currentSessionId = null;
+let currentTurn = 0;
+let pendingAnswers = {};
+let pendingSelfExams = {};
+let pendingQuestions = [];
+let pendingSelfExamObjs = [];
+
+// ── File selection display ──────────────────────────────────────────────────
+function showFileName(inputId, nameId) {
+    const input = document.getElementById(inputId);
+    const nameEl = document.getElementById(nameId);
+    if (input.files && input.files[0]) {
+        nameEl.textContent = '✅ ' + input.files[0].name;
+        nameEl.style.display = 'block';
+    }
+}
+
+// ── Collapsible sections ────────────────────────────────────────────────────
+function toggleSection(bodyId, header) {
+    const body = document.getElementById(bodyId);
+    const chevron = header.querySelector('.chevron');
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    chevron.classList.toggle('open', !isOpen);
+}
+
+// ── Build patient JSON ──────────────────────────────────────────────────────
+function buildPatientObj() {
+    const conditionsRaw = document.getElementById('conditions').value;
+    const medicationsRaw = document.getElementById('medications').value;
+    const allergiesRaw = document.getElementById('allergies').value;
+    const familyRaw = document.getElementById('familyHistory').value;
+
+    const splitCSV = v => v.split(',').map(s => s.trim()).filter(Boolean);
+
+    const obj = {
+        name: document.getElementById('name').value.trim() || 'Patient',
+        age: parseInt(document.getElementById('age').value) || 30,
+        gender: document.getElementById('gender').value,
+        smoking: document.getElementById('smoking').value,
+        activity_level: document.getElementById('activity').value,
+        conditions: splitCSV(conditionsRaw),
+        medications: splitCSV(medicationsRaw),
+        allergies: splitCSV(allergiesRaw),
+        family_history: splitCSV(familyRaw),
+    };
+
+    const height = parseFloat(document.getElementById('height').value);
+    const weight = parseFloat(document.getElementById('weight').value);
+    if (height >= 50) obj.height_cm = height;
+    if (weight >= 2) obj.weight_kg = weight;
+
+    const bloodGroup = document.getElementById('bloodGroup').value;
+    if (bloodGroup) obj.blood_group = bloodGroup;
+
+    const alcohol = parseInt(document.getElementById('alcohol').value);
+    if (!isNaN(alcohol)) obj.alcohol_units_per_week = alcohol;
+
+    const sleep = parseFloat(document.getElementById('sleep').value);
+    if (!isNaN(sleep)) obj.sleep_hours = sleep;
+
+    return obj;
+}
+
+// ── Build FormData with optional files ─────────────────────────────────────
+function buildFormData(extraFields = {}) {
+    const fd = new FormData();
+    for (const [k, v] of Object.entries(extraFields)) {
+        fd.append(k, v);
+    }
+
+    const xray = document.getElementById('fileXray').files[0];
+    const photo = document.getElementById('filePhoto').files[0];
+    const prescription = document.getElementById('filePrescription').files[0];
+    const report = document.getElementById('fileReport').files[0];
+
+    if (xray) fd.append('xray_image', xray);
+    if (photo) fd.append('body_photo', photo);
+    if (prescription) fd.append('prescription', prescription);
+    if (report) fd.append('lab_report', report);
+
+    return fd;
+}
+
+// ── UI helpers ──────────────────────────────────────────────────────────────
+function addBubble(role, html) {
+    const chatBody = document.getElementById('chatBody');
+    const empty = document.getElementById('emptyState');
+    if (empty) empty.remove();
+    const div = document.createElement('div');
+    div.className = `bubble ${role}`;
+    const lbl = role === 'ai' ? '🤖 Aarogya AI' : '👤 You';
+    div.innerHTML = `<div class="lbl">${lbl}</div>${html}`;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function addSpinner() {
+    const chatBody = document.getElementById('chatBody');
+    const div = document.createElement('div');
+    div.className = 'bubble ai'; div.id = 'loadingBubble';
+    div.innerHTML = `<div class="lbl">🤖 Aarogya AI</div><div class="spinner"></div>`;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function removeSpinner() { const s = document.getElementById('loadingBubble'); if (s) s.remove(); }
+function setLoading(on) { document.getElementById('startBtn').disabled = on; }
+function updateTurnBadge(turn) { document.getElementById('turnBadge').textContent = `Turn ${turn} / 3`; }
+
+// ── Render follow-up round ──────────────────────────────────────────────────
+function renderFollowUp(data) {
+    pendingAnswers = {};
+    pendingSelfExams = {};
+    pendingQuestions = data.questions || [];
+    pendingSelfExamObjs = data.self_exams || [];
+    currentTurn = data.turn;
+    updateTurnBadge(data.turn);
+
+    let html = '';
+    if (data.initial_analysis) html += `<p style="margin-bottom:10px">${data.initial_analysis}</p>`;
+
+    if (pendingQuestions.length) {
+        html += `<p style="font-size:0.76rem; color:var(--text-muted); margin-bottom:7px;">Please answer these questions:</p>`;
+        pendingQuestions.forEach((q, idx) => {
+            html += `<div class="question-block" id="qblock_${q.id}">
+                <div class="q-text"><strong>Q${idx+1}:</strong> ${q.text}</div>`;
+            if (q.type === 'yes_no') {
+                html += `<div class="yn-buttons">
+                    <button class="yn-btn" id="yn_${q.id}_yes" onclick="selectYN('${q.id}','yes')">✅ Yes</button>
+                    <button class="yn-btn" id="yn_${q.id}_no" onclick="selectYN('${q.id}','no')">❌ No</button>
+                </div>`;
+            } else {
+                html += `<div class="options">`;
+                (q.options || []).forEach(opt => {
+                    const sid = opt.replace(/[^a-zA-Z0-9]/g, '_');
+                    html += `<button class="option-btn" id="opt_${q.id}_${sid}"
+                        onclick="selectOption('${q.id}','${opt.replace(/'/g,"\\'")}','${sid}')">${opt}</button>`;
+                });
+                html += `</div>`;
+            }
+            html += `</div>`;
+        });
+    }
+
+    if (pendingSelfExamObjs.length) {
+        html += `<p style="font-size:0.78rem; color:#60c4f5; margin: 12px 0 7px; font-weight:600;">🔬 Self-Examination Requested</p>`;
+        pendingSelfExamObjs.forEach(exam => {
+            html += `<div class="exam-card">
+                <div class="exam-title">📋 ${exam.title}</div>
+                <div class="exam-why">${exam.why_useful}</div>
+                <ol class="exam-steps">${exam.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+                <div class="exam-input-row">`;
+            if (exam.input_type === 'number') {
+                const minVal = exam.min_value ?? 0;
+                const maxVal = exam.max_value ?? 999;
+                html += `<input type="number" id="exam_${exam.id}" placeholder="Enter result"
+                    min="${minVal}" max="${maxVal}"
+                    oninput="setSelfExam('${exam.id}', this.value)">
+                    <span class="exam-unit">${exam.unit || ''}</span>`;
+            } else if (exam.input_type === 'choice') {
+                html += `<select id="exam_${exam.id}" onchange="setSelfExam('${exam.id}', this.value)">
+                    <option value="">Select result…</option>
+                    ${(exam.choices||[]).map(c => `<option value="${c}">${c}</option>`).join('')}
+                </select>`;
+            } else {
+                html += `<input type="text" id="exam_${exam.id}" placeholder="Enter result"
+                    oninput="setSelfExam('${exam.id}', this.value)">`;
+            }
+            html += `</div>`;
+            if (exam.normal_range) html += `<div class="normal-range">✅ Normal: ${exam.normal_range}</div>`;
+            html += `</div>`;
+        });
+    }
+
+    html += `<button class="submit-answers-btn" onclick="submitAnswers()">Submit Answers →</button>`;
+    addBubble('ai', html);
+}
+
+function selectYN(qid, val) {
+    pendingAnswers[qid] = val;
+    [`#yn_${qid}_yes`, `#yn_${qid}_no`].forEach(sel => document.querySelector(sel)?.classList.remove('selected'));
+    document.getElementById(`yn_${qid}_${val}`)?.classList.add('selected');
+}
+
+function selectOption(qid, val, sid) {
+    pendingAnswers[qid] = val;
+    document.getElementById(`qblock_${qid}`)?.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById(`opt_${qid}_${sid}`)?.classList.add('selected');
+}
+
+function setSelfExam(examId, val) { pendingSelfExams[examId] = val; }
+
+// ── Submit answers ──────────────────────────────────────────────────────────
+async function submitAnswers() {
+    if (!currentSessionId) return;
+
+    let userHtml = '<ul style="padding-left:1.2em; font-size:0.82rem;">';
+    for (const [qid, ans] of Object.entries(pendingAnswers)) {
+        const q = pendingQuestions.find(q => q.id === qid);
+        userHtml += `<li><em>${q ? q.text : qid}:</em> <strong>${ans}</strong></li>`;
+    }
+    for (const [examId, val] of Object.entries(pendingSelfExams)) {
+        if (val) {
+            const exam = pendingSelfExamObjs.find(e => e.id === examId);
+            userHtml += `<li><em>${exam ? exam.title : examId}:</em> <strong>${val} ${exam?.unit || ''}</strong></li>`;
+        }
+    }
+    userHtml += '</ul>';
+    addBubble('user', userHtml);
+    addSpinner();
+    setLoading(true);
+
+    const fd = new FormData();
+    fd.append('session_id', currentSessionId);
+    fd.append('answers', JSON.stringify(pendingAnswers));
+    fd.append('self_exam_results', JSON.stringify(pendingSelfExams));
+
+    try {
+        const res = await fetch(`${API}/session/respond`, { method: 'POST', body: fd });
+        const data = await res.json();
+        removeSpinner(); setLoading(false);
+        if (!res.ok) { addBubble('ai', `<span style="color:#ff6b6b">Error ${res.status}: ${JSON.stringify(data.detail)}</span>`); return; }
+        data.status === 'complete' ? renderDiagnosis(data) : renderFollowUp(data);
+    } catch (err) {
+        removeSpinner(); setLoading(false);
+        addBubble('ai', `<span style="color:#ff6b6b">Network error: ${err.message}</span>`);
+    }
+}
+
+// ── Render final diagnosis ──────────────────────────────────────────────────
+function renderDiagnosis(data) {
+    updateTurnBadge(data.turn);
+    const diag = data.diagnosis || {};
+    const urg = data.urgency || {};
+    const level = urg.level || 'low';
+    const uClass = { emergency:'u-emergency', urgent:'u-urgent', moderate:'u-moderate', low:'u-low' }[level] || 'u-low';
+    const uIcon = { emergency:'🚨', urgent:'⚠️', moderate:'🔶', low:'✅' }[level] || '✅';
+
+    let html = `<div class="diagnosis-card">
+        <h3>📋 Diagnosis Complete</h3>
+        <span class="urgency-badge ${uClass}">${uIcon} ${level.toUpperCase()}</span>`;
+
+    if (diag.condition_name) html += `<div class="field"><div class="key">Most Likely Condition</div>
+        <div class="val"><strong>${diag.condition_name}</strong> (${(diag.confidence*100).toFixed(0)}% confidence)</div></div>`;
+    if (diag.explanation) html += `<div class="field"><div class="key">Explanation</div><div class="val">${diag.explanation}</div></div>`;
+    if (diag.specialist_needed) html += `<div class="field"><div class="key">Recommended Specialist</div><div class="val">${diag.specialist_needed}</div></div>`;
+    if (urg.action_plan?.length) html += `<div class="field"><div class="key">Action Plan</div>
+        <ul class="action-list">${urg.action_plan.map(a=>`<li>${a}</li>`).join('')}</ul></div>`;
+
+    if (data.doctors?.length) {
+        html += `<div class="field"><div class="key">Nearby Doctors</div>`;
+        data.doctors.forEach(d => {
+            html += `<div style="font-size:0.8rem; margin-top:5px; padding:6px 9px; background:var(--surface); border-radius:6px;">
+                <strong>${d.name}</strong> — ${d.specialty}<br>
+                <span style="color:var(--text-muted)">${d.hospital} · ${d.distance_km}km · ⭐ ${d.rating}</span></div>`;
+        });
+        html += `</div>`;
+    }
+    html += `</div>`;
+    if (data.disclaimer) html += `<p style="font-size:0.73rem; color:var(--text-muted); margin-top:9px; font-style:italic">${data.disclaimer}</p>`;
+
+    addBubble('ai', html);
+    document.getElementById('startBtn').textContent = '✅ Session Complete';
+    document.getElementById('startBtn').disabled = true;
+}
+
+// ── Start session ──────────────────────────────────────────────────────────
+async function startSession() {
+    const symptoms = document.getElementById('symptoms').value.trim();
+    if (!symptoms) { alert('Please describe your symptoms.'); return; }
+
+    resetChat(false);
+    currentSessionId = null; currentTurn = 0;
+    updateTurnBadge(0);
+
+    const patientObj = buildPatientObj();
+
+    // Build user summary for chat bubble
+    const smokingLabel = document.getElementById('smoking').options[document.getElementById('smoking').selectedIndex].text;
+    const hasFiles = ['fileXray','filePhoto','filePrescription','fileReport'].some(id => document.getElementById(id).files[0]);
+    let userHtml = `<strong>Symptoms:</strong> ${symptoms}`;
+    if (hasFiles) userHtml += `<br><span style="font-size:0.75rem; color: #60c4f5">📎 Files attached</span>`;
+    addBubble('user', userHtml);
+    addSpinner();
+    setLoading(true);
+
+    const fd = buildFormData({
+        symptoms_text: symptoms,
+        patient: JSON.stringify(patientObj),
+    });
+
+    try {
+        const res = await fetch(`${API}/session/start`, { method: 'POST', body: fd });
+        const data = await res.json();
+        removeSpinner(); setLoading(false);
+
+        if (!res.ok) {
+            let errMsg = data.detail || res.statusText;
+            if (Array.isArray(errMsg)) errMsg = errMsg.map(e => `${e.loc?.join('.')}: ${e.msg}`).join(', ');
+            addBubble('ai', `<span style="color:#ff6b6b">Error ${res.status}: ${errMsg}</span>`);
+            return;
+        }
+
+        currentSessionId = data.session_id;
+        document.getElementById('sessionInfo').textContent = `Session: ${data.session_id.slice(0,8)}…  (Turn ${data.turn}/3)`;
+        data.status === 'complete' ? renderDiagnosis(data) : renderFollowUp(data);
+    } catch (err) {
+        removeSpinner(); setLoading(false);
+        addBubble('ai', `<span style="color:#ff6b6b">Network error: ${err.message}<br>Is the server running at ${API}?</span>`);
+    }
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────
+function resetChat(addEmpty = true) {
+    document.getElementById('chatBody').innerHTML = addEmpty
+        ? `<div class="chat-empty" id="emptyState"><div>
+            <div style="font-size:2.2rem; margin-bottom:10px">🏥</div>
+            Fill in the patient profile and click <strong>Start Diagnosis</strong><br>
+            <span style="font-size:0.76rem; margin-top:6px; display:block; color:var(--text-muted)">
+                Files (X-ray, lab reports, prescriptions) are optional and improve accuracy.
+            </span></div></div>` : '';
+    currentSessionId = null; currentTurn = 0;
+    pendingAnswers = {}; pendingSelfExams = {};
+    pendingQuestions = []; pendingSelfExamObjs = [];
+    updateTurnBadge(0);
+    document.getElementById('startBtn').textContent = '🚀 Start Diagnosis';
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('sessionInfo').textContent = '';
+    // Clear file inputs
+    ['fileXray','filePhoto','filePrescription','fileReport'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    ['xrayName','photoName','prescriptionName','reportName'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+    });
+}
+</script>
+</body>
+</html>

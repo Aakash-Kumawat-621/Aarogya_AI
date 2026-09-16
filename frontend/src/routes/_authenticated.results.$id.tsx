@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowRight, CheckCircle2, Info, ShieldAlert } from "lucide-react";
 
-import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 
@@ -23,8 +23,24 @@ function ResultsPage() {
   const { id } = Route.useParams();
   if (!id) return <PageLoadingSkeleton />;
 
+  const [resultData, setResultData] = useState<{ diagnosis: any, urgency: any } | null>(null);
+  
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("latest_diagnosis");
+      if (stored) {
+        setResultData(JSON.parse(stored));
+      }
+    } catch (e) {}
+  }, []);
+  
+  const conditionName = resultData?.diagnosis?.condition_name || "Viral Fever";
+  const confidence = resultData?.diagnosis?.confidence || 85;
+  const urgencyLevel = resultData?.urgency?.level || "moderate";
+  const explanation = resultData?.diagnosis?.explanation || "Your symptoms are most consistent with a viral infection that may be causing fever and fatigue. Most cases improve with rest, hydration, and careful monitoring, but a clinician can help confirm the cause and guide treatment.";
+
   return (
-    <AppShell>
+    <>
       <main className="mx-auto w-full max-w-5xl px-6 py-10 lg:px-10 lg:py-14">
         <header className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
@@ -39,13 +55,13 @@ function ResultsPage() {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-sm text-muted-text">Diagnosis match</p>
-              <h2 id="diagnosis-heading" className="mt-2 text-2xl font-semibold sm:text-3xl">Viral Fever</h2>
+              <h2 id="diagnosis-heading" className="mt-2 text-2xl font-semibold sm:text-3xl">{conditionName}</h2>
               <p className="mt-2 text-sm text-muted-text">Based on the symptoms shared in this assessment.</p>
             </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-moderate/40 bg-moderate/10 px-3 py-1.5 text-sm text-moderate"><AlertTriangle className="size-4" /> Moderate urgency</span>
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-moderate/40 bg-moderate/10 px-3 py-1.5 text-sm text-moderate"><AlertTriangle className="size-4" /> {urgencyLevel.charAt(0).toUpperCase() + urgencyLevel.slice(1)} urgency</span>
           </div>
           <div className="mt-8 max-w-2xl">
-            <div className="flex items-center justify-between text-sm"><span className="text-muted-text">Confidence</span><span className="font-mono text-teal">85%</span></div>
+            <div className="flex items-center justify-between text-sm"><span className="text-muted-text">Confidence</span><span className="font-mono text-teal">{confidence}%</span></div>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2"><div className="h-full w-[85%] rounded-full bg-teal" /></div>
           </div>
         </section>
@@ -68,6 +84,6 @@ function ResultsPage() {
 
         <aside className="mt-6 flex gap-4 rounded-lg border border-urgent/30 bg-urgent/10 p-5 text-sm text-muted-text" aria-label="Medical disclaimer"><ShieldAlert className="mt-0.5 size-5 shrink-0 text-urgent" /><p><span className="font-medium text-foreground">Important:</span> This AI-generated assessment is for informational purposes only and is not a diagnosis or substitute for professional medical advice. Seek urgent care for severe or rapidly worsening symptoms.</p></aside>
       </main>
-    </AppShell>
+    </>
   );
 }
