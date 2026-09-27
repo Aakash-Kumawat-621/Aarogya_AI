@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, HeartPulse, LoaderCircle } from "lucide-react";
+import { ArrowRight, HeartPulse, LoaderCircle, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { lovable } from "@/integrations/lovable";
@@ -25,6 +25,11 @@ function LoginPage() {
       if (data.user) void navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
+
+  function handleGuest() {
+    sessionStorage.setItem("aarogya_guest", "true");
+    void navigate({ to: "/dashboard", replace: true });
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,6 +87,7 @@ function LoginPage() {
           </form>
           <div className="my-6 flex items-center gap-3 text-xs text-dim"><span className="h-px flex-1 bg-border" />or<span className="h-px flex-1 bg-border" /></div>
           <Button type="button" variant="outline" className="btn-ghost w-full bg-foreground text-background hover:text-background" onClick={handleGoogle} disabled={loading}><span className="font-bold">G</span> Continue with Google</Button>
+          <Button type="button" variant="ghost" className="btn-ghost mt-2 w-full text-muted-text hover:text-teal" onClick={handleGuest} disabled={loading}><UserRound className="size-4" /> Continue as Guest</Button>
           <p className="mt-6 text-center text-sm text-muted-text">New to Aarogya? <Link className="text-teal hover:underline" to="/signup">Create an account</Link></p>
         </div>
       </div></section>

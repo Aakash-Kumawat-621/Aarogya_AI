@@ -33,6 +33,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleSignOut() {
+    sessionStorage.removeItem("aarogya_guest");
     await supabase.auth.signOut();
     await navigate({ to: "/home", replace: true });
   }
@@ -141,6 +142,13 @@ function UserProfileDisplay() {
 
   useEffect(() => {
     let active = true;
+
+    // Check if guest
+    if (typeof window !== "undefined" && sessionStorage.getItem("aarogya_guest") === "true") {
+      setProfile({ name: "Guest", initials: "G" });
+      return;
+    }
+
     void supabase.auth.getUser().then(({ data }) => {
       if (active && data.user) {
         const metaName = data.user.user_metadata?.["full_name"];

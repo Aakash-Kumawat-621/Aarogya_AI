@@ -5,6 +5,10 @@ import { AppShell } from "@/components/app-shell";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
+    // Allow guest users to bypass auth
+    if (typeof window !== "undefined" && sessionStorage.getItem("aarogya_guest") === "true") {
+      return;
+    }
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/login" });
   },
