@@ -91,3 +91,8 @@ mediassist/
 # ── Logs ────────────────────────────────────────────────────────────────────────
 *.log
 logs/
+
+# Ignore large models and temp scripts
+backend/ml_models/model.tar.gz
+fix_results.py
+fix_transitions.py
