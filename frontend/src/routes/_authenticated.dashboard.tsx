@@ -24,6 +24,13 @@ function DashboardPage() {
 
   useEffect(() => {
     let active = true;
+
+    // Detect guest mode
+    if (typeof window !== "undefined" && sessionStorage.getItem("aarogya_guest") === "true") {
+      setName("Guest");
+      return;
+    }
+
     void supabase.auth.getUser().then(({ data }) => {
       const fullName = data.user?.user_metadata?.["full_name"];
       const firstName = typeof fullName === "string" ? fullName.trim().split(/\s+/)[0] : "";

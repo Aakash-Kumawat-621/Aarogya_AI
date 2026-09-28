@@ -135,8 +135,8 @@ def main():
     print("="*60)
 
     # ── Step 1: Build Docker image ─────────────────────────────────────────
-    step(1, "Build Docker image (linux/arm64)")
-    run(f"docker build --platform linux/arm64 --no-cache -t {REPO_NAME} ./backend")
+    step(1, "Build Docker image (linux/amd64)")
+    run(f"docker build --platform linux/amd64 --provenance=false -t {REPO_NAME} ./backend")
 
     # ── Step 2: Local smoke test ───────────────────────────────────────────
     step(2, "Local container smoke test")

@@ -32,11 +32,11 @@ function DoctorFinderPage() {
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
-  async function findDoctors(condition = query) {
+  async function findDoctors(condition = query, lat?: number, lng?: number) {
     const cleanCondition = condition.trim() || "general physician";
     setLoading(true);
     try {
-      const result = await searchDoctors({ condition: cleanCondition, radius_km: 25 });
+      const result = await searchDoctors({ condition: cleanCondition, radius_km: 25, lat, lng });
       if (result.doctors.length > 0) setDoctors(result.doctors);
     } catch {
       setDoctors(fallbackDoctors);
@@ -53,7 +53,10 @@ function DoctorFinderPage() {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      () => showToast("Showing doctors closest to your location.", "success"),
+      (pos) => {
+        showToast("Showing doctors closest to your location.", "success");
+        void findDoctors(query, pos.coords.latitude, pos.coords.longitude);
+      },
       () => showToast("We could not access your location. Showing nearby doctors instead.", "info"),
     );
   }

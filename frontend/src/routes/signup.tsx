@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { PublicLayout } from "@/components/public-layout";
-import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/components/ui/Toast";
 
 export const Route = createFileRoute("/signup")({

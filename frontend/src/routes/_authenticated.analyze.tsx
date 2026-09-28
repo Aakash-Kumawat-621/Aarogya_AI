@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { startSession, respondSession } from "@/api/mediassist";
 import type { ConversationResponse, FollowUpQuestion } from "@/types/api.types";
+import { useToast } from "@/components/ui/Toast";
 
 export const Route = createFileRoute("/_authenticated/analyze")({
   head: () => ({
@@ -22,6 +23,7 @@ type Profile = { name: string; age: string; gender: string; conditions: string }
 
 function AnalyzePage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [profile, setProfile] = useState<Profile>({ name: "", age: "", gender: "", conditions: "" });
   const [symptoms, setSymptoms] = useState("");
@@ -42,7 +44,7 @@ function AnalyzePage() {
     try {
       const formData = new FormData();
       formData.append("symptoms_text", symptoms);
-      formData.append("patient", JSON.stringify(profile));
+      formData.append("patient", JSON.stringify({ ...profile, age: profile.age ? Number(profile.age) : null }));
       
       const res = await startSession(formData);
       
@@ -57,6 +59,7 @@ function AnalyzePage() {
       }
     } catch (err) {
       console.error(err);
+      showToast("Could not reach the server. Showing demo results.", "error");
       await navigate({ to: "/results/$id", params: { id: "mock-id" } });
     } finally {
       setSubmitting(false);
@@ -81,6 +84,7 @@ function AnalyzePage() {
       }
     } catch (err) {
       console.error(err);
+      showToast("Could not reach the server. Showing demo results.", "error");
       await navigate({ to: "/results/$id", params: { id: "mock-id" } });
     } finally {
       setSubmitting(false);
