@@ -42,7 +42,7 @@ export async function searchDoctors(
   if (params.lat !== undefined) query.set("lat", String(params.lat));
   if (params.lng !== undefined) query.set("lng", String(params.lng));
   if (params.radius_km !== undefined) query.set("radius_km", String(params.radius_km));
-  return request<DoctorSearchResponse>(`/doctors?${query.toString()}`);
+  return request<DoctorSearchResponse>(`/doctors/search?${query.toString()}`);
 }
 
 export async function getSession(id: string): Promise<AnalyzeResponse> {
@@ -71,32 +71,61 @@ export async function startSession(data: FormData): Promise<ConversationResponse
   } catch (err) {
     console.warn("Backend /session/start not available. Using interactive mock.", err);
     await new Promise((r) => setTimeout(r, 1500));
+
+    // Extract symptoms from the submitted form to generate relevant mock questions
+    const symptomsText = (data.get("symptoms_text") as string || "").toLowerCase();
+
+    // Detect symptom categories and generate relevant follow-ups
+    const isMentalHealth = /depress|anxiet|sad|stress|panic|insomnia|sleep|mood|suicid|lonely|hopeless|motivation|mental/i.test(symptomsText);
+    const isRespiratory = /cough|breath|chest|wheez|lung|asthma/i.test(symptomsText);
+    const isDigestive = /stomach|nausea|vomit|diarr|abdomen|bloat|digest/i.test(symptomsText);
+    const isNeurological = /headache|dizzy|migraine|vision|numb|tingl|seizure/i.test(symptomsText);
+
+    let questions: FollowUpQuestion[];
+    let analysis: string;
+
+    if (isMentalHealth) {
+      analysis = "I understand you're experiencing emotional or mental health symptoms. Let me ask a few questions to better understand your situation.";
+      questions = [
+        { id: "q1", text: "How long have you been feeling this way?", type: "multiple_choice", options: ["Less than 2 weeks", "2–4 weeks", "1–3 months", "More than 3 months"] },
+        { id: "q2", text: "Have these feelings affected your ability to work, study, or manage daily tasks?", type: "yes_no" },
+        { id: "q3", text: "Have you experienced changes in your appetite or sleep patterns?", type: "multiple_choice", options: ["Sleep problems only", "Appetite changes only", "Both", "Neither"] },
+      ];
+    } else if (isRespiratory) {
+      analysis = "I see you're experiencing respiratory symptoms. Let me gather more details.";
+      questions = [
+        { id: "q1", text: "Do you have a fever along with these symptoms?", type: "yes_no" },
+        { id: "q2", text: "How would you describe the cough?", type: "multiple_choice", options: ["Dry cough", "Cough with mucus", "Cough with blood", "No cough"] },
+      ];
+    } else if (isDigestive) {
+      analysis = "I notice you're experiencing digestive symptoms. A few more details will help.";
+      questions = [
+        { id: "q1", text: "When did these symptoms start?", type: "multiple_choice", options: ["Today", "1–3 days ago", "This week", "More than a week ago"] },
+        { id: "q2", text: "Have you noticed any blood in your stool or vomit?", type: "yes_no" },
+      ];
+    } else if (isNeurological) {
+      analysis = "I see you're experiencing neurological symptoms. Let me ask a few clarifying questions.";
+      questions = [
+        { id: "q1", text: "Is the pain or symptom on one side of the body or both?", type: "multiple_choice", options: ["Left side only", "Right side only", "Both sides", "Changes sides"] },
+        { id: "q2", text: "Did the symptoms start suddenly or gradually?", type: "multiple_choice", options: ["Suddenly (within minutes)", "Over a few hours", "Over a few days", "Gradually (weeks)"] },
+      ];
+    } else {
+      analysis = "Thank you for sharing your symptoms. Let me ask a few follow-up questions to better understand your condition.";
+      questions = [
+        { id: "q1", text: "On a scale of 1–10, how severe are your symptoms right now?", type: "multiple_choice", options: ["1–3 (mild)", "4–6 (moderate)", "7–9 (severe)", "10 (worst ever)"] },
+        { id: "q2", text: "How long have you been experiencing these symptoms?", type: "multiple_choice", options: ["Less than 1 hour", "1–24 hours", "1–7 days", "More than 1 week"] },
+        { id: "q3", text: "Do the symptoms come and go, or are they constant?", type: "multiple_choice", options: ["Constant", "Come and go", "Getting worse", "Getting better"] },
+      ];
+    }
+
     return {
       session_id: "mock-session-" + Date.now(),
       status: "needs_followup",
       turn: 1,
-      initial_analysis: "I noticed you mentioned swelling in your legs and back pain. To give you the best assessment, I need to ask a few clarifying questions.",
-      questions: [
-        {
-          id: "q1",
-          text: "Is the swelling in one leg or both legs?",
-          type: "multiple_choice",
-          options: ["One leg", "Both legs", "Not sure"]
-        },
-        {
-          id: "q2",
-          text: "Does the back pain radiate down your legs?",
-          type: "yes_no"
-        }
-      ],
-      self_exams: [
-        {
-          id: "exam1",
-          title: "Check for pitting edema",
-          why_useful: "Press firmly on the swollen area of your leg for 5 seconds. If a dent remains, it indicates pitting edema."
-        }
-      ],
-      disclaimer: "Mock mode",
+      initial_analysis: analysis,
+      questions,
+      self_exams: [],
+      disclaimer: "Demo mode — connect to the live backend for AI-powered analysis",
       processing_time_ms: 1500
     };
   }
@@ -113,25 +142,24 @@ export async function respondSession(sessionId: string, answers: Record<string, 
     console.warn("Backend /session/respond not available. Using interactive mock.", err);
     await new Promise((r) => setTimeout(r, 1500));
     
-    // After 1 question turn, return a complete diagnosis!
     return {
       session_id: sessionId,
       status: "complete",
       turn: 2,
       diagnosis: {
-        condition_name: "Possible Sciatica or Fluid Retention",
-        confidence: 85,
+        condition_name: "Assessment Complete",
+        confidence: 70,
         severity_level: "moderate",
         specialist_needed: "General Physician",
-        explanation: "Based on the swelling and back pain, combined with your answers, this could be related to fluid retention or nerve pressure.",
+        explanation: "Based on your symptoms and answers, we recommend consulting a healthcare professional for a thorough evaluation. This is a demo assessment — the live AI backend provides more accurate, personalized results.",
         citations: []
       },
       urgency: {
         level: "moderate",
-        action_plan: ["Rest with legs elevated", "Monitor for shortness of breath", "Schedule a doctor visit"],
+        action_plan: ["Schedule a visit with your doctor within the next few days", "Keep track of your symptoms and note any changes", "Stay hydrated and get adequate rest"],
         call_emergency: false
       },
-      disclaimer: "Mock mode",
+      disclaimer: "Demo mode — connect to the live backend for AI-powered analysis",
       processing_time_ms: 1500
     };
   }

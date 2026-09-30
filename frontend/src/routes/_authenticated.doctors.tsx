@@ -45,7 +45,18 @@ function DoctorFinderPage() {
     }
   }
 
-  useEffect(() => { void findDoctors(); }, []);
+  useEffect(() => {
+    // Auto-request location on page load for better results
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => void findDoctors("general physician", pos.coords.latitude, pos.coords.longitude),
+        () => void findDoctors(), // Fallback without location
+        { timeout: 5000 },
+      );
+    } else {
+      void findDoctors();
+    }
+  }, []);
 
   function useLocation() {
     if (!navigator.geolocation) {
