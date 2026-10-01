@@ -58,8 +58,9 @@ def mock_aws_services(mocker):
     )
 
     def mock_extract(text):
+        result = []
         if "no chest pain" in text:
-            return [
+            result = [
                 {
                     "entity": "chest pain",
                     "canonical_form": "chest pain",
@@ -67,22 +68,35 @@ def mock_aws_services(mocker):
                 }
             ]
         elif "chest pain" in text:
-            return [
+            result = [
                 {
                     "entity": "chest pain",
                     "canonical_form": "chest pain",
                     "negated": False,
                 }
             ]
+            if "palpitations" in text:
+                result.append(
+                    {
+                        "entity": "palpitations",
+                        "canonical_form": "palpitations",
+                        "negated": False,
+                    }
+                )
         elif "palpitations" in text:
-            return [
+            result = [
                 {
                     "entity": "palpitations",
                     "canonical_form": "palpitations",
                     "negated": False,
                 }
             ]
-        return []
+        return {
+            "extracted_symptoms": result,
+            "disease_history_mentions": [],
+            "raw_text": text,
+            "confidence": 0.95,
+        }
 
     mocker.patch("app.core.patient_context.extract_symptoms", side_effect=mock_extract)
 
