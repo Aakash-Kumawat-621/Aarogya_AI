@@ -25,6 +25,7 @@ def _put_metric(name: str, value: float, unit: str, dimensions: dict) -> None:
     """Synchronous CloudWatch put — runs in thread pool."""
     try:
         import boto3
+
         from app.config import settings
 
         cw = boto3.client(

@@ -9,6 +9,7 @@ Unit tests for Module 3 RAG components:
 """
 
 import json
+
 import pytest
 
 from app.core.patient_context import PatientContext, SymptomEntity

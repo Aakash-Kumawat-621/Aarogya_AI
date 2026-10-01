@@ -1,10 +1,12 @@
-import re
-import boto3
-import uuid
 import logging
+import re
+import uuid
+
+import boto3
 from botocore.exceptions import ClientError
+
 from app.config import settings
-from app.services.s3_service import upload_file, delete_file
+from app.services.s3_service import delete_file, upload_file
 
 logger = logging.getLogger(__name__)
 

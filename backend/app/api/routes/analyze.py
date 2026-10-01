@@ -113,8 +113,8 @@ async def analyze_symptoms(
     xray_result_ml = None
 
     try:
-        from app.modules.ml.symptom_classifier import classify_symptoms
         from app.modules.image.xray_classifier import classify_xray
+        from app.modules.ml.symptom_classifier import classify_symptoms
 
         # Run XGBoost and ResNet-50 concurrently (both CPU-bound, thread pool)
         xgb_task = asyncio.to_thread(classify_symptoms, context)
@@ -300,7 +300,7 @@ def _build_degraded_response(
     Graceful degradation response when RAG chain fails.
     Returns ML-backed urgency + top disease even without full diagnosis.
     """
-    from app.models.response_models import Urgency, SeverityLevel
+    from app.models.response_models import SeverityLevel, Urgency
 
     urgency = None
     if urgency_result:

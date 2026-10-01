@@ -18,7 +18,7 @@ from slowapi.util import get_remote_address
 
 from app.models.response_models import DoctorResult
 from app.modules.doctors.finder import find_doctors
-from app.modules.doctors.specialty_mapper import get_specialty_result, _CONDITION_MAP
+from app.modules.doctors.specialty_mapper import _CONDITION_MAP, get_specialty_result
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Doctors"])
