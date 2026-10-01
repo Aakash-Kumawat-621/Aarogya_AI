@@ -79,6 +79,7 @@ async def analyze_symptoms(
     # ── 3b. Sanitize and cap symptoms_text ────────────────────────────────
     if symptoms_text:
         import re
+
         # Strip HTML tags
         symptoms_text = re.sub(r"<[^>]+>", " ", symptoms_text)
         # Remove control characters (except newlines/tabs)
@@ -153,8 +154,13 @@ async def analyze_symptoms(
     urgency_result = None
     try:
         from app.modules.ml.severity_scorer import score_urgency
-        urgency_result = await asyncio.to_thread(score_urgency, context, xgb_predictions)
-        logger.info(f"Urgency: {urgency_result['level'].upper()} (ml_backed={urgency_result.get('ml_backed')})")
+
+        urgency_result = await asyncio.to_thread(
+            score_urgency, context, xgb_predictions
+        )
+        logger.info(
+            f"Urgency: {urgency_result['level'].upper()} (ml_backed={urgency_result.get('ml_backed')})"
+        )
     except Exception as e:
         logger.warning(f"Severity scorer failed (non-fatal): {e}")
         urgency_result = None
@@ -162,13 +168,22 @@ async def analyze_symptoms(
     # ── 8. RAG chain — enriched with ML context ───────────────────────────
     try:
         # Pass ML predictions into chain context
-        diagnosis = chain.run(context, ml_predictions={
-            "xgb_top_disease": xgb_predictions[0]["disease"] if xgb_predictions else None,
-            "xgb_top_prob": xgb_predictions[0]["probability"] if xgb_predictions else None,
-            "xgb_top3": xgb_predictions[:3] if xgb_predictions else [],
-            "urgency_level": urgency_result["level"] if urgency_result else None,
-            "xray_top_condition": xray_result_ml.get("top_condition") if xray_result_ml else None,
-        })
+        diagnosis = chain.run(
+            context,
+            ml_predictions={
+                "xgb_top_disease": (
+                    xgb_predictions[0]["disease"] if xgb_predictions else None
+                ),
+                "xgb_top_prob": (
+                    xgb_predictions[0]["probability"] if xgb_predictions else None
+                ),
+                "xgb_top3": xgb_predictions[:3] if xgb_predictions else [],
+                "urgency_level": urgency_result["level"] if urgency_result else None,
+                "xray_top_condition": (
+                    xray_result_ml.get("top_condition") if xray_result_ml else None
+                ),
+            },
+        )
     except Exception as e:
         logger.error(f"RAG chain failed: {e}")
         elapsed = int((time.time() - start_ms) * 1000)
@@ -184,17 +199,25 @@ async def analyze_symptoms(
     # Prefer ML-predicted specialist over RAG specialist ONLY IF confidence is decent
     # Otherwise, an empty feature vector defaults to "Urinary tract infection"
     primary_disease = None
-    if xgb_predictions and xgb_predictions[0].get("disease") and xgb_predictions[0].get("probability", 0) > 0.25:
+    if (
+        xgb_predictions
+        and xgb_predictions[0].get("disease")
+        and xgb_predictions[0].get("probability", 0) > 0.25
+    ):
         primary_disease = xgb_predictions[0]["disease"]
     specialist = None
     if primary_disease:
         spec_result = specialty_mapper.get_specialty_result(primary_disease)
         specialist = spec_result.primary
     if not specialist:
-        spec_result = specialty_mapper.get_specialty_result(context.primary_concern or "general")
+        spec_result = specialty_mapper.get_specialty_result(
+            context.primary_concern or "general"
+        )
         specialist = spec_result.primary
     if not specialist and diagnosis:
-        specialist = getattr(diagnosis, "specialist_needed", None) or "General Physician"
+        specialist = (
+            getattr(diagnosis, "specialist_needed", None) or "General Physician"
+        )
 
     # Get patient location from context if available
     loc = getattr(context, "location", None)
@@ -208,7 +231,9 @@ async def analyze_symptoms(
         lat=p_lat,
         lng=p_lng,
         urgency=urgency_result.get("level", "low") if urgency_result else "low",
-        emergency_dept=(urgency_result.get("call_emergency", False) if urgency_result else False),
+        emergency_dept=(
+            urgency_result.get("call_emergency", False) if urgency_result else False
+        ),
         top_k=3,
     )
 
@@ -224,15 +249,21 @@ async def analyze_symptoms(
     )
 
     # ── 11. CloudWatch metrics (fire-and-forget) ──────────────────────────
-    urgency_level = urgency_result.get("level", "unknown") if urgency_result else "unknown"
-    modalities_used = sum([
-        1 if symptoms_text else 0,
-        1 if xray_image else 0,
-        1 if body_photo else 0,
-        1 if prescription else 0,
-    ])
+    urgency_level = (
+        urgency_result.get("level", "unknown") if urgency_result else "unknown"
+    )
+    modalities_used = sum(
+        [
+            1 if symptoms_text else 0,
+            1 if xray_image else 0,
+            1 if body_photo else 0,
+            1 if prescription else 0,
+        ]
+    )
     await emit_metric("AnalyzeLatency", elapsed_ms, "Milliseconds")
-    await emit_metric("UrgencyDistribution", 1, "Count", {"UrgencyLevel": urgency_level.upper()})
+    await emit_metric(
+        "UrgencyDistribution", 1, "Count", {"UrgencyLevel": urgency_level.upper()}
+    )
     await emit_metric("InputModalities", modalities_used, "Count")
 
     # ── 12. Persist session (fire-and-forget) ─────────────────────────────
@@ -244,8 +275,12 @@ async def analyze_symptoms(
             "severity_level": diagnosis.severity_level,
             "specialist_needed": diagnosis.specialist_needed,
             "citations": diagnosis.citations,
-            "requires_emergency_attention": getattr(diagnosis, "requires_emergency_attention", False),
-            "ml_backed_disease": xgb_predictions[0]["disease"] if xgb_predictions else None,
+            "requires_emergency_attention": getattr(
+                diagnosis, "requires_emergency_attention", False
+            ),
+            "ml_backed_disease": (
+                xgb_predictions[0]["disease"] if xgb_predictions else None
+            ),
             "ml_urgency": urgency_result["level"] if urgency_result else None,
         }
         save_session(context.session_id, context_dict, diagnosis_dict)
@@ -282,7 +317,11 @@ def _build_degraded_response(
         )
 
     top_disease = xgb_predictions[0]["disease"] if xgb_predictions else None
-    disclaimer_prefix = "EMERGENCY: Call 112 immediately! " if (urgency_result and urgency_result.get("call_emergency")) else ""
+    disclaimer_prefix = (
+        "EMERGENCY: Call 112 immediately! "
+        if (urgency_result and urgency_result.get("call_emergency"))
+        else ""
+    )
 
     return AnalyzeResponse(
         session_id=context.session_id,

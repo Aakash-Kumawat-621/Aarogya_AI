@@ -82,13 +82,17 @@ def _load_model() -> None:
 
             model_path = LOCAL_DIR / "resnet50_xray.pt"
             if not model_path.exists():
-                logger.info(f"Downloading ResNet-50 TorchScript from s3://{bucket}/{MODEL_S3_KEY}")
+                logger.info(
+                    f"Downloading ResNet-50 TorchScript from s3://{bucket}/{MODEL_S3_KEY}"
+                )
                 s3.download_file(bucket, MODEL_S3_KEY, str(model_path))
 
             _model = torch.jit.load(str(model_path), map_location=torch.device("cpu"))
             _model.eval()
 
-            logger.info(f"ResNet-50 X-ray classifier loaded ✓ ({len(XRAY_CLASSES)} classes)")
+            logger.info(
+                f"ResNet-50 X-ray classifier loaded ✓ ({len(XRAY_CLASSES)} classes)"
+            )
 
         except Exception as e:
             logger.warning(
@@ -159,7 +163,7 @@ def classify_xray(image_bytes: bytes) -> dict:
         scores = torch.sigmoid(logits).squeeze().numpy()
 
         # Trim to match XRAY_CLASSES length
-        scores = scores[:len(XRAY_CLASSES)]
+        scores = scores[: len(XRAY_CLASSES)]
 
         # Build condition list
         conditions = [
@@ -175,7 +179,9 @@ def classify_xray(image_bytes: bytes) -> dict:
         conditions_sorted = sorted(conditions, key=lambda x: x["score"], reverse=True)
 
         # Top condition (highest score, excluding "No Finding" if other positives exist)
-        positive_conditions = [c["name"] for c in conditions if c["positive"] and c["name"] != "No Finding"]
+        positive_conditions = [
+            c["name"] for c in conditions if c["positive"] and c["name"] != "No Finding"
+        ]
         top = conditions_sorted[0]
 
         logger.info(
@@ -185,7 +191,9 @@ def classify_xray(image_bytes: bytes) -> dict:
 
         return {
             "conditions": conditions_sorted,
-            "top_condition": positive_conditions[0] if positive_conditions else top["name"],
+            "top_condition": (
+                positive_conditions[0] if positive_conditions else top["name"]
+            ),
             "top_score": top["score"],
             "positive_conditions": positive_conditions,
             "ml_backed": True,

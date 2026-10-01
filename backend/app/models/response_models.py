@@ -38,7 +38,7 @@ class DoctorResult(BaseModel):
     # Google Places enrichment (optional)
     google_place_id: Optional[str] = None
     is_open_now: Optional[bool] = None
-    source: str = "fallback"        # "google_places" | "nmc_registry" | "fallback"
+    source: str = "fallback"  # "google_places" | "nmc_registry" | "fallback"
 
     # Internal scoring — not serialized
     _score: float = 0.0

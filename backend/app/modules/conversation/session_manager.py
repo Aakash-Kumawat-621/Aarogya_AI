@@ -47,10 +47,12 @@ _memory_store: dict[str, dict] = {}
 
 # ── DynamoDB helpers ──────────────────────────────────────────────────────────
 
+
 def _get_table():
     """Return the DynamoDB Table resource, or None if unavailable."""
     try:
         import boto3
+
         dynamodb = boto3.resource(
             "dynamodb",
             region_name=settings.AWS_REGION,
@@ -68,6 +70,7 @@ def _ddb_put(session: dict) -> bool:
     try:
         import json
         from decimal import Decimal
+
         table = _get_table()
         if table is None:
             return False
@@ -119,6 +122,7 @@ def _ddb_update_status(session_id: str, status: str, final_diagnosis: dict) -> b
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
 
 def create_session(
     session_id: str,

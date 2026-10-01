@@ -22,7 +22,6 @@ from typing import Optional
 # ── Self-exam library ──────────────────────────────────────────────────────────
 
 SELF_EXAM_LIBRARY: dict[str, dict] = {
-
     "pulse_rate": {
         "id": "pulse_rate",
         "title": "Check Your Resting Pulse (Heart Rate)",
@@ -47,7 +46,6 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         "normal_range": "60–100 bpm (resting adult)",
         "differentiates": ["ACS vs Panic Attack", "Tachycardia vs Bradycardia"],
     },
-
     "breathing_rate": {
         "id": "breathing_rate",
         "title": "Count Your Breathing Rate",
@@ -66,9 +64,12 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         "min_value": 1,
         "max_value": 60,
         "normal_range": "12–20 breaths/min (adult at rest)",
-        "differentiates": ["Pneumonia vs Cardiac", "Asthma vs Anxiety", "PE vs Musculoskeletal"],
+        "differentiates": [
+            "Pneumonia vs Cardiac",
+            "Asthma vs Anxiety",
+            "PE vs Musculoskeletal",
+        ],
     },
-
     "pain_scale": {
         "id": "pain_scale",
         "title": "Rate Your Pain (1–10)",
@@ -93,7 +94,6 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         "normal_range": "0–3 is mild; ≥7 is medically significant",
         "differentiates": ["Acute vs Chronic", "Emergency vs Urgent"],
     },
-
     "skin_color": {
         "id": "skin_color",
         "title": "Check Skin and Lip Color",
@@ -117,9 +117,12 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         ],
         "unit": None,
         "normal_range": "Normal pink/healthy color",
-        "differentiates": ["Cardiac Emergency vs Non-Cardiac", "Liver Disease vs Anemia", "Cyanosis"],
+        "differentiates": [
+            "Cardiac Emergency vs Non-Cardiac",
+            "Liver Disease vs Anemia",
+            "Cyanosis",
+        ],
     },
-
     "capillary_refill": {
         "id": "capillary_refill",
         "title": "Capillary Refill Time (Circulation Check)",
@@ -141,7 +144,6 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         "normal_range": "<2 seconds is normal; >2 seconds may indicate poor circulation",
         "differentiates": ["Shock vs Normal", "Dehydration vs Cardiac"],
     },
-
     "grip_strength": {
         "id": "grip_strength",
         "title": "Compare Grip Strength (Both Hands)",
@@ -163,9 +165,11 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         ],
         "unit": None,
         "normal_range": "Both hands equally strong",
-        "differentiates": ["Stroke vs TIA vs Non-Neurological", "Unilateral vs Bilateral weakness"],
+        "differentiates": [
+            "Stroke vs TIA vs Non-Neurological",
+            "Unilateral vs Bilateral weakness",
+        ],
     },
-
     "facial_symmetry": {
         "id": "facial_symmetry",
         "title": "FAST Facial Symmetry Test (Stroke Screen)",
@@ -191,7 +195,6 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         "normal_range": "Symmetric movement on both sides",
         "differentiates": ["Stroke vs Bell's Palsy vs Non-Neurological"],
     },
-
     "skin_turgor": {
         "id": "skin_turgor",
         "title": "Skin Turgor (Dehydration Check)",
@@ -214,7 +217,6 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         "normal_range": "Snaps back immediately",
         "differentiates": ["Dehydration vs Normal", "Severe vs Mild dehydration"],
     },
-
     "urine_color": {
         "id": "urine_color",
         "title": "Urine Color Check",
@@ -238,9 +240,13 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         ],
         "unit": None,
         "normal_range": "Pale to medium yellow",
-        "differentiates": ["UTI vs Other", "Kidney stones", "Dehydration", "Liver disease"],
+        "differentiates": [
+            "UTI vs Other",
+            "Kidney stones",
+            "Dehydration",
+            "Liver disease",
+        ],
     },
-
     "temperature": {
         "id": "temperature",
         "title": "Body Temperature (If You Have a Thermometer)",
@@ -266,7 +272,11 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
         ],
         "unit": None,
         "normal_range": "98–99.5°F / 37–37.5°C",
-        "differentiates": ["Infection vs Non-Infection", "Fever severity", "Hypothermia"],
+        "differentiates": [
+            "Infection vs Non-Infection",
+            "Fever severity",
+            "Hypothermia",
+        ],
     },
 }
 
@@ -275,7 +285,12 @@ SELF_EXAM_LIBRARY: dict[str, dict] = {
 
 # Which self-exams help most when these conditions are in the differential
 CONDITION_EXAM_MAP: dict[str, list[str]] = {
-    "acute coronary syndrome": ["pulse_rate", "pain_scale", "skin_color", "capillary_refill"],
+    "acute coronary syndrome": [
+        "pulse_rate",
+        "pain_scale",
+        "skin_color",
+        "capillary_refill",
+    ],
     "acs": ["pulse_rate", "pain_scale", "skin_color"],
     "angina": ["pulse_rate", "pain_scale"],
     "stroke": ["facial_symmetry", "grip_strength", "pulse_rate"],

@@ -22,21 +22,26 @@ HIGH_CONFIDENCE_THRESHOLD = 0.70
 MEDIUM_CONFIDENCE_THRESHOLD = 0.40
 
 # EMERGENCY symptom/risk signals that bypass all follow-up
-EMERGENCY_SIGNALS = frozenset({
-    "cardiac_risk_critical",
-    "emergency",
-})
+EMERGENCY_SIGNALS = frozenset(
+    {
+        "cardiac_risk_critical",
+        "emergency",
+    }
+)
 
-EMERGENCY_SYMPTOMS = frozenset({
-    "chest_pain", "chest pain",
-    "loss_of_consciousness",
-    "slurred_speech",
-    "facial_droop",
-    "arm_weakness",
-    "weakness_of_one_body_side",
-    "coma",
-    "stomach_bleeding",
-})
+EMERGENCY_SYMPTOMS = frozenset(
+    {
+        "chest_pain",
+        "chest pain",
+        "loss_of_consciousness",
+        "slurred_speech",
+        "facial_droop",
+        "arm_weakness",
+        "weakness_of_one_body_side",
+        "coma",
+        "stomach_bleeding",
+    }
+)
 
 
 def check_emergency_bypass(context) -> bool:
@@ -51,9 +56,7 @@ def check_emergency_bypass(context) -> bool:
         return True
 
     # Check symptom entities
-    symptom_names = {
-        s.name.lower() for s in context.symptom_entities if not s.negated
-    }
+    symptom_names = {s.name.lower() for s in context.symptom_entities if not s.negated}
     if symptom_names & EMERGENCY_SYMPTOMS:
         logger.warning("Emergency bypass triggered by symptom")
         return True
@@ -101,20 +104,30 @@ def should_diagnose(
 
     # Medium confidence with low number of candidates → ask 1 round
     # If we've already asked that round (turn > 0) and still medium → diagnose
-    candidate_count = len([p for p in xgb_predictions if p.get("probability", 0) > 0.15])
+    candidate_count = len(
+        [p for p in xgb_predictions if p.get("probability", 0) > 0.15]
+    )
     if top_prob >= MEDIUM_CONFIDENCE_THRESHOLD:
         if turn > 0:
-            logger.info(f"Medium confidence ({top_prob:.2f}), turn={turn} — diagnosing after follow-up")
+            logger.info(
+                f"Medium confidence ({top_prob:.2f}), turn={turn} — diagnosing after follow-up"
+            )
             return True, "medium_confidence_after_followup"
-        logger.info(f"Medium confidence ({top_prob:.2f}) — asking follow-up questions (turn 1)")
+        logger.info(
+            f"Medium confidence ({top_prob:.2f}) — asking follow-up questions (turn 1)"
+        )
         return False, "medium_confidence_needs_followup"
 
     # Low confidence — ask up to 2 rounds
     if turn >= 2:
-        logger.info(f"Low confidence ({top_prob:.2f}), turn={turn} ≥ 2 — forcing diagnosis")
+        logger.info(
+            f"Low confidence ({top_prob:.2f}), turn={turn} ≥ 2 — forcing diagnosis"
+        )
         return True, "low_confidence_max_reached"
 
-    logger.info(f"Low confidence ({top_prob:.2f}), {candidate_count} candidates — asking questions")
+    logger.info(
+        f"Low confidence ({top_prob:.2f}), {candidate_count} candidates — asking questions"
+    )
     return False, "low_confidence_needs_followup"
 
 

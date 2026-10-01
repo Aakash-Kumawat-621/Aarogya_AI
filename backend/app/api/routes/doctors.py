@@ -30,7 +30,7 @@ class DoctorSearchResponse(BaseModel):
     specialty: str
     doctors: List[DoctorResult]
     total_found: int
-    source: str                   # "google_places" | "nmc_registry" | "fallback"
+    source: str  # "google_places" | "nmc_registry" | "fallback"
     location_used: bool
 
 
@@ -40,10 +40,18 @@ async def search_doctors(
     request: Request,
     condition: str = Query(..., description="Medical condition or symptom"),
     lat: Optional[float] = Query(None, ge=-90, le=90, description="Patient latitude"),
-    lng: Optional[float] = Query(None, ge=-180, le=180, description="Patient longitude"),
-    gender: Optional[str] = Query(None, description="Patient gender for specialty overrides"),
-    age: Optional[int] = Query(None, ge=0, le=120, description="Patient age for pediatric/geriatric routing"),
-    urgency: str = Query("low", description="Urgency level: low|moderate|urgent|emergency"),
+    lng: Optional[float] = Query(
+        None, ge=-180, le=180, description="Patient longitude"
+    ),
+    gender: Optional[str] = Query(
+        None, description="Patient gender for specialty overrides"
+    ),
+    age: Optional[int] = Query(
+        None, ge=0, le=120, description="Patient age for pediatric/geriatric routing"
+    ),
+    urgency: str = Query(
+        "low", description="Urgency level: low|moderate|urgent|emergency"
+    ),
     top_k: int = Query(5, ge=1, le=10),
 ):
     """
@@ -87,6 +95,7 @@ async def search_doctors(
 async def list_specialties():
     """Return all supported condition → specialist mappings."""
     from app.modules.doctors.specialty_mapper import _CONDITION_MAP
+
     specialties = sorted(set(v[0] for v in _CONDITION_MAP.values()))
     conditions_by_specialty: dict[str, list] = {}
     for condition, (spec, _, _) in _CONDITION_MAP.items():
@@ -95,5 +104,7 @@ async def list_specialties():
         "total_conditions": len(_CONDITION_MAP),
         "total_specialties": len(specialties),
         "specialties": sorted(specialties),
-        "conditions_by_specialty": {k: sorted(v) for k, v in sorted(conditions_by_specialty.items())},
+        "conditions_by_specialty": {
+            k: sorted(v) for k, v in sorted(conditions_by_specialty.items())
+        },
     }

@@ -19,7 +19,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 # --- Singletons (loaded once at module import) ----------------------------
-_nlp_model = None     # BioSentBERT sentence transformer
+_nlp_model = None  # BioSentBERT sentence transformer
 _pinecone_index = None  # Pinecone Index object
 
 
@@ -29,6 +29,7 @@ def _get_model():
     if _nlp_model is None:
         try:
             from sentence_transformers import SentenceTransformer
+
             logger.info("Loading BioSentBERT model…")
             _nlp_model = SentenceTransformer(
                 "pritamdeka/BioBERT-mnli-snli-scinli-scitail-mednli-stsb"
@@ -48,6 +49,7 @@ def _get_index():
             raise RuntimeError("PINECONE_API_KEY is not set")
         try:
             from pinecone import Pinecone
+
             pc = Pinecone(api_key=settings.PINECONE_API_KEY)
             _pinecone_index = pc.Index(settings.PINECONE_INDEX_NAME)
             logger.info(f"Pinecone index '{settings.PINECONE_INDEX_NAME}' connected ✓")
@@ -70,6 +72,7 @@ def _bm25_rerank(query: str, matches: list[dict], top_k: int) -> list[dict]:
     """
     try:
         from rank_bm25 import BM25Okapi
+
         texts = [m["metadata"].get("text", "") for m in matches]
         tokenized_corpus = [t.lower().split() for t in texts]
         bm25 = BM25Okapi(tokenized_corpus)
@@ -162,7 +165,9 @@ def retrieve(query: str, top_k: int = 5) -> dict:
             f"— fetching {HYBRID_CANDIDATE_K} candidates for BM25 reranking"
         )
         # Fetch a much larger pool from Pinecone
-        candidate_matches = _query_namespace(query_vector, "medical-kb", HYBRID_CANDIDATE_K)
+        candidate_matches = _query_namespace(
+            query_vector, "medical-kb", HYBRID_CANDIDATE_K
+        )
         if candidate_matches:
             # BM25 rerank over the FULL candidate pool → return best top_k
             medical_matches = _bm25_rerank(query, candidate_matches, top_k)
@@ -208,9 +213,7 @@ def retrieve(query: str, top_k: int = 5) -> dict:
     }
 
 
-def retrieve_for_namespace(
-    query: str, namespace: str, top_k: int = 5
-) -> list[dict]:
+def retrieve_for_namespace(query: str, namespace: str, top_k: int = 5) -> list[dict]:
     """
     Queries a single arbitrary namespace.
     Used by doctor finder (Module 5) to search hospital-db.

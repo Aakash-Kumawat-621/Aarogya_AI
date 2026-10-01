@@ -56,15 +56,27 @@ async def _process_symptoms(text: str):
         # Wrap CPU-bound tasks so they don't block the event loop
         result = await asyncio.to_thread(extract_symptoms, text)
         if isinstance(result, dict) and "extracted_symptoms" in result:
-            normalized = await asyncio.to_thread(normalize_all, result["extracted_symptoms"])
+            normalized = await asyncio.to_thread(
+                normalize_all, result["extracted_symptoms"]
+            )
             result["extracted_symptoms"] = normalized
             return result
         else:
             # Fallback for old tuple return type or unexpected result
-            return {"extracted_symptoms": [], "disease_history_mentions": [], "raw_text": text, "confidence": 0.0}
+            return {
+                "extracted_symptoms": [],
+                "disease_history_mentions": [],
+                "raw_text": text,
+                "confidence": 0.0,
+            }
     except Exception as e:
         logger.error(f"Error processing symptoms: {e}")
-        return {"extracted_symptoms": [], "disease_history_mentions": [], "raw_text": text, "confidence": 0.0}
+        return {
+            "extracted_symptoms": [],
+            "disease_history_mentions": [],
+            "raw_text": text,
+            "confidence": 0.0,
+        }
 
 
 async def _process_xray(image_bytes: bytes):

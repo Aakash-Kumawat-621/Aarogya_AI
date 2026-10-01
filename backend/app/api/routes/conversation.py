@@ -39,10 +39,11 @@ MAX_SYMPTOMS_LEN = 2000
 
 # ── Pydantic response models ───────────────────────────────────────────────────
 
+
 class FollowUpQuestion(BaseModel):
     id: str
     text: str
-    type: str                       # "yes_no" | "multiple_choice"
+    type: str  # "yes_no" | "multiple_choice"
     options: Optional[list[str]] = None
 
 
@@ -51,7 +52,7 @@ class SelfExamInstruction(BaseModel):
     title: str
     why_useful: str
     steps: list[str]
-    input_type: str                  # "number" | "choice" | "text"
+    input_type: str  # "number" | "choice" | "text"
     unit: Optional[str] = None
     choices: Optional[list[str]] = None
     normal_range: Optional[str] = None
@@ -59,7 +60,7 @@ class SelfExamInstruction(BaseModel):
 
 class ConversationResponse(BaseModel):
     session_id: str
-    status: str                      # "needs_followup" | "complete"
+    status: str  # "needs_followup" | "complete"
     turn: int
     # Populated when status == "needs_followup"
     initial_analysis: Optional[str] = None
@@ -79,6 +80,7 @@ class ConversationResponse(BaseModel):
 
 # ── Helper: run the full diagnosis pipeline ───────────────────────────────────
 
+
 async def _run_full_diagnosis(
     context,
     xgb_predictions: list[dict],
@@ -94,13 +96,20 @@ async def _run_full_diagnosis(
     from app.core.response_builder import build_response
 
     try:
-        diagnosis = chain.run(context, ml_predictions={
-            "xgb_top_disease": xgb_predictions[0]["disease"] if xgb_predictions else None,
-            "xgb_top_prob": xgb_predictions[0]["probability"] if xgb_predictions else None,
-            "xgb_top3": xgb_predictions[:3] if xgb_predictions else [],
-            "urgency_level": urgency_result["level"] if urgency_result else None,
-            "xray_top_condition": None,
-        })
+        diagnosis = chain.run(
+            context,
+            ml_predictions={
+                "xgb_top_disease": (
+                    xgb_predictions[0]["disease"] if xgb_predictions else None
+                ),
+                "xgb_top_prob": (
+                    xgb_predictions[0]["probability"] if xgb_predictions else None
+                ),
+                "xgb_top3": xgb_predictions[:3] if xgb_predictions else [],
+                "urgency_level": urgency_result["level"] if urgency_result else None,
+                "xray_top_condition": None,
+            },
+        )
     except Exception as e:
         logger.error(f"RAG chain failed in conversation: {e}")
         diagnosis = None
@@ -108,7 +117,9 @@ async def _run_full_diagnosis(
     # Doctor finder
     specialist = None
     if xgb_predictions:
-        specialist = specialty_mapper.map_to_specialty(xgb_predictions[0].get("disease", ""))
+        specialist = specialty_mapper.map_to_specialty(
+            xgb_predictions[0].get("disease", "")
+        )
     if not specialist and diagnosis:
         specialist = getattr(diagnosis, "specialist_needed", None)
     doctors = finder.find_doctors(specialist, top_k=3)
@@ -137,7 +148,7 @@ async def _run_full_diagnosis(
             "citations": diagnosis.citations,
             "requires_emergency_attention": diagnosis.requires_emergency_attention,
         }
-    
+
     if urgency_result:
         urgency_dict = {
             "level": urgency_result["level"],
@@ -148,7 +159,7 @@ async def _run_full_diagnosis(
         }
 
     doctors_list = []
-    for d in (doctors or []):
+    for d in doctors or []:
         if isinstance(d, dict):
             doctors_list.append(d)
         else:
@@ -172,6 +183,7 @@ async def _run_full_diagnosis(
 
 # ── POST /session/start ────────────────────────────────────────────────────────
 
+
 @router.post("/start", response_model=ConversationResponse)
 async def start_session(
     symptoms_text: str = Form(...),
@@ -194,6 +206,7 @@ async def start_session(
     # ── Parse patient profile ─────────────────────────────────────────────
     try:
         from pydantic import ValidationError
+
         patient_dict = json.loads(patient)
         patient_profile = PatientProfile(**patient_dict)
     except (json.JSONDecodeError, Exception) as e:
@@ -201,6 +214,7 @@ async def start_session(
 
     # ── Sanitize symptoms ─────────────────────────────────────────────────
     import re
+
     symptoms_text = re.sub(r"<[^>]+>", " ", symptoms_text)
     symptoms_text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", symptoms_text)
     symptoms_text = " ".join(symptoms_text.split())
@@ -235,6 +249,7 @@ async def start_session(
     xgb_predictions = []
     try:
         from app.modules.ml.symptom_classifier import classify_symptoms
+
         xgb_predictions = await asyncio.to_thread(classify_symptoms, context)
     except Exception as e:
         logger.warning(f"XGBoost failed in conversation start: {e}")
@@ -243,7 +258,10 @@ async def start_session(
     urgency_result = None
     try:
         from app.modules.ml.severity_scorer import score_urgency
-        urgency_result = await asyncio.to_thread(score_urgency, context, xgb_predictions)
+
+        urgency_result = await asyncio.to_thread(
+            score_urgency, context, xgb_predictions
+        )
     except Exception as e:
         logger.warning(f"Severity scorer failed: {e}")
 
@@ -253,7 +271,9 @@ async def start_session(
         emergency_bypass = True
 
     if emergency_bypass:
-        logger.warning(f"Emergency bypass — skipping follow-up for session {session_id}")
+        logger.warning(
+            f"Emergency bypass — skipping follow-up for session {session_id}"
+        )
         result = await _run_full_diagnosis(
             context, xgb_predictions, urgency_result, session_id, start_ms
         )
@@ -314,11 +334,10 @@ async def start_session(
     )
 
     # ── Build response ────────────────────────────────────────────────────
-    questions = [
-        FollowUpQuestion(**q) for q in question_data.get("questions", [])
-    ]
+    questions = [FollowUpQuestion(**q) for q in question_data.get("questions", [])]
     self_exams = [
-        SelfExamInstruction(**e) for e in question_data.get("recommended_self_exams", [])
+        SelfExamInstruction(**e)
+        for e in question_data.get("recommended_self_exams", [])
     ]
 
     top_prob = xgb_predictions[0]["probability"] if xgb_predictions else 0.0
@@ -342,10 +361,11 @@ async def start_session(
 
 # ── POST /session/respond ──────────────────────────────────────────────────────
 
+
 @router.post("/respond", response_model=ConversationResponse)
 async def respond_to_session(
     session_id: str = Form(...),
-    answers: str = Form(...),         # JSON dict: {"q1": "Dull/pressure", "q2": "yes"}
+    answers: str = Form(...),  # JSON dict: {"q1": "Dull/pressure", "q2": "yes"}
     self_exam_results: str = Form(default="{}"),  # JSON dict: {"pulse_rate": 108}
 ):
     """
@@ -370,15 +390,20 @@ async def respond_to_session(
         answers_dict = json.loads(answers)
         self_exam_dict = json.loads(self_exam_results)
     except json.JSONDecodeError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON in answers or self_exam_results: {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid JSON in answers or self_exam_results: {e}"
+        )
 
     # ── Rebuild enriched patient context ──────────────────────────────────
     patient_profile_dict = session.get("patient_profile", {})
     try:
         from pydantic import ValidationError
+
         patient_profile = PatientProfile(**patient_profile_dict)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Session patient profile corrupted: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Session patient profile corrupted: {e}"
+        )
 
     # Merge all accumulated data into enriched symptoms text
     # First save this turn's data to get the full accumulated picture
@@ -412,6 +437,7 @@ async def respond_to_session(
     xgb_predictions = []
     try:
         from app.modules.ml.symptom_classifier import classify_symptoms
+
         xgb_predictions = await asyncio.to_thread(classify_symptoms, context)
     except Exception as e:
         logger.warning(f"XGBoost failed in conversation respond: {e}")
@@ -421,6 +447,7 @@ async def respond_to_session(
     # Update the session's differential in-memory (no new turn increment)
     if xgb_predictions:
         from app.modules.conversation import session_manager as sm
+
         cached = sm._memory_store.get(session_id)
         if cached:
             cached["differential_diagnoses"] = xgb_predictions[:3]
@@ -432,7 +459,10 @@ async def respond_to_session(
     urgency_result = None
     try:
         from app.modules.ml.severity_scorer import score_urgency
-        urgency_result = await asyncio.to_thread(score_urgency, context, xgb_predictions)
+
+        urgency_result = await asyncio.to_thread(
+            score_urgency, context, xgb_predictions
+        )
     except Exception as e:
         logger.warning(f"Severity scorer failed: {e}")
 
@@ -454,13 +484,20 @@ async def respond_to_session(
 
     # ── Decide: diagnose now or ask another round ─────────────────────────
     should_dx, reason = confidence_evaluator.should_diagnose(
-        xgb_predictions, turn=current_turn, context=context, urgency_result=urgency_result
+        xgb_predictions,
+        turn=current_turn,
+        context=context,
+        urgency_result=urgency_result,
     )
     confidence_note = confidence_evaluator.get_confidence_note(reason, current_turn)
 
     if should_dx:
         result = await _run_full_diagnosis(
-            context, xgb_predictions, urgency_result, session_id, start_ms,
+            context,
+            xgb_predictions,
+            urgency_result,
+            session_id,
+            start_ms,
             confidence_note=confidence_note,
         )
         return ConversationResponse(
@@ -492,7 +529,10 @@ async def respond_to_session(
         )
 
     questions = [FollowUpQuestion(**q) for q in question_data.get("questions", [])]
-    self_exams = [SelfExamInstruction(**e) for e in question_data.get("recommended_self_exams", [])]
+    self_exams = [
+        SelfExamInstruction(**e)
+        for e in question_data.get("recommended_self_exams", [])
+    ]
 
     elapsed_ms = int((time.time() - start_ms) * 1000)
     return ConversationResponse(
@@ -507,6 +547,7 @@ async def respond_to_session(
 
 
 # ── GET /session/{session_id} ──────────────────────────────────────────────────
+
 
 @router.get("/{session_id}")
 async def get_session(session_id: str):

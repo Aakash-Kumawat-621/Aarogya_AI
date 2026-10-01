@@ -33,15 +33,17 @@ logger = logging.getLogger(__name__)
 # Output data class
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class DiagnosisResult:
     """Structured diagnosis output from the RAG chain."""
+
     condition_name: str
-    confidence: float                   # 0.0 – 1.0
-    explanation: str                    # Plain-English for the patient
-    severity_level: str                 # "low" | "moderate" | "urgent" | "emergency"
+    confidence: float  # 0.0 – 1.0
+    explanation: str  # Plain-English for the patient
+    severity_level: str  # "low" | "moderate" | "urgent" | "emergency"
     specialist_needed: str
-    citations: List[str] = field(default_factory=list)   # PMIDs cited
+    citations: List[str] = field(default_factory=list)  # PMIDs cited
     requires_emergency_attention: bool = False
     drug_interactions_noted: List[str] = field(default_factory=list)
     retrieval_method: str = "dense"
@@ -89,6 +91,7 @@ OUTPUT FORMAT — return exactly this JSON schema (no other text):
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _build_prompt(
     context: PatientContext,
@@ -144,7 +147,9 @@ def _build_prompt(
     patient_section = (
         f"PATIENT PROFILE:\n"
         f"  Age: {age} | Gender: {gender} | BMI: {bmi_str}\n"
-        f"  Smoking: {smoking}" + (f" ({pack_years} pack-years)" if pack_years else "") + "\n"
+        f"  Smoking: {smoking}"
+        + (f" ({pack_years} pack-years)" if pack_years else "")
+        + "\n"
         f"  Alcohol: {f'{alcohol} units/week' if alcohol is not None else 'unknown'}\n"
         f"  Activity level: {activity or 'unknown'} | Sleep: {f'{sleep}h/night' if sleep else 'unknown'}\n"
         f"  Known conditions: {', '.join(conditions) or 'none'}\n"
@@ -190,8 +195,11 @@ def _build_prompt(
             f"{xgb_summary}"
             f"  Computed urgency (LightGBM/rule-based): {urgency}\n"
             + (f"  X-ray model finding: {xray}\n" if xray else "")
-            + (f"  ⚡ Ensemble signal: XGBoost and retrieved KB both suggest similar condition — higher confidence warranted.\n"
-               if ensemble_agreement else "")
+            + (
+                f"  ⚡ Ensemble signal: XGBoost and retrieved KB both suggest similar condition — higher confidence warranted.\n"
+                if ensemble_agreement
+                else ""
+            )
         )
 
     # Format retrieved medical chunks
@@ -236,7 +244,7 @@ def _call_bedrock(prompt: str, max_retries: int = 3) -> str:
         "system": [{"text": _SYSTEM_PROMPT}],
         "inferenceConfig": {
             "maxTokens": 1024,
-            "temperature": 0.1,   # Low temperature for consistent medical output
+            "temperature": 0.1,  # Low temperature for consistent medical output
             "topP": 0.9,
         },
     }
@@ -254,7 +262,7 @@ def _call_bedrock(prompt: str, max_retries: int = 3) -> str:
         except ClientError as e:
             code = e.response["Error"]["Code"]
             if code == "ThrottlingException" and attempt < max_retries - 1:
-                wait = 2 ** attempt
+                wait = 2**attempt
                 logger.warning(f"Bedrock throttled - retrying in {wait}s")
                 time.sleep(wait)
             else:
@@ -285,7 +293,9 @@ def _parse_response(text: str, context: PatientContext) -> DiagnosisResult:
         )
 
     # Safety override: if cardiac_risk_critical + chest pain +' always emergency
-    active = {s.canonical_form or s.name for s in context.symptom_entities if not s.negated}
+    active = {
+        s.canonical_form or s.name for s in context.symptom_entities if not s.negated
+    }
     cardiac_symptoms = {"chest pain", "palpitations", "shortness of breath"}
     if "cardiac_risk_critical" in context.risk_flags and active & cardiac_symptoms:
         data["requires_emergency_attention"] = True
@@ -298,7 +308,9 @@ def _parse_response(text: str, context: PatientContext) -> DiagnosisResult:
         severity_level=data.get("severity_level", "moderate"),
         specialist_needed=data.get("specialist_needed", "General Physician"),
         citations=data.get("citations", []),
-        requires_emergency_attention=bool(data.get("requires_emergency_attention", False)),
+        requires_emergency_attention=bool(
+            data.get("requires_emergency_attention", False)
+        ),
         drug_interactions_noted=data.get("drug_interactions_noted", []),
     )
 
@@ -306,6 +318,7 @@ def _parse_response(text: str, context: PatientContext) -> DiagnosisResult:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def run(context: PatientContext, ml_predictions: dict = None) -> DiagnosisResult:
     """

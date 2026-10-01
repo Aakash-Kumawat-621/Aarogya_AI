@@ -30,25 +30,30 @@ from app.models.response_models import DoctorResult
 
 logger = logging.getLogger(__name__)
 
-OVERPASS_URL    = "https://overpass-api.de/api/interpreter"
-CACHE_TABLE     = "mediassist-doctor-cache"
+OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+CACHE_TABLE = "mediassist-doctor-cache"
 HOSPITALS_TABLE = settings.DYNAMODB_HOSPITALS_TABLE
 CACHE_TTL_HOURS = 24
 
 
 # ── Geometry ──────────────────────────────────────────────────────────────────
 
+
 def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     R = 6371.0
     d_lat = math.radians(lat2 - lat1)
     d_lng = math.radians(lng2 - lng1)
-    a = (math.sin(d_lat / 2) ** 2
-         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
-         * math.sin(d_lng / 2) ** 2)
+    a = (
+        math.sin(d_lat / 2) ** 2
+        + math.cos(math.radians(lat1))
+        * math.cos(math.radians(lat2))
+        * math.sin(d_lng / 2) ** 2
+    )
     return R * 2 * math.asin(math.sqrt(a))
 
 
 # ── DynamoDB cache ────────────────────────────────────────────────────────────
+
 
 def _cache_key(condition: str, lat: float, lng: float) -> str:
     raw = f"{condition.lower()}_{lat:.2f}_{lng:.2f}"
@@ -58,6 +63,7 @@ def _cache_key(condition: str, lat: float, lng: float) -> str:
 def _get_dynamo_table(table_name: str):
     try:
         import boto3
+
         dynamo = boto3.resource("dynamodb", **settings.boto3_kwargs)
         return dynamo.Table(table_name)
     except Exception:
@@ -81,7 +87,9 @@ def _load_cache(condition: str, lat: float, lng: float) -> Optional[List[DoctorR
         return None
 
 
-def _save_cache(condition: str, lat: float, lng: float, doctors: List[DoctorResult]) -> None:
+def _save_cache(
+    condition: str, lat: float, lng: float, doctors: List[DoctorResult]
+) -> None:
     try:
         table = _get_dynamo_table(CACHE_TABLE)
         if not table:
@@ -89,21 +97,26 @@ def _save_cache(condition: str, lat: float, lng: float, doctors: List[DoctorResu
         key = _cache_key(condition, lat, lng)
         expires = int(time.time()) + CACHE_TTL_HOURS * 3600
         raw = json.dumps([d.dict() for d in doctors])
-        table.put_item(Item={
-            "cache_key": key,
-            "condition": condition,
-            "lat": Decimal(str(round(lat, 2))),
-            "lng": Decimal(str(round(lng, 2))),
-            "data": raw,
-            "expires_at": expires,
-        })
+        table.put_item(
+            Item={
+                "cache_key": key,
+                "condition": condition,
+                "lat": Decimal(str(round(lat, 2))),
+                "lng": Decimal(str(round(lng, 2))),
+                "data": raw,
+                "expires_at": expires,
+            }
+        )
     except Exception as e:
         logger.debug(f"Cache save failed: {e}")
 
 
 # ── OpenStreetMap Overpass API ────────────────────────────────────────────────
 
-def _build_overpass_query(lat: float, lng: float, radius_m: int, emergency_only: bool) -> str:
+
+def _build_overpass_query(
+    lat: float, lng: float, radius_m: int, emergency_only: bool
+) -> str:
     if emergency_only:
         return (
             f"[out:json][timeout:15];\n"
@@ -135,11 +148,19 @@ def _osm_name(tags: dict) -> str:
 
 
 def _osm_phone(tags: dict) -> str:
-    return tags.get("contact:phone") or tags.get("phone") or tags.get("contact:mobile") or ""
+    return (
+        tags.get("contact:phone")
+        or tags.get("phone")
+        or tags.get("contact:mobile")
+        or ""
+    )
 
 
 def _osm_address(tags: dict) -> str:
-    parts = [tags.get(k, "") for k in ("addr:housenumber", "addr:street", "addr:suburb", "addr:city")]
+    parts = [
+        tags.get(k, "")
+        for k in ("addr:housenumber", "addr:street", "addr:suburb", "addr:city")
+    ]
     return ", ".join(p for p in parts if p) or tags.get("addr:full", "")
 
 
@@ -172,8 +193,12 @@ async def _search_overpass(
 
     # Retry with double radius if no results (max 30km)
     if not elements and radius_km < 30:
-        logger.info(f"Overpass: 0 results at {radius_km}km, expanding to {radius_km * 2}km")
-        return await _search_overpass(lat, lng, radius_km * 2, specialty, emergency_only, top_k)
+        logger.info(
+            f"Overpass: 0 results at {radius_km}km, expanding to {radius_km * 2}km"
+        )
+        return await _search_overpass(
+            lat, lng, radius_km * 2, specialty, emergency_only, top_k
+        )
 
     results: List[DoctorResult] = []
     for el in elements:
@@ -186,19 +211,21 @@ async def _search_overpass(
         el_lng = float(el.get("lon") or el.get("center", {}).get("lon") or lng)
         dist_km = _haversine_km(lat, lng, el_lat, el_lng)
 
-        results.append(DoctorResult(
-            name=name,
-            specialty=specialty,
-            hospital=name,
-            rating=4.0,
-            distance_km=round(dist_km, 1),
-            phone=_osm_phone(tags),
-            address=_osm_address(tags),
-            google_place_id=f"osm:{el.get('type', 'n')}/{el.get('id', '')}",
-            is_open_now=None,
-            source="openstreetmap",
-            _score=_composite_score(dist_km, radius_km),
-        ))
+        results.append(
+            DoctorResult(
+                name=name,
+                specialty=specialty,
+                hospital=name,
+                rating=4.0,
+                distance_km=round(dist_km, 1),
+                phone=_osm_phone(tags),
+                address=_osm_address(tags),
+                google_place_id=f"osm:{el.get('type', 'n')}/{el.get('id', '')}",
+                is_open_now=None,
+                source="openstreetmap",
+                _score=_composite_score(dist_km, radius_km),
+            )
+        )
 
     results.sort(key=lambda d: d._score, reverse=True)
     return results[:top_k]
@@ -206,10 +233,14 @@ async def _search_overpass(
 
 # ── NMC / DynamoDB registry fallback ─────────────────────────────────────────
 
-def _query_nmc_fallback(specialty: str, lat: float, lng: float, top_k: int = 5) -> List[DoctorResult]:
+
+def _query_nmc_fallback(
+    specialty: str, lat: float, lng: float, top_k: int = 5
+) -> List[DoctorResult]:
     """Query seeded hospital table by specialty. Max 50km radius."""
     try:
         from boto3.dynamodb.conditions import Attr
+
         table = _get_dynamo_table(HOSPITALS_TABLE)
         if not table:
             return []
@@ -217,21 +248,25 @@ def _query_nmc_fallback(specialty: str, lat: float, lng: float, top_k: int = 5) 
         items = resp.get("Items", [])
         doctors = []
         for item in items:
-            dist_km = _haversine_km(lat, lng, float(item.get("lat", lat)), float(item.get("lng", lng)))
+            dist_km = _haversine_km(
+                lat, lng, float(item.get("lat", lat)), float(item.get("lng", lng))
+            )
             if dist_km > 50:
                 continue
-            doctors.append(DoctorResult(
-                name=item.get("name", "Unknown"),
-                specialty=item.get("specialty", specialty),
-                hospital=item.get("hospital", item.get("name", "Unknown")),
-                rating=float(item.get("rating", 4.0)),
-                distance_km=round(dist_km, 1),
-                phone=item.get("phone", ""),
-                address=item.get("address", ""),
-                google_place_id=item.get("google_place_id") or None,
-                is_open_now=None,
-                source="nmc_registry",
-            ))
+            doctors.append(
+                DoctorResult(
+                    name=item.get("name", "Unknown"),
+                    specialty=item.get("specialty", specialty),
+                    hospital=item.get("hospital", item.get("name", "Unknown")),
+                    rating=float(item.get("rating", 4.0)),
+                    distance_km=round(dist_km, 1),
+                    phone=item.get("phone", ""),
+                    address=item.get("address", ""),
+                    google_place_id=item.get("google_place_id") or None,
+                    is_open_now=None,
+                    source="nmc_registry",
+                )
+            )
         doctors.sort(key=lambda d: d.distance_km)
         return doctors[:top_k]
     except Exception as e:
@@ -243,42 +278,102 @@ def _query_nmc_fallback(specialty: str, lat: float, lng: float, top_k: int = 5) 
 
 _HARDCODED: dict = {
     "Cardiologist": [
-        dict(name="Apex Hospital Jaipur", hospital="Apex Hospital", rating=4.8, distance_km=2.5,
-             phone="+91-141-2700000", address="SP-4, Malviya Nagar, Jaipur"),
-        dict(name="Fortis Escorts Hospital", hospital="Fortis Escorts", rating=4.7, distance_km=3.2,
-             phone="+91-141-2547000", address="JLN Marg, Jaipur"),
+        dict(
+            name="Apex Hospital Jaipur",
+            hospital="Apex Hospital",
+            rating=4.8,
+            distance_km=2.5,
+            phone="+91-141-2700000",
+            address="SP-4, Malviya Nagar, Jaipur",
+        ),
+        dict(
+            name="Fortis Escorts Hospital",
+            hospital="Fortis Escorts",
+            rating=4.7,
+            distance_km=3.2,
+            phone="+91-141-2547000",
+            address="JLN Marg, Jaipur",
+        ),
     ],
     "Pulmonologist": [
-        dict(name="SMS Medical College & Hospital", hospital="SMS Hospital", rating=4.6, distance_km=3.5,
-             phone="+91-141-2518501", address="JLN Marg, Jaipur"),
+        dict(
+            name="SMS Medical College & Hospital",
+            hospital="SMS Hospital",
+            rating=4.6,
+            distance_km=3.5,
+            phone="+91-141-2518501",
+            address="JLN Marg, Jaipur",
+        ),
     ],
     "Neurologist": [
-        dict(name="RUHS College of Medical Sciences", hospital="RUHS", rating=4.7, distance_km=5.0,
-             phone="+91-141-2703000", address="Sector-11, Pratap Nagar, Jaipur"),
+        dict(
+            name="RUHS College of Medical Sciences",
+            hospital="RUHS",
+            rating=4.7,
+            distance_km=5.0,
+            phone="+91-141-2703000",
+            address="Sector-11, Pratap Nagar, Jaipur",
+        ),
     ],
     "Gastroenterologist": [
-        dict(name="Narayana Multispeciality Hospital", hospital="Narayana Hospital", rating=4.5, distance_km=4.2,
-             phone="+91-141-7161000", address="Pratap Nagar, Jaipur"),
+        dict(
+            name="Narayana Multispeciality Hospital",
+            hospital="Narayana Hospital",
+            rating=4.5,
+            distance_km=4.2,
+            phone="+91-141-7161000",
+            address="Pratap Nagar, Jaipur",
+        ),
     ],
     "Orthopedist": [
-        dict(name="Santokba Durlabhji Memorial Hospital", hospital="SD Hospital", rating=4.6, distance_km=2.8,
-             phone="+91-141-2566251", address="Bhawani Singh Marg, Jaipur"),
+        dict(
+            name="Santokba Durlabhji Memorial Hospital",
+            hospital="SD Hospital",
+            rating=4.6,
+            distance_km=2.8,
+            phone="+91-141-2566251",
+            address="Bhawani Singh Marg, Jaipur",
+        ),
     ],
     "Dermatologist": [
-        dict(name="Skin Care Centre Jaipur", hospital="Skin Care Centre", rating=4.4, distance_km=1.5,
-             phone="+91-98280-11111", address="C-Scheme, Jaipur"),
+        dict(
+            name="Skin Care Centre Jaipur",
+            hospital="Skin Care Centre",
+            rating=4.4,
+            distance_km=1.5,
+            phone="+91-98280-11111",
+            address="C-Scheme, Jaipur",
+        ),
     ],
     "Endocrinologist": [
-        dict(name="Mahatma Gandhi Hospital Jaipur", hospital="MG Hospital", rating=4.5, distance_km=6.0,
-             phone="+91-141-2294301", address="Sitapura, Jaipur"),
+        dict(
+            name="Mahatma Gandhi Hospital Jaipur",
+            hospital="MG Hospital",
+            rating=4.5,
+            distance_km=6.0,
+            phone="+91-141-2294301",
+            address="Sitapura, Jaipur",
+        ),
     ],
     "Psychiatrist": [
-        dict(name="Institute of Mental Health Jaipur", hospital="IMH Jaipur", rating=4.3, distance_km=4.5,
-             phone="+91-141-2566803", address="JLN Marg, Jaipur"),
+        dict(
+            name="Institute of Mental Health Jaipur",
+            hospital="IMH Jaipur",
+            rating=4.3,
+            distance_km=4.5,
+            phone="+91-141-2566803",
+            address="JLN Marg, Jaipur",
+        ),
     ],
     "General Physician": [
-        dict(name="Apex Hospital Jaipur", hospital="Apex Hospital", rating=4.8, distance_km=2.5,
-             phone="+91-141-2700000", address="SP-4, Malviya Nagar, Jaipur"),
+        dict(
+            name="Apex Hospital Jaipur",
+            hospital="Apex Hospital",
+            rating=4.8,
+            distance_km=2.5,
+            phone="+91-141-2700000",
+            address="SP-4, Malviya Nagar, Jaipur",
+        ),
     ],
 }
 
@@ -287,16 +382,23 @@ def _hardcoded_fallback(specialty: str, top_k: int) -> List[DoctorResult]:
     bucket = _HARDCODED.get(specialty) or _HARDCODED.get("General Physician", [])
     return [
         DoctorResult(
-            name=d["name"], specialty=specialty, hospital=d["hospital"],
-            rating=d["rating"], distance_km=d["distance_km"],
-            phone=d["phone"], address=d["address"],
-            google_place_id=None, is_open_now=None, source="fallback",
+            name=d["name"],
+            specialty=specialty,
+            hospital=d["hospital"],
+            rating=d["rating"],
+            distance_km=d["distance_km"],
+            phone=d["phone"],
+            address=d["address"],
+            google_place_id=None,
+            is_open_now=None,
+            source="fallback",
         )
         for d in bucket[:top_k]
     ]
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
 
 async def find_doctors(
     condition: str,
@@ -333,10 +435,14 @@ async def find_doctors(
     # 2. OpenStreetMap Overpass (free)
     if has_location:
         try:
-            doctors = await _search_overpass(lat, lng, radius_km, specialty, emergency_only, top_k)
+            doctors = await _search_overpass(
+                lat, lng, radius_km, specialty, emergency_only, top_k
+            )
             if doctors:
                 _save_cache(condition, lat, lng, doctors)
-                logger.info(f"OpenStreetMap returned {len(doctors)} results for {specialty}")
+                logger.info(
+                    f"OpenStreetMap returned {len(doctors)} results for {specialty}"
+                )
                 return doctors
         except Exception as e:
             logger.warning(f"Overpass search error: {e} — falling back")

@@ -10,7 +10,6 @@ context fields requires only a new entry in the mapper dictionaries.
 
 from app.core.patient_context import PatientContext
 
-
 # Maps risk_flag → plain-English phrase added to the query.
 # Add new entries here to extend without changing build_query().
 _RISK_FLAG_PHRASES = {
@@ -79,9 +78,7 @@ def build_query(context: PatientContext) -> str:
 
     # 4. Risk flags → human-readable phrases
     flag_phrases = [
-        _RISK_FLAG_PHRASES[f]
-        for f in context.risk_flags
-        if f in _RISK_FLAG_PHRASES
+        _RISK_FLAG_PHRASES[f] for f in context.risk_flags if f in _RISK_FLAG_PHRASES
     ]
     if flag_phrases:
         parts.append(f"Risk factors: {', '.join(flag_phrases)}")

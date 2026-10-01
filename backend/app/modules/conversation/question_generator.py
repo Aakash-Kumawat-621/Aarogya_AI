@@ -97,7 +97,10 @@ def generate_followup_questions(
 
     profile = context.patient_profile
     active_symptoms = [s for s in context.symptom_entities if not s.negated]
-    symptom_list = ", ".join(s.canonical_form or s.name for s in active_symptoms) or "not specified"
+    symptom_list = (
+        ", ".join(s.canonical_form or s.name for s in active_symptoms)
+        or "not specified"
+    )
 
     # Build differentials summary
     differentials_text = ""
@@ -145,7 +148,7 @@ def generate_followup_questions(
                 break
             except ClientError as e:
                 if e.response["Error"]["Code"] == "ThrottlingException" and attempt < 2:
-                    time.sleep(2 ** attempt)
+                    time.sleep(2**attempt)
                 else:
                     raise
 
@@ -187,7 +190,9 @@ def generate_followup_questions(
         return _fallback_questions(xgb_predictions, available_exam_ids)
 
 
-def _fallback_questions(xgb_predictions: list[dict], available_exam_ids: list[str]) -> dict:
+def _fallback_questions(
+    xgb_predictions: list[dict], available_exam_ids: list[str]
+) -> dict:
     """
     Static fallback questions when Bedrock is unavailable.
     """
@@ -201,7 +206,12 @@ def _fallback_questions(xgb_predictions: list[dict], available_exam_ids: list[st
                 "id": "q1",
                 "text": "On a scale of 1-10, how severe is your current discomfort?",
                 "type": "multiple_choice",
-                "options": ["1-3 (mild)", "4-6 (moderate)", "7-9 (severe)", "10 (worst ever)"],
+                "options": [
+                    "1-3 (mild)",
+                    "4-6 (moderate)",
+                    "7-9 (severe)",
+                    "10 (worst ever)",
+                ],
             },
             {
                 "id": "q2",
@@ -218,7 +228,12 @@ def _fallback_questions(xgb_predictions: list[dict], available_exam_ids: list[st
                 "id": "q3",
                 "text": "Do the symptoms come and go, or are they constant?",
                 "type": "multiple_choice",
-                "options": ["Constant", "Come and go", "Getting worse", "Getting better"],
+                "options": [
+                    "Constant",
+                    "Come and go",
+                    "Getting worse",
+                    "Getting better",
+                ],
             },
         ],
         "recommended_self_exams": [

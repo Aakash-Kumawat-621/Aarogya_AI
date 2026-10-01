@@ -37,9 +37,9 @@ if settings.SENTRY_DSN:
             StarletteIntegration(transaction_style="url"),
             FastApiIntegration(transaction_style="url"),
         ],
-        traces_sample_rate=0.1,          # 10% of requests traced (performance)
+        traces_sample_rate=0.1,  # 10% of requests traced (performance)
         environment=settings.APP_ENV,
-        send_default_pii=False,          # Don't send patient PII to Sentry
+        send_default_pii=False,  # Don't send patient PII to Sentry
     )
     logger.info(f"Sentry initialized for env={settings.APP_ENV}")
 else:
@@ -84,12 +84,12 @@ async def startup_event():
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
-app.include_router(health.router,        prefix="/api/v1")
-app.include_router(analyze.router,       prefix="/api/v1")
-app.include_router(conversation.router,  prefix="/api/v1")
-app.include_router(doctors.router,       prefix="/api/v1")
-app.include_router(history.router,       prefix="/api/v1")
-app.include_router(feedback.router,      prefix="/api/v1")
+app.include_router(health.router, prefix="/api/v1")
+app.include_router(analyze.router, prefix="/api/v1")
+app.include_router(conversation.router, prefix="/api/v1")
+app.include_router(doctors.router, prefix="/api/v1")
+app.include_router(history.router, prefix="/api/v1")
+app.include_router(feedback.router, prefix="/api/v1")
 
 # ── AWS Lambda Handler ────────────────────────────────────────────────────────
 handler = Mangum(app, lifespan="off")

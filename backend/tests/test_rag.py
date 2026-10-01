@@ -16,10 +16,10 @@ from app.models.request_models import PatientProfile
 from app.modules.doctors.specialty_mapper import map_to_specialty, should_boost_urgency
 from app.modules.rag.query_builder import build_query
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_context(
     age=55,
@@ -40,7 +40,7 @@ def _make_context(
         activity_level="moderate",
     )
     symptom_objs = []
-    for s in (symptoms or []):
+    for s in symptoms or []:
         symptom_objs.append(
             SymptomEntity(
                 name=s.get("name", ""),
@@ -64,10 +64,13 @@ def _make_context(
 # query_builder tests
 # ---------------------------------------------------------------------------
 
+
 class TestQueryBuilder:
 
     def test_demographic_always_present(self):
-        ctx = _make_context(age=30, gender="female", smoking="never", conditions=[], risk_flags=[])
+        ctx = _make_context(
+            age=30, gender="female", smoking="never", conditions=[], risk_flags=[]
+        )
         query = build_query(ctx)
         assert "30-year-old female" in query
 
@@ -82,7 +85,11 @@ class TestQueryBuilder:
         ctx = _make_context(
             symptoms=[
                 {"name": "chest pain", "canonical_form": "chest pain", "negated": True},
-                {"name": "palpitations", "canonical_form": "palpitations", "negated": False},
+                {
+                    "name": "palpitations",
+                    "canonical_form": "palpitations",
+                    "negated": False,
+                },
             ]
         )
         query = build_query(ctx)
@@ -128,21 +135,25 @@ class TestQueryBuilder:
 # specialty_mapper tests
 # ---------------------------------------------------------------------------
 
+
 class TestSpecialtyMapper:
 
-    @pytest.mark.parametrize("symptom,expected", [
-        ("chest pain", "Cardiologist"),
-        ("palpitations", "Cardiologist"),
-        ("cough", "Pulmonologist"),
-        ("rash", "Dermatologist"),
-        ("headache", "Neurologist"),
-        ("abdominal pain", "Gastroenterologist"),
-        ("joint pain", "Orthopedist"),
-        ("fever", "General Physician"),
-        ("diabetes", "Endocrinologist"),
-        (None, "General Physician"),
-        ("unknown gibberish xyz", "General Physician"),
-    ])
+    @pytest.mark.parametrize(
+        "symptom,expected",
+        [
+            ("chest pain", "Cardiologist"),
+            ("palpitations", "Cardiologist"),
+            ("cough", "Pulmonologist"),
+            ("rash", "Dermatologist"),
+            ("headache", "Neurologist"),
+            ("abdominal pain", "Gastroenterologist"),
+            ("joint pain", "Orthopedist"),
+            ("fever", "General Physician"),
+            ("diabetes", "Endocrinologist"),
+            (None, "General Physician"),
+            ("unknown gibberish xyz", "General Physician"),
+        ],
+    )
     def test_specialty_mapping(self, symptom, expected):
         assert map_to_specialty(symptom) == expected
 
@@ -158,6 +169,7 @@ class TestSpecialtyMapper:
 # ---------------------------------------------------------------------------
 # RAG chain test (Pinecone + Bedrock mocked)
 # ---------------------------------------------------------------------------
+
 
 class TestRAGChain:
 
@@ -180,22 +192,27 @@ class TestRAGChain:
             "top_score": 0.88,
             "query_embedding_time_ms": 45,
         }
-        mocker.patch("app.modules.rag.chain.retriever.retrieve", return_value=mock_retrieved)
+        mocker.patch(
+            "app.modules.rag.chain.retriever.retrieve", return_value=mock_retrieved
+        )
 
         # Mock Bedrock response
-        bedrock_json = json.dumps({
-            "condition_name": "Acute Coronary Syndrome",
-            "confidence": 0.82,
-            "explanation": "Symptoms consistent with possible cardiac event.",
-            "severity_level": "emergency",
-            "specialist_needed": "Cardiologist",
-            "citations": ["12345678"],
-            "requires_emergency_attention": True,
-            "drug_interactions_noted": [],
-        })
+        bedrock_json = json.dumps(
+            {
+                "condition_name": "Acute Coronary Syndrome",
+                "confidence": 0.82,
+                "explanation": "Symptoms consistent with possible cardiac event.",
+                "severity_level": "emergency",
+                "specialist_needed": "Cardiologist",
+                "citations": ["12345678"],
+                "requires_emergency_attention": True,
+                "drug_interactions_noted": [],
+            }
+        )
         mocker.patch("app.modules.rag.chain._call_bedrock", return_value=bedrock_json)
 
         from app.modules.rag.chain import run
+
         ctx = _make_context(
             symptoms=[{"name": "chest pain", "canonical_form": "chest pain"}],
             risk_flags=["age_over_50", "current_smoker", "cardiac_risk_critical"],
@@ -212,26 +229,33 @@ class TestRAGChain:
     def test_cardiac_safety_override(self, mocker):
         """cardiac_risk_critical + chest pain → must be emergency even if Bedrock says moderate."""
         mock_retrieved = {
-            "medical_chunks": [], "drug_chunks": [],
-            "retrieval_method": "dense", "top_score": 0.5,
+            "medical_chunks": [],
+            "drug_chunks": [],
+            "retrieval_method": "dense",
+            "top_score": 0.5,
             "query_embedding_time_ms": 40,
         }
-        mocker.patch("app.modules.rag.chain.retriever.retrieve", return_value=mock_retrieved)
+        mocker.patch(
+            "app.modules.rag.chain.retriever.retrieve", return_value=mock_retrieved
+        )
 
         # Bedrock says "moderate" but safety override should flip to "emergency"
-        bedrock_json = json.dumps({
-            "condition_name": "Angina",
-            "confidence": 0.6,
-            "explanation": "Possible cardiac condition.",
-            "severity_level": "moderate",   # ← will be overridden
-            "specialist_needed": "Cardiologist",
-            "citations": [],
-            "requires_emergency_attention": False,  # ← will be overridden
-            "drug_interactions_noted": [],
-        })
+        bedrock_json = json.dumps(
+            {
+                "condition_name": "Angina",
+                "confidence": 0.6,
+                "explanation": "Possible cardiac condition.",
+                "severity_level": "moderate",  # ← will be overridden
+                "specialist_needed": "Cardiologist",
+                "citations": [],
+                "requires_emergency_attention": False,  # ← will be overridden
+                "drug_interactions_noted": [],
+            }
+        )
         mocker.patch("app.modules.rag.chain._call_bedrock", return_value=bedrock_json)
 
         from app.modules.rag.chain import run
+
         ctx = _make_context(
             symptoms=[{"name": "chest pain", "canonical_form": "chest pain"}],
             risk_flags=["age_over_50", "cardiac_risk_critical"],
@@ -244,14 +268,21 @@ class TestRAGChain:
     def test_bedrock_json_parse_error_graceful(self, mocker):
         """If Bedrock returns garbage JSON → graceful fallback DiagnosisResult."""
         mock_retrieved = {
-            "medical_chunks": [], "drug_chunks": [],
-            "retrieval_method": "dense", "top_score": 0.3,
+            "medical_chunks": [],
+            "drug_chunks": [],
+            "retrieval_method": "dense",
+            "top_score": 0.3,
             "query_embedding_time_ms": 40,
         }
-        mocker.patch("app.modules.rag.chain.retriever.retrieve", return_value=mock_retrieved)
-        mocker.patch("app.modules.rag.chain._call_bedrock", return_value="NOT VALID JSON {{{{")
+        mocker.patch(
+            "app.modules.rag.chain.retriever.retrieve", return_value=mock_retrieved
+        )
+        mocker.patch(
+            "app.modules.rag.chain._call_bedrock", return_value="NOT VALID JSON {{{{"
+        )
 
         from app.modules.rag.chain import run
+
         ctx = _make_context(symptoms=[{"name": "fever", "canonical_form": "fever"}])
         result = run(ctx)
 

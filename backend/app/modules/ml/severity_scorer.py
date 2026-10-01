@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 # ── Singleton cache ────────────────────────────────────────────────────────
 _lock = threading.Lock()
-_ort_session = None       # ONNX Runtime InferenceSession
-_thresholds = None        # Dict: {"emergency_threshold": float, ...}
-_feature_names = None     # List[str]: expected feature order
+_ort_session = None  # ONNX Runtime InferenceSession
+_thresholds = None  # Dict: {"emergency_threshold": float, ...}
+_feature_names = None  # List[str]: expected feature order
 
 MODEL_S3_KEY = "models/severity_scorer.onnx"
 THRESHOLDS_S3_KEY = "models/severity_thresholds.json"
@@ -87,21 +87,29 @@ def _load_models() -> None:
 
             onnx_path = LOCAL_DIR / "severity_scorer.onnx"
             if not onnx_path.exists():
-                logger.info(f"Downloading severity ONNX from s3://{bucket}/{MODEL_S3_KEY}")
+                logger.info(
+                    f"Downloading severity ONNX from s3://{bucket}/{MODEL_S3_KEY}"
+                )
                 s3.download_file(bucket, MODEL_S3_KEY, str(onnx_path))
 
             thresh_path = LOCAL_DIR / "severity_thresholds.json"
             if not thresh_path.exists():
-                logger.info(f"Downloading thresholds from s3://{bucket}/{THRESHOLDS_S3_KEY}")
+                logger.info(
+                    f"Downloading thresholds from s3://{bucket}/{THRESHOLDS_S3_KEY}"
+                )
                 s3.download_file(bucket, THRESHOLDS_S3_KEY, str(thresh_path))
 
             feat_path = LOCAL_DIR / "severity_feature_names.json"
             if not feat_path.exists():
                 try:
-                    logger.info(f"Downloading severity feature names from s3://{bucket}/{FEATURES_S3_KEY}")
+                    logger.info(
+                        f"Downloading severity feature names from s3://{bucket}/{FEATURES_S3_KEY}"
+                    )
                     s3.download_file(bucket, FEATURES_S3_KEY, str(feat_path))
                 except Exception:
-                    logger.warning("Severity feature names not found in S3 — will use positional features")
+                    logger.warning(
+                        "Severity feature names not found in S3 — will use positional features"
+                    )
 
             _ort_session = ort.InferenceSession(
                 str(onnx_path), providers=["CPUExecutionProvider"]
@@ -134,6 +142,7 @@ def _build_disease_encoding_map() -> dict:
     """
     try:
         from app.modules.ml.symptom_classifier import _label_encoder
+
         if _label_encoder:
             return {disease.lower(): idx for idx, disease in enumerate(_label_encoder)}
     except Exception:
@@ -178,13 +187,18 @@ def _build_severity_features(context, xgb_predictions: list[dict]) -> np.ndarray
 
     # Symptom severity max — count of canonically "severe" symptom names
     severe_symptom_names = {
-        "chest_pain", "breathlessness", "high_fever", "vomiting",
-        "loss_of_consciousness", "slurred_speech", "weakness_of_one_body_side",
-        "coma", "stomach_bleeding", "blood_in_sputum",
+        "chest_pain",
+        "breathlessness",
+        "high_fever",
+        "vomiting",
+        "loss_of_consciousness",
+        "slurred_speech",
+        "weakness_of_one_body_side",
+        "coma",
+        "stomach_bleeding",
+        "blood_in_sputum",
     }
-    symptom_names_set = {
-        s.name.lower().replace(" ", "_") for s in active_symptoms
-    }
+    symptom_names_set = {s.name.lower().replace(" ", "_") for s in active_symptoms}
     symptom_severity_max = len(severe_symptom_names & symptom_names_set)
 
     # NLP severity score — use the severity field extracted by preprocessor
@@ -239,7 +253,9 @@ def _rule_based_urgency(context) -> str:
 
     # ── EMERGENCY triggers ─────────────────────────────────────────────────
     has_chest_pain = any(s in symptom_names for s in ("chest pain", "chest_pain"))
-    has_breathlessness = any(s in symptom_names for s in ("breathlessness", "shortness of breath"))
+    has_breathlessness = any(
+        s in symptom_names for s in ("breathlessness", "shortness of breath")
+    )
     has_headache = any(s in symptom_names for s in ("headache",))
     is_smoker = smoking == "current"
     is_over_45 = age > 45
@@ -247,11 +263,17 @@ def _rule_based_urgency(context) -> str:
     if has_chest_pain and has_breathlessness and (is_over_45 or is_smoker):
         return "emergency"  # Likely ACS
 
-    if has_headache and any(s in symptom_names for s in ("sudden onset", "worst headache")):
+    if has_headache and any(
+        s in symptom_names for s in ("sudden onset", "worst headache")
+    ):
         return "emergency"  # Possible SAH
 
-    facial_droop = any(s in symptom_names for s in ("facial droop", "slurred speech", "facial_droop"))
-    arm_weakness = any(s in symptom_names for s in ("weakness_of_one_body_side", "arm weakness"))
+    facial_droop = any(
+        s in symptom_names for s in ("facial droop", "slurred speech", "facial_droop")
+    )
+    arm_weakness = any(
+        s in symptom_names for s in ("weakness_of_one_body_side", "arm weakness")
+    )
     if facial_droop or arm_weakness:
         return "emergency"  # Possible stroke
 
@@ -261,7 +283,9 @@ def _rule_based_urgency(context) -> str:
     # ── URGENT triggers ────────────────────────────────────────────────────
     has_high_fever = any(s in symptom_names for s in ("high_fever", "high fever"))
     has_rash = any(s in symptom_names for s in ("skin_rash", "red_spots_over_body"))
-    has_severe_abdominal = any(s in symptom_names for s in ("abdominal_pain", "stomach_pain"))
+    has_severe_abdominal = any(
+        s in symptom_names for s in ("abdominal_pain", "stomach_pain")
+    )
 
     if has_high_fever and has_rash:
         return "urgent"

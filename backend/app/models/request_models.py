@@ -9,11 +9,11 @@ class SmokingStatus(str, Enum):
     former = "former"
     current = "current"
     # Extended options
-    occasional = "occasional"          # occasional → treated as current for ML
-    vaping = "vaping"                  # e-cig/vaping → treated as current for ML
-    passive = "passive"                # secondhand/passive → treated as never for ML
-    hookah = "hookah"                  # hookah/shisha → treated as current for ML
-    other = "other"                    # user-written → treated as never unless specified
+    occasional = "occasional"  # occasional → treated as current for ML
+    vaping = "vaping"  # e-cig/vaping → treated as current for ML
+    passive = "passive"  # secondhand/passive → treated as never for ML
+    hookah = "hookah"  # hookah/shisha → treated as current for ML
+    other = "other"  # user-written → treated as never unless specified
 
     def ml_category(self) -> str:
         """Map to the 3 core ML categories: never / former / current."""

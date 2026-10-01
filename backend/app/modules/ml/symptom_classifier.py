@@ -22,9 +22,9 @@ logger = logging.getLogger(__name__)
 
 # ── Singleton cache (thread-safe) ─────────────────────────────────────────
 _lock = threading.Lock()
-_xgb_model = None          # XGBClassifier
-_label_encoder = None      # List[str]: index → disease name
-_feature_names = None      # List[str]: expected feature order
+_xgb_model = None  # XGBClassifier
+_label_encoder = None  # List[str]: index → disease name
+_feature_names = None  # List[str]: expected feature order
 
 MODEL_S3_KEY = "models/xgboost_symptom.pkl"
 LABELS_S3_KEY = "models/label_encoder.json"
@@ -34,49 +34,142 @@ LOCAL_DIR = Path("/tmp/mediassist_models")
 # All 132 symptom columns from the Kaggle disease-symptom dataset
 # (keep ordered alphabetically to match training feature order)
 SYMPTOM_COLUMNS = [
-    "abdominal_pain", "abnormal_menstruation", "acidity", "acute_liver_failure",
-    "altered_sensorium", "anxiety", "back_pain", "belly_pain", "blackheads",
-    "bladder_discomfort", "blister", "blood_in_sputum", "bloody_stool",
-    "blurred_and_distorted_vision", "breathlessness", "brittle_nails",
-    "bruising", "burning_micturition", "chest_pain", "chills",
-    "cold_hands_and_feets", "coma", "congestion", "constipation",
-    "continuous_feel_of_urine", "continuous_sneezing", "cough",
-    "cramps", "dark_urine", "dehydration", "depression", "diarrhoea",
-    "dischromic_patches", "distention_of_abdomen", "dizziness",
-    "drying_and_tingling_lips", "enlarged_thyroid", "excessive_hunger",
-    "extra_marital_contacts", "family_history", "fast_heart_rate",
-    "fatigue", "fluid_overload", "foul_smell_of_urine", "headache",
-    "high_fever", "hip_joint_pain", "history_of_alcohol_consumption",
-    "increased_appetite", "indigestion", "inflammatory_nails",
-    "internal_itching", "irregular_sugar_level", "irritability",
-    "irritation_in_anus", "itching", "joint_pain", "knee_pain",
-    "lack_of_concentration", "lethargy", "loss_of_appetite",
-    "loss_of_balance", "loss_of_smell", "malaise", "mild_fever",
-    "mood_swings", "movement_stiffness", "mucoid_sputum",
-    "muscle_pain", "muscle_wasting", "muscle_weakness", "nausea",
-    "neck_pain", "nodal_skin_eruptions", "obesity", "pain_behind_the_eyes",
-    "pain_during_bowel_movements", "pain_in_anal_region", "painful_walking",
-    "palpitations", "passage_of_gases", "patches_in_throat",
-    "phlegm", "polyuria", "prominent_veins_on_calf", "puffy_face_and_eyes",
-    "pus_filled_pimples", "receiving_blood_transfusion",
-    "receiving_unsterile_injections", "red_sore_around_nose",
-    "red_spots_over_body", "redness_of_eyes", "restlessness",
-    "runny_nose", "rusty_sputum", "scurring", "shivering",
-    "silver_like_dusting", "sinus_pressure", "skin_peeling",
-    "skin_rash", "slurred_speech", "small_dents_in_nails",
-    "spinning_movements", "spotting_urination", "stiff_neck",
-    "stomach_bleeding", "stomach_pain", "sunken_eyes",
-    "sweating", "swelled_lymph_nodes", "swelling_joints",
-    "swelling_of_stomach", "swollen_blood_vessels", "swollen_extremeties",
-    "swollen_legs", "throat_irritation", "toxic_look_typhos",
-    "ulcers_on_tongue", "unsteadiness", "visual_disturbances",
-    "vomiting", "watering_from_eyes", "weakness_in_limbs",
-    "weakness_of_one_body_side", "weight_gain", "weight_loss",
-    "yellowing_of_eyes", "yellowish_skin", "yellow_urine",
+    "abdominal_pain",
+    "abnormal_menstruation",
+    "acidity",
+    "acute_liver_failure",
+    "altered_sensorium",
+    "anxiety",
+    "back_pain",
+    "belly_pain",
+    "blackheads",
+    "bladder_discomfort",
+    "blister",
+    "blood_in_sputum",
+    "bloody_stool",
+    "blurred_and_distorted_vision",
+    "breathlessness",
+    "brittle_nails",
+    "bruising",
+    "burning_micturition",
+    "chest_pain",
+    "chills",
+    "cold_hands_and_feets",
+    "coma",
+    "congestion",
+    "constipation",
+    "continuous_feel_of_urine",
+    "continuous_sneezing",
+    "cough",
+    "cramps",
+    "dark_urine",
+    "dehydration",
+    "depression",
+    "diarrhoea",
+    "dischromic_patches",
+    "distention_of_abdomen",
+    "dizziness",
+    "drying_and_tingling_lips",
+    "enlarged_thyroid",
+    "excessive_hunger",
+    "extra_marital_contacts",
+    "family_history",
+    "fast_heart_rate",
+    "fatigue",
+    "fluid_overload",
+    "foul_smell_of_urine",
+    "headache",
+    "high_fever",
+    "hip_joint_pain",
+    "history_of_alcohol_consumption",
+    "increased_appetite",
+    "indigestion",
+    "inflammatory_nails",
+    "internal_itching",
+    "irregular_sugar_level",
+    "irritability",
+    "irritation_in_anus",
+    "itching",
+    "joint_pain",
+    "knee_pain",
+    "lack_of_concentration",
+    "lethargy",
+    "loss_of_appetite",
+    "loss_of_balance",
+    "loss_of_smell",
+    "malaise",
+    "mild_fever",
+    "mood_swings",
+    "movement_stiffness",
+    "mucoid_sputum",
+    "muscle_pain",
+    "muscle_wasting",
+    "muscle_weakness",
+    "nausea",
+    "neck_pain",
+    "nodal_skin_eruptions",
+    "obesity",
+    "pain_behind_the_eyes",
+    "pain_during_bowel_movements",
+    "pain_in_anal_region",
+    "painful_walking",
+    "palpitations",
+    "passage_of_gases",
+    "patches_in_throat",
+    "phlegm",
+    "polyuria",
+    "prominent_veins_on_calf",
+    "puffy_face_and_eyes",
+    "pus_filled_pimples",
+    "receiving_blood_transfusion",
+    "receiving_unsterile_injections",
+    "red_sore_around_nose",
+    "red_spots_over_body",
+    "redness_of_eyes",
+    "restlessness",
+    "runny_nose",
+    "rusty_sputum",
+    "scurring",
+    "shivering",
+    "silver_like_dusting",
+    "sinus_pressure",
+    "skin_peeling",
+    "skin_rash",
+    "slurred_speech",
+    "small_dents_in_nails",
+    "spinning_movements",
+    "spotting_urination",
+    "stiff_neck",
+    "stomach_bleeding",
+    "stomach_pain",
+    "sunken_eyes",
+    "sweating",
+    "swelled_lymph_nodes",
+    "swelling_joints",
+    "swelling_of_stomach",
+    "swollen_blood_vessels",
+    "swollen_extremeties",
+    "swollen_legs",
+    "throat_irritation",
+    "toxic_look_typhos",
+    "ulcers_on_tongue",
+    "unsteadiness",
+    "visual_disturbances",
+    "vomiting",
+    "watering_from_eyes",
+    "weakness_in_limbs",
+    "weakness_of_one_body_side",
+    "weight_gain",
+    "weight_loss",
+    "yellowing_of_eyes",
+    "yellowish_skin",
+    "yellow_urine",
 ]
+
 
 def _download_from_s3(s3_key: str, local_path: Path):
     import boto3
+
     s3 = boto3.client(
         "s3",
         region_name=settings.AWS_REGION,
@@ -113,19 +206,25 @@ def _load_models() -> None:
             # Download PKL model
             pkl_path = LOCAL_DIR / "xgboost_symptom.pkl"
             if not pkl_path.exists():
-                logger.info(f"Downloading XGBoost PKL from s3://{bucket}/{MODEL_S3_KEY}")
+                logger.info(
+                    f"Downloading XGBoost PKL from s3://{bucket}/{MODEL_S3_KEY}"
+                )
                 s3.download_file(bucket, MODEL_S3_KEY, str(pkl_path))
 
             # Download label encoder (JSON list: index → disease name)
             labels_path = LOCAL_DIR / "label_encoder.json"
             if not labels_path.exists():
-                logger.info(f"Downloading label encoder from s3://{bucket}/{LABELS_S3_KEY}")
+                logger.info(
+                    f"Downloading label encoder from s3://{bucket}/{LABELS_S3_KEY}"
+                )
                 s3.download_file(bucket, LABELS_S3_KEY, str(labels_path))
 
             # Download feature names
             features_path = LOCAL_DIR / "feature_names.json"
             if not features_path.exists():
-                logger.info(f"Downloading feature names from s3://{bucket}/{FEATURES_S3_KEY}")
+                logger.info(
+                    f"Downloading feature names from s3://{bucket}/{FEATURES_S3_KEY}"
+                )
                 s3.download_file(bucket, FEATURES_S3_KEY, str(features_path))
 
             # Load into memory
@@ -161,6 +260,7 @@ def _load_models() -> None:
             _label_encoder = None
             _feature_names = None
 
+
 def _build_feature_vector(context) -> np.ndarray:
     """
     Build a feature vector from PatientContext matching the training feature order.
@@ -173,7 +273,11 @@ def _build_feature_vector(context) -> np.ndarray:
     5. Engineered risk multipliers (cardiac_risk_score, etc.)
     """
     profile = context.patient_profile
-    symptom_names = {s.name.lower().replace(" ", "_") for s in context.symptom_entities if not s.negated}
+    symptom_names = {
+        s.name.lower().replace(" ", "_")
+        for s in context.symptom_entities
+        if not s.negated
+    }
 
     features = {}
 
@@ -233,7 +337,9 @@ def _build_feature_vector(context) -> np.ndarray:
         smoking_ml = str(smoking_raw)
     else:
         smoking_ml = "never"
-    features["smoking_encoded"] = {"never": 0, "former": 1, "current": 2}.get(smoking_ml, 0)
+    features["smoking_encoded"] = {"never": 0, "former": 1, "current": 2}.get(
+        smoking_ml, 0
+    )
 
     pack_years = getattr(profile, "pack_years", 0) or 0
     if pack_years == 0:
@@ -249,9 +355,12 @@ def _build_feature_vector(context) -> np.ndarray:
     features["alcohol_risk"] = int(alcohol_units > 14)
 
     activity = getattr(profile, "activity_level", "moderate")
-    features["activity_score"] = {"sedentary": 0, "light": 1, "moderate": 2, "active": 3}.get(
-        activity if activity else "moderate", 2
-    )
+    features["activity_score"] = {
+        "sedentary": 0,
+        "light": 1,
+        "moderate": 2,
+        "active": 3,
+    }.get(activity if activity else "moderate", 2)
 
     sleep_hours = getattr(profile, "sleep_hours", 7) or 7
     features["sleep_deficit"] = int(sleep_hours < 6)
@@ -274,9 +383,7 @@ def _build_feature_vector(context) -> np.ndarray:
     has_visual_disturbances = features.get("visual_disturbances", 0)
 
     # cardiac_risk_score: age_over_50 A- smoker A- (hypertension OR diabetes)
-    features["cardiac_risk_score"] = int(
-        age_over_50 and smoker and (has_htn or has_dm)
-    )
+    features["cardiac_risk_score"] = int(age_over_50 and smoker and (has_htn or has_dm))
 
     # respiratory_risk_score: smoker A- (chest_pain OR cough OR breathlessness)
     features["respiratory_risk_score"] = int(
@@ -295,9 +402,7 @@ def _build_feature_vector(context) -> np.ndarray:
 
     # infection_cluster: fever A- (fatigue OR body_aches)
     has_body_aches = features.get("muscle_pain", 0)
-    features["infection_cluster"] = int(
-        has_fever and (has_fatigue or has_body_aches)
-    )
+    features["infection_cluster"] = int(has_fever and (has_fatigue or has_body_aches))
 
     # Build ordered vector matching training feature_names
     if _feature_names:
@@ -342,11 +447,13 @@ def classify_symptoms(context) -> list[dict]:
         results = []
         for idx in top3_idx:
             disease = _label_encoder[int(idx)] if _label_encoder else f"class_{idx}"
-            results.append({
-                "disease": disease,
-                "probability": round(float(probs[idx]), 4),
-                "ml_backed": True,
-            })
+            results.append(
+                {
+                    "disease": disease,
+                    "probability": round(float(probs[idx]), 4),
+                    "ml_backed": True,
+                }
+            )
 
         logger.info(
             f"XGBoost top prediction: {results[0]['disease']} "

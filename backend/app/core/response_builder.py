@@ -99,7 +99,10 @@ def build_response(
             ml_level = SeverityLevel(urgency_override["level"])
             # Always upgrade to EMERGENCY if ML says so (safety-critical)
             # Only downgrade from EMERGENCY if ML is also confident it's not emergency
-            if ml_level == SeverityLevel.emergency or severity != SeverityLevel.emergency:
+            if (
+                ml_level == SeverityLevel.emergency
+                or severity != SeverityLevel.emergency
+            ):
                 severity_for_urgency = ml_level
             else:
                 severity_for_urgency = severity  # Keep RAG emergency over ML downgrade

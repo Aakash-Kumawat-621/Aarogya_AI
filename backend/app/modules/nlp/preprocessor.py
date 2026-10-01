@@ -389,20 +389,22 @@ def extract_symptoms(text: str) -> dict:
 
     # FALLBACK FOR TESTING: If models failed to load, just split text by commas
     if not symptoms and _bc5cdr_nlp is None and _sci_nlp is None:
-        parts = [p.strip() for p in text.split(',')]
+        parts = [p.strip() for p in text.split(",")]
         for p in parts:
             if len(p) > 2:
-                symptoms.append({
-                    "text": p,
-                    "canonical_form": p,
-                    "label": "DISEASE",
-                    "body_part": None,
-                    "negated": False,
-                    "uncertain": False,
-                    "severity": None,
-                    "duration": None,
-                    "duration_category": None,
-                })
+                symptoms.append(
+                    {
+                        "text": p,
+                        "canonical_form": p,
+                        "label": "DISEASE",
+                        "body_part": None,
+                        "negated": False,
+                        "uncertain": False,
+                        "severity": None,
+                        "duration": None,
+                        "duration_category": None,
+                    }
+                )
 
     # ── Annotate body parts ───────────────────────────────────────────────────
     body_anatomy_hints = {
